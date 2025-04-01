@@ -4,7 +4,14 @@
 \alias{summaryTable}
 \title{summaryTable for continuous data}
 \usage{
-summaryTable(data, by = NULL, continuous = "median_IQ")
+summaryTable(
+  data,
+  by = NULL,
+  continuous = "median_IQ",
+  test_continuous = "t.test",
+  ci = "yes",
+  conf.level = 0.95
+)
 }
 \arguments{
 \item{by}{A single column from data.
@@ -12,7 +19,16 @@ Summary statistics will be stratified by this variable. Default is NULL.
 (from tbl_summary)}
 
 \item{continuous}{Summary statistic to display for continuous variables. Options
-include "median_IQ" (default), "median_range", "mean_sd".}
+include "median_IQ" (default), "median_range", "mean_sd", "mean_se" and
+"geomMean_sd".}
+
+\item{test_continuous}{Test for continuous variables. Options
+include "t.test" (default), "oneway.test", "kruskal.test", "wilcox.test",
+"paired.t.test", "paired.wilcox.test"}
+
+\item{ci}{Confidence interval}
+
+\item{conf.level}{Confidence level. Default to 0.95}
 }
 \description{
 Produces a summary table for continuous data
