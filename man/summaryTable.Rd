@@ -6,29 +6,67 @@
 \usage{
 summaryTable(
   data,
-  by = NULL,
-  continuous = "median_IQ",
-  test_continuous = "t.test",
-  ci = "yes",
-  conf.level = 0.95
+  vars = NULL,
+  group = NULL,
+  stat_cont = "median_IQR",
+  stat_cat = NULL,
+  test_cont = "wilcox.test",
+  test_cat = NULL,
+  ci_cont = "wilcox.test",
+  ci_cat = NULL,
+  conf_level = 0.95,
+  layout_cont = NULL,
+  layout_cat = NULL,
+  digits_cont = 1,
+  digits_cat = 1
 )
 }
 \arguments{
-\item{by}{A single column from data.
-Summary statistics will be stratified by this variable. Default is NULL.
-(from tbl_summary)}
+\item{data}{A data frame or tibble containing the data to be plotted.}
 
-\item{continuous}{Summary statistic to display for continuous variables. Options
-include "median_IQ" (default), "median_range", "mean_sd", "mean_se" and
+\item{vars}{Variables to include in the summary table. Default to
+all variables present in the data.}
+
+\item{group}{A single column from data.
+Summary statistics will be stratified according to this variable.
+Default to NULL.}
+
+\item{stat_cont}{Summary statistic to display for continuous variables. Options
+include "median_IQR" (default), "median_range", "mean_sd", "mean_se" and
 "geomMean_sd".}
 
-\item{test_continuous}{Test for continuous variables. Options
-include "t.test" (default), "oneway.test", "kruskal.test", "wilcox.test",
-"paired.t.test", "paired.wilcox.test"}
+\item{stat_cat}{Summary statistic to display for categorical variables.}
 
-\item{ci}{Confidence interval}
+\item{test_cont}{Test type for the p-value, for continuous variables.
+Options include "t.test", "oneway.test", "kruskal.test", "wilcox.test" (default),
+"paired.t.test", "paired.wilcox.test"
+IF NULL, no p-value will be dispayed}
 
-\item{conf.level}{Confidence level. Default to 0.95}
+\item{test_cat}{Test type for the p-value, for categorical variables.
+IF NULL, no p-value will be dispayed}
+
+\item{ci_cont}{CI type for continuous variables. Options include ...
+If NULL, no CI will be displayed.}
+
+\item{ci_cat}{CI type for categorical variables. Options include ...
+If NULL, no CI will be displayed.}
+
+\item{conf_level}{Confidence level. Default to 0.95. Only used
+if ci_cont or ci_cat is not NULL.}
+
+\item{layout_cont}{Layout for continuous variables. Is the CI in the same
+column as the summary statistics. Only used if ci_cont is not NULL.
+Default to ...}
+
+\item{layout_cat}{Layout for continuous variables. Is the CI in the same
+column as the summary statistics. Only used if ci_cat is not NULL.
+Default to ...}
+
+\item{digits_cont}{Digits for summary statistics and CI of continuous
+variables}
+
+\item{digits_cat}{Digits for summary statistics and CI of categorical
+variables}
 }
 \description{
 Produces a summary table for continuous data
