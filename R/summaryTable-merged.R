@@ -50,7 +50,8 @@
 #' @param digits_cat Digits for summary statistics and CI of categorical
 #' variables
 #'
-#' @param missin TODO
+#' @param missing Indicate whether percentages for missings are shown (TRUE)
+#' or not (FALSE). If "both", then both options are displayed.
 #'
 #' @importFrom gtsummary tbl_summary
 #' @import cardx dplyr Hmisc
@@ -131,18 +132,27 @@ summaryTable <- function(data,
   cont <- format_lookup[[stat_cont]]
 
 # --------------------------  missing = FALSE -------------------------------- #
-  if(missing == FALSE){
+
   tbl_noMissing <- tbl_summary(data = data,
                      include = vars,
                      by = group,
                      statistic = list(all_continuous() ~ cont)
   )
 
+  if(!is.null(test_cat)) {
+    tbl_noMissing <-  tbl_noMissing|>
+      add_p(pvalue_fun = label_style_pvalue(digits = 2),
+            test = list(
+              # all_continuous() ~ test_cont,
+                        all_categorical() ~ test_cat))
+
+  }
+
   if(!is.null(test_cont)) {
     tbl_noMissing <-  tbl_noMissing|>
       add_p(pvalue_fun = label_style_pvalue(digits = 2),
-            test = list(all_continuous() ~ test_cont,
-                        all_categorical() ~ test_cat))
+            test = list(
+               all_continuous() ~ test_cont))
 
   }
 
@@ -152,22 +162,23 @@ summaryTable <- function(data,
       add_ci(method = list(all_continuous() ~ ci_cont,
                            all_categorical() ~ ci_cat),
              conf.level = conf_level)
-
-    if(stat_cont == "mean_sd" | stat_cont == "mean_se")
-      tbl_noMissing <- tbl_noMissing |>
-        add_stat(fns = all_continuous() ~ meanDiff) |>
-        add_stat(fns = all_continuous() ~ meanDiffCI) |>
-        modify_header(add_stat_1 = "Mean difference") |>
-        modify_header(add_stat_2 = "CI")
-
   }
 
+  #   if(stat_cont == "mean_sd" | stat_cont == "mean_se"){
+  #     tbl_noMissing <- tbl_noMissing |>
+  #       add_stat(fns = all_continuous() ~ meanDiff) |>
+  #       add_stat(fns = all_continuous() ~ meanDiffCI) |>
+  #       modify_header(add_stat_1 = "Mean difference") |>
+  #       modify_header(add_stat_2 = "CI")
+  #
+  # }
+
+if(missing == FALSE){
 tbl <- tbl_noMissing
+}
 # --------------------------  missing = TRUE -------------------------------- #
-} else if (missing == TRUE){
 
   data2 <- data
-  data3 <- data
 
     for (i in colnames(data2|>
                        dplyr::select(vars, group))) {
@@ -189,7 +200,7 @@ tbl <- tbl_noMissing
                     type = list(all_dichotomous() ~ "categorical"))
       # tests displayed
     if (!is.null(test_cat)) {
-      tbl_noMissing <- tbl_summary(data = data,
+      tbl_noMissing_short <- tbl_summary(data = data,
                                    include = vars,
                                    missing = "no",
                                    by = group,
@@ -199,17 +210,17 @@ tbl <- tbl_noMissing
               test = list(all_continuous() ~ test_cont,
                           all_categorical() ~ test_cat)) |>
         modify_column_hide(c("stat_1", "stat_2"))
-
-
-      tbl_missing <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing)) |>
-        modify_spanning_header(everything()~NA_character_)
     }
-      tbl <- tbl_missing
+
+tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
+        modify_spanning_header(everything()~NA_character_)
+
+if(missing == TRUE){
+      tbl <- tbl_missingTRUE
+}
 
   # --------------------------  missing = both -------------------------------- #
-    } else if (missing=="both"){
 
-      # TO DO
 
       # for (i in colnames(data3|>
       #                    dplyr::select(vars, group))) {
@@ -230,8 +241,13 @@ tbl <- tbl_noMissing
       # t<- tbl_merge(tbls = list(t00, t0))|>
       #   modify_spanning_header(c("stat_1_1", "stat_2_1") ~ "**With missing**",
                                # c("stat_1_2", "stat_2_2", "p.value_2") ~ "**Without missing**")
-
-    }
+# Work in progress
+  tbl_both <- tbl_merge(tbls = list( tbl_missing, tbl_noMissing)) |>
+    modify_spanning_header(c("stat_1_1", "stat_2_1") ~ "**With missing**",
+                           c("stat_1_2", "stat_2_2") ~ "**Without missing**")
+if(missing == "both"){
+  tbl <- tbl_both
+}
 tbl
 
 }
