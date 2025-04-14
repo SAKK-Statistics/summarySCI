@@ -1,0 +1,6 @@
+Points to discuss: 
+
+[] Should categorical variables with levels "0", "1" automatically be displayed as "No", "Yes"? Not the case currently. 
+[] I would say: either p-values for all types of variables (i.e categorical/binary and continous) are displayed or no p-value at all. Do you agree? I would also do the same for ci_cat and ci_cont. 
+[] mean difference: in progress, I will add it towards the end. 
+[] Do we want CI displayed also when missing "both" (I find it a bit overcrowded, currently programmed for this). 
