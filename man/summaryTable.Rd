@@ -9,7 +9,7 @@ summaryTable(
   vars = NULL,
   group = NULL,
   stat_cont = "median_IQR",
-  stat_cat = NULL,
+  stat_cat = "n_percent",
   test_cont = NULL,
   test_cat = NULL,
   ci_cont = NULL,
@@ -18,19 +18,19 @@ summaryTable(
   layout_cont = NULL,
   layout_cat = NULL,
   digits_cont = 1,
-  digits_cat = 1,
+  digits_cat = 0,
   missing = FALSE,
-  binary = FALSE
+  binary = FALSE,
+  missing_text = "Missing"
 )
 }
 \arguments{
-\item{data}{A data frame or tibble containing the data to be plotted.}
+\item{data}{A data frame or tibble containing the data to be summarized.}
 
 \item{vars}{Variables to include in the summary table. Default to
-all variables present in the data if \code{group} is NULL,
-otherwise to all variables except \code{group}.}
+all variables present in the data except \code{group}.}
 
-\item{group}{A single column from data.
+\item{group}{A single column from \code{data}.
 Summary statistics will be stratified according to this variable.
 Default to NULL.}
 
@@ -38,24 +38,30 @@ Default to NULL.}
 include "median_IQR" (default), "median_range", "mean_sd", "mean_se" and
 "geomMean_sd".}
 
-\item{stat_cat}{Summary statistic to display for categorical variables.}
+\item{stat_cat}{Summary statistic to display for categorical variables.
+Options include "n_percent" (default) and "n", and "n_N".}
 
-\item{test_cont}{Test type for the p-value, for continuous variables.
+\item{test_cont}{Test type used to calculate the p-value
+for continuous variables. Only used if \code{group} is not NULL.
 Options include "t.test", "oneway.test", "kruskal.test", "wilcox.test",
 "paired.t.test", "paired.wilcox.test"
 IF NULL (default), no p-value will be displayed.}
 
-\item{test_cat}{Test type for the p-value, for categorical variables.
+\item{test_cat}{Test type used to calculated the p-value
+for categorical variables. Only used if \code{group} is not NULL.
+Options include "chisq.test", "chisq.test.no.correct", "fisher.test".
 IF NULL, no p-value will be displayed.}
 
-\item{ci_cont}{CI type for continuous variables. Options include ...
+\item{ci_cont}{Confidence interval method for continuous variables.
+Options include "t.test" and "wilcox.text".
 If NULL, no CI will be displayed.}
 
-\item{ci_cat}{CI type for categorical variables. Options include ...
+\item{ci_cat}{Confidence interval method for categorical variables.
+Options include "wilson", "wilson.no.correct", "clopper.pearson",
+"wald", "wald.no.correct", "agresti.coull" and "jeffreys".
 If NULL, no CI will be displayed.}
 
-\item{conf_level}{Confidence level. Default to 0.95. Only used
-if ci_cont and ci_cat are not NULL.}
+\item{conf_level}{Confidence level. Default to 0.95.}
 
 \item{layout_cont}{Layout for continuous variables. Is the CI in the same
 column as the summary statistics. Only used if ci_cont is not NULL.
@@ -66,17 +72,20 @@ column as the summary statistics. Only used if ci_cat is not NULL.
 Default to ...}
 
 \item{digits_cont}{Digits for summary statistics and CI of continuous
-variables}
+variables. Default to 1.}
 
 \item{digits_cat}{Digits for summary statistics and CI of categorical
-variables}
+variables. Default to 0.}
 
 \item{missing}{Indicates whether percentages for missings are shown (TRUE)
-or not (FALSE). If "both", then both options are displayed.}
+or not (FALSE). If "both", then both options are displayed next to each other.}
 
 \item{binary}{Only taken into account when missing = FALSE.
 For binary variables, indicates whether all levels are
 displayed (FALSE, default) or only one.}
+
+\item{missing_text}{String indicating text shown on missing row. Default to
+"Missing".}
 }
 \description{
 Creates publication-ready summary tables based on the gtsummary

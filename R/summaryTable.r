@@ -3,13 +3,12 @@
 #' Creates publication-ready summary tables based on the gtsummary
 #' package.
 #'
-#' @param data A data frame or tibble containing the data to be plotted.
+#' @param data A data frame or tibble containing the data to be summarized.
 #'
 #' @param vars Variables to include in the summary table. Default to
-#' all variables present in the data if `group` is NULL,
-#' otherwise to all variables except `group`.
+#' all variables present in the data except `group`.
 #'
-#' @param group A single column from data.
+#' @param group A single column from `data`.
 #' Summary statistics will be stratified according to this variable.
 #' Default to NULL.
 #'
@@ -18,23 +17,29 @@
 #' "geomMean_sd".
 #'
 #' @param stat_cat Summary statistic to display for categorical variables.
+#' Options include "n_percent" (default) and "n", and "n_N".
 #'
-#' @param test_cont Test type for the p-value, for continuous variables.
+#' @param test_cont Test type used to calculate the p-value
+#' for continuous variables. Only used if `group` is not NULL.
 #' Options include "t.test", "oneway.test", "kruskal.test", "wilcox.test",
 #' "paired.t.test", "paired.wilcox.test"
 #' IF NULL (default), no p-value will be displayed.
 #'
-#' @param test_cat Test type for the p-value, for categorical variables.
+#' @param test_cat Test type used to calculated the p-value
+#' for categorical variables. Only used if `group` is not NULL.
+#' Options include "chisq.test", "chisq.test.no.correct", "fisher.test".
 #' IF NULL, no p-value will be displayed.
 #'
-#' @param ci_cont CI type for continuous variables. Options include ...
+#' @param ci_cont Confidence interval method for continuous variables.
+#' Options include "t.test" and "wilcox.text".
 #' If NULL, no CI will be displayed.
 #'
-#' @param ci_cat CI type for categorical variables. Options include ...
+#' @param ci_cat Confidence interval method for categorical variables.
+#' Options include "wilson", "wilson.no.correct", "clopper.pearson",
+#' "wald", "wald.no.correct", "agresti.coull" and "jeffreys".
 #' If NULL, no CI will be displayed.
 #'
-#' @param conf_level Confidence level. Default to 0.95. Only used
-#' if ci_cont and ci_cat are not NULL.
+#' @param conf_level Confidence level. Default to 0.95.
 #'
 #' @param layout_cont Layout for continuous variables. Is the CI in the same
 #' column as the summary statistics. Only used if ci_cont is not NULL.
@@ -45,13 +50,16 @@
 #' Default to ...
 #'
 #' @param digits_cont Digits for summary statistics and CI of continuous
-#' variables
+#' variables. Default to 1.
 #'
 #' @param digits_cat Digits for summary statistics and CI of categorical
-#' variables
+#' variables. Default to 0.
 #'
 #' @param missing Indicates whether percentages for missings are shown (TRUE)
-#' or not (FALSE). If "both", then both options are displayed.
+#' or not (FALSE). If "both", then both options are displayed next to each other.
+#'
+#' @param missing_text String indicating text shown on missing row. Default to
+#' "Missing".
 #'
 #' @param binary Only taken into account when missing = FALSE.
 #' For binary variables, indicates whether all levels are
@@ -66,7 +74,7 @@ summaryTable <- function(data,
                          vars = NULL,
                          group = NULL,
                          stat_cont = "median_IQR" ,
-                         stat_cat = NULL,
+                         stat_cat = "n_percent",
                          test_cont = NULL,
                          test_cat = NULL,
                          ci_cont = NULL,
@@ -75,19 +83,32 @@ summaryTable <- function(data,
                          layout_cont = NULL,
                          layout_cat = NULL,
                          digits_cont = 1,
-                         digits_cat = 1,
+                         digits_cat = 0,
                          missing = FALSE,
-                         binary = FALSE){
+                         binary = FALSE,
+                         missing_text = "Missing"){
 
   # --------- Some checks --------------------------------------------------- #
 
+  # Make sure that 'data' exists and that it is a data frame
+  if (missing(data)) {
+    stop("'data' must be specified.")
+  }
+  data <- data.frame(data)
+
   if (is.null(test_cont) != is.null(test_cat)) {
-    stop("Error: Both test_cont and test_cat should be either NULL or both should be non-NULL.")
+    stop("Error: Both 'test_cont' and 'test_cat' should be either NULL or both should be non-NULL.")
   }
 
   if (is.null(ci_cont) != is.null(ci_cat)) {
-    stop("Error: Both ci_cont and ci_cat should be either NULL or both should be non-NULL.")
+    stop("Error: Both 'ci_cont' and 'ci_cat' should be either NULL or both should be non-NULL.")
   }
+
+  if((is.null(group) & !is.null(test_cont)) | (is.null(group) & !is.null(test_cat))){
+    stop("Error: 'group' needs to be given for a test to be calculated.")
+  }
+
+
 
   # --------- A few required  functions ------------------------------------------
 
@@ -118,6 +139,13 @@ summaryTable <- function(data,
     median_IQR = "{median} ({p25}, {p75})",
     geomMean_sd = "{geom_mean} ({sd})"
   )
+
+  format_lookup_cat <-
+    list(
+      n_percent = "{n} ({p}%)",
+      n = "{n}",
+      n_N = "{n}/{N}"
+    )
   #  -----------------------------------------------------------------------------
 
   # if vars = NULL, take all the variables (except group if not NULL).
@@ -127,6 +155,7 @@ summaryTable <- function(data,
 
   # Summary stat for continuous variables
   stat_cont <- format_lookup[[stat_cont]]
+  stat_cat <- format_lookup_cat[[stat_cat]]
 
   # binary variables as categorical or binary
   if(binary == FALSE){
@@ -135,15 +164,36 @@ summaryTable <- function(data,
     type_binary = "dichotomous"
   }
 
+  if(!is.null(ci_cat)){
+
+  if(ci_cat == "clopper-pearson"){
+    ci_cat_gt <- "exact"
+  } else if(ci_cat == "wilson" |
+            ci_cat == "wilson.no.correct"|
+            ci_cat == "clopper.pearson" |
+            ci_cat == "wald"|
+            ci_cat == "wald.no.correct" |
+            ci_cat == "agresti.coull"|
+            ci_cat == "jeffreys") {
+    ci_cat_gt <- ci_cat
+  }else{
+    stop(paste0("The chosen CI method '", ci_cat, "' does not exist or is not yet implemented."))
+    }
+  }
+
+
   # -------------- # table for missing = FALSE (default in gtsummary)----- #
   if(missing == FALSE){
 
   tbl_noMissing <- tbl_summary(data = data,
                      include = vars,
                      by = group,
-                     statistic = list(all_continuous() ~ stat_cont),
+                     statistic = list(all_continuous() ~ stat_cont,
+                                      all_categorical() ~ stat_cat),
                      type = list(all_dichotomous() ~ type_binary),
-                     missing_text = "(Missing)")
+                     missing_text = missing_text,
+                     digits = list(all_categorical() ~ digits_cat,
+                                   all_continuous() ~ digits_cont))
 
 
   if(!is.null(test_cont)) {
@@ -158,8 +208,10 @@ summaryTable <- function(data,
   if(!is.null(ci_cont)) {
     tbl_noMissing <- tbl_noMissing |>
       add_ci(method = list(all_continuous() ~ ci_cont,
-                           all_categorical() ~ ci_cat),
-             conf.level = conf_level)
+                           all_categorical() ~ ci_cat_gt),
+             conf.level = conf_level,
+             statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
+                              all_categorical() ~ "[{conf.low}%, {conf.high}%]"))
   }
 
   # CMI: will work on it.
@@ -201,16 +253,21 @@ if(missing != FALSE){
     tbl_missing <- data2|>
       tbl_summary(by = group,
                   include = vars,
-                  statistic = list(all_continuous() ~ stat_cont),
+                  statistic = list(all_continuous() ~ stat_cont,
+                                   all_categorical() ~ stat_cat),
                   type = list(all_dichotomous() ~ "categorical"),
-                  missing_text = "(Missing)")
+                  missing_text = missing_text,
+                  digits = list(all_categorical() ~ digits_cat,
+                                all_continuous() ~ digits_cont))
 
 
     if(!is.null(ci_cont)) {
       tbl_missing <- tbl_missing |>
         add_ci(method = list(all_continuous() ~ ci_cont,
-                             all_categorical() ~ ci_cat),
-               conf.level = conf_level)
+                             all_categorical() ~ ci_cat_gt),
+               conf.level = conf_level,
+               statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
+                                all_categorical() ~ "[{conf.low}%, {conf.high}%]"))
     }
 
 
@@ -220,9 +277,12 @@ if(missing != FALSE){
       tbl_noMissing_short <- tbl_summary(data = data,
                                    include = vars,
                                    missing = "no",
-                                   missing_text = "(Missing)",
+                                   missing_text = missing_text,
                                    by = group,
-                                   statistic = list(all_continuous() ~ stat_cont)
+                                   statistic = list(all_continuous() ~ stat_cont,
+                                                    all_categorical() ~ stat_cat),
+                                   digits = list(all_categorical() ~ digits_cat,
+                                                 all_continuous() ~ digits_cont)
       ) |>
         add_p(pvalue_fun = label_style_pvalue(digits = 2),
               test = list(all_continuous() ~ test_cont,
@@ -246,9 +306,12 @@ if(missing == "both"){
   tbl_noMissing2 <- tbl_summary(data = data,
                                include = vars,
                                by = group,
-                               statistic = list(all_continuous() ~ stat_cont),
+                               statistic = list(all_continuous() ~ stat_cont,
+                                                all_categorical() ~ stat_cat),
                                type = list(all_dichotomous() ~ "categorical"),
-                               missing = "no")
+                               missing = "no",
+                               digits = list(all_categorical() ~ digits_cat,
+                                             all_continuous() ~ digits_cont))
 
 
 
