@@ -96,13 +96,13 @@ summaryTable <- function(data,
   }
   data <- data.frame(data)
 
-  if (is.null(test_cont) != is.null(test_cat)) {
-    stop("Error: Both 'test_cont' and 'test_cat' should be either NULL or both should be non-NULL.")
-  }
+  # if (is.null(test_cont) != is.null(test_cat)) {
+  #   stop("Error: Both 'test_cont' and 'test_cat' should be either NULL or both should be non-NULL.")
+  # }
 
-  if (is.null(ci_cont) != is.null(ci_cat)) {
-    stop("Error: Both 'ci_cont' and 'ci_cat' should be either NULL or both should be non-NULL.")
-  }
+  # if (is.null(ci_cont) != is.null(ci_cat)) {
+  #   stop("Error: Both 'ci_cont' and 'ci_cat' should be either NULL or both should be non-NULL.")
+  # }
 
   if((is.null(group) & !is.null(test_cont)) | (is.null(group) & !is.null(test_cat))){
     stop("Error: 'group' needs to be given for a test to be calculated.")
@@ -199,19 +199,32 @@ summaryTable <- function(data,
   if(!is.null(test_cont)) {
     tbl_noMissing <-  tbl_noMissing|>
       add_p(pvalue_fun = label_style_pvalue(digits = 2),
-            test = list(all_categorical() ~ test_cat,
-                        all_continuous() ~ test_cont))
+            test = list(all_continuous() ~ test_cont))
+
+  }
+
+
+  if(!is.null(test_cat)) {
+    tbl_noMissing <-  tbl_noMissing|>
+      add_p(pvalue_fun = label_style_pvalue(digits = 2),
+            test = list(all_categorical() ~ test_cat))
 
   }
 
 
   if(!is.null(ci_cont)) {
     tbl_noMissing <- tbl_noMissing |>
-      add_ci(method = list(all_continuous() ~ ci_cont,
-                           all_categorical() ~ ci_cat_gt),
+      add_ci(method = list(all_continuous() ~ ci_cont),
              conf.level = conf_level,
-             statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
-                              all_categorical() ~ "[{conf.low}%, {conf.high}%]"))
+             statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]"))
+  }
+
+
+  if(!is.null(ci_cat)) {
+    tbl_noMissing <- tbl_noMissing |>
+      add_ci(method = list(all_categorical() ~ ci_cat_gt),
+             conf.level = conf_level,
+             statistic = list(all_categorical() ~ "[{conf.low}%, {conf.high}%]"))
   }
 
   # CMI: will work on it.
@@ -237,7 +250,7 @@ if(missing != FALSE){
                        dplyr::select(vars, group))) {
 
       if (is.factor(data2[[i]]) == TRUE | is.character(data2[[i]])) {
-        data2[[i]] <- forcats::fct_explicit_na(as.factor(data2[[i]]))
+        data2[[i]] <- forcats::fct_explicit_na(as.factor(data2[[i]]), na_level = missing_text)
         if (!is.null(attr(data[[i]], "label"))) {
           Hmisc::label(data2[[i]]) <- attr(data[[i]], "label")
         }
@@ -263,11 +276,17 @@ if(missing != FALSE){
 
     if(!is.null(ci_cont)) {
       tbl_missing <- tbl_missing |>
-        add_ci(method = list(all_continuous() ~ ci_cont,
-                             all_categorical() ~ ci_cat_gt),
+        add_ci(method = list(all_continuous() ~ ci_cont),
                conf.level = conf_level,
-               statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
-                                all_categorical() ~ "[{conf.low}%, {conf.high}%]"))
+               statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]"))
+    }
+
+
+    if(!is.null(ci_cat)) {
+      tbl_missing <- tbl_missing |>
+        add_ci(method = list(all_categorical() ~ ci_cat_gt),
+               conf.level = conf_level,
+               statistic = list(all_categorical() ~ "[{conf.low}%, {conf.high}%]"))
     }
 
 
@@ -279,17 +298,27 @@ if(missing != FALSE){
                                    missing = "no",
                                    missing_text = missing_text,
                                    by = group,
-                                   statistic = list(all_continuous() ~ stat_cont,
-                                                    all_categorical() ~ stat_cat),
-                                   digits = list(all_categorical() ~ digits_cat,
-                                                 all_continuous() ~ digits_cont)
+                                   statistic = list(all_categorical() ~ stat_cat),
+                                   digits = list(all_categorical() ~ digits_cat)
       ) |>
         add_p(pvalue_fun = label_style_pvalue(digits = 2),
-              test = list(all_continuous() ~ test_cont,
-                          all_categorical() ~ test_cat)) |>
+              test = list(all_categorical() ~ test_cat)) |>
         modify_column_hide(c("stat_1", "stat_2"))
     }
 
+    if (!is.null(test_cont)) {
+      tbl_noMissing_short <- tbl_summary(data = data,
+                                         include = vars,
+                                         missing = "no",
+                                         missing_text = missing_text,
+                                         by = group,
+                                         statistic = list(all_continuous() ~ stat_cont),
+                                         digits = list(all_continuous() ~ digits_cont)
+      ) |>
+        add_p(pvalue_fun = label_style_pvalue(digits = 2),
+              test = list(all_continuous() ~ test_cont)) |>
+        modify_column_hide(c("stat_1", "stat_2"))
+    }
 # merging table with missings and p-value
 tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
         modify_spanning_header(everything()~NA_character_)
@@ -310,6 +339,7 @@ if(missing == "both"){
                                                 all_categorical() ~ stat_cat),
                                type = list(all_dichotomous() ~ "categorical"),
                                missing = "no",
+                               missing_text = missing_text,
                                digits = list(all_categorical() ~ digits_cat,
                                              all_continuous() ~ digits_cont))
 
