@@ -1,0 +1,205 @@
+---
+title: "Summary table"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Summary table}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE,
+  eval = TRUE,
+  warning=FALSE,
+  fig.height = 6,
+  fig.width = 9,
+  fig.align='center'
+)
+```
+
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+library(dplyr)
+library(tidyverse)
+library(SAKK)
+library(gtsummary)
+
+source("../R/summaryTable.R")
+```
+
+
+The function `summaryTable()` produces a table with descriptive statistics for continuous, categorical and dichotomous variables. 
+It is based on the function `gtsummary::tbl_summary`.
+Main changes as compared to `tbl_summary` are: 
+
+- Simplification of syntax, i.e TODO
+- Missing values for categorical variables can be counted 
+in the percentage.
+
+
+
+## Setup and data
+
+To demonstrate the various functionalities of the function
+we will use the dataset `survival::colon`.
+
+```{r, message = FALSE}
+library(survival)
+data(cancer, package="survival")
+
+colon1 <-  colon %>%
+  group_by(id) %>%
+  slice(1) %>% # Select the first row within each id group
+  ungroup()
+  
+```
+
+
+
+```{r, echo = FALSE}
+n_patients <- nrow(colon)
+```
+
+The dataset `colon` contains data of `r n_patients` from one of the first successful trials of adjuvant chemotherapy for colon cancer. 
+
+For simplicity, 
+we focus here on recurrence only, two treatment groups,
+and three variable (sex, age and extent). 
+We also add a few missing values for the variable extent. 
+```{r}
+set.seed(123)
+colon2 <- colon1 %>%
+  select(rx, sex, age, extent) %>%
+  filter(rx != "Lev") %>%
+  mutate(sex = if_else(sex == 1, "male", "female"),
+         extent = if_else(row_number() %in% sample(row_number(), size = round(0.1 * n())), NA, extent))
+
+colon2$rx <- droplevels(colon2$rx)
+
+```
+
+
+```{r}
+head(colon2)
+```
+
+
+## Simple table
+
+By default, the function produces a table with all variables 
+present in the dataset. 
+```{r}
+summaryTable(data = colon2)
+```
+Currently, the name of the different variables cannot 
+be modified in the function directly, they have to be modified in the dataset. !! OK, or should we change that? !!
+
+```{r}
+colon2 <- colon2 %>% 
+  rename(Arm = rx, Sex = sex, Age = age, Extent = extent) %>% 
+  mutate(Extent = as.factor(Extent))
+  
+```
+
+```{r}
+summaryTable(colon2)
+```
+
+## Stratify per group 
+
+The argument `group` indicates by which variable the 
+summary statistics will be stratified. 
+```{r}
+summaryTable(data = colon2, group = "Arm")
+```
+
+## Only age
+
+If only specific variables areto be included in the table, 
+they can be written in the argument `vars`. 
+```{r}
+summaryTable(data = colon2, group = "Arm", vars = "Age")
+```
+By default, the function plots the median and (Q1, Q3) for 
+continuous variables. A number of other options are available,
+using the argument `stat_cont`. 
+
+### Median and range
+
+```{r}
+summaryTable(data = colon2, group = "Arm", vars = "Age", 
+             stat_cont = "median_range")
+```
+
+### Mean and standard deviation 
+
+```{r}
+summaryTable(data = colon2, 
+             group = "Arm", 
+             vars = "Age", 
+             stat_cont = "mean_sd")
+```
+
+## Tests
+
+By default, no p-value and confidence  (CI)
+are displayed. p-values can be added with `test_cont`
+and CI with `ci_cont`. 
+
+```{r}
+summaryTable(data = colon2, 
+             group = "Arm", 
+             vars = "Age", 
+             stat_cont = "mean_sd", 
+             test_cont = "t.test",
+             ci_cont = "t.test"
+             )
+```
+
+
+## Categorical 
+
+For categorical variables,
+the percentage are not automatically added next to the missing. 
+They can be added by setting the argument `missing` to `TRUE`. 
+```{r}
+summaryTable(data = colon2, 
+             group = "Arm", 
+             vars = "Extent", 
+             test_cat = "chisq.test", 
+             missing = TRUE
+             )
+
+
+```
+Note that the p-value is always calculated ignoring the missing values. 
+
+
+Both can also be put next to each other: 
+```{r}
+summaryTable(data = colon2, 
+             group = "Arm", 
+             vars = "Extent", 
+             test_cat = "chisq.test", 
+             missing = "both"
+             )
+
+```
+
+
+## Binary variables
+
+
+```{r}
+summaryTable(data = colon2, 
+             group = "Arm", 
+             vars = "Sex", 
+             binary = F
+             )
+
+```
+
+
+
