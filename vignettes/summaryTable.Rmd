@@ -3,8 +3,11 @@ title: "Summary table"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Summary table}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r, include = FALSE}
@@ -20,6 +23,17 @@ knitr::opts_chunk$set(
 )
 ```
 
+```{r color-function, echo = FALSE}
+colorize <- function(text, color) {
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{%s}{%s}", color, text)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='color: %s;'>%s</span>", color, text)
+  } else text
+}
+
+```
+
 ```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
 library(dplyr)
 library(tidyverse)
@@ -29,21 +43,19 @@ library(gtsummary)
 source("../R/summaryTable.R")
 ```
 
+The function `summaryTable()` produces a table with descriptive
+statistics for continuous, categorical and dichotomous variables. It is
+largely based on the function `gtsummary::tbl_summary()`. The changes as
+compared to `tbl_summary` are:
 
-The function `summaryTable()` produces a table with descriptive statistics for continuous, categorical and dichotomous variables. 
-It is based on the function `gtsummary::tbl_summary`.
-Main changes as compared to `tbl_summary` are: 
-
-- Simplification of syntax, i.e TODO
-- Missing values for categorical variables can be counted 
-in the percentage.
-
-
+-   Simplification of syntax
+-   Missing values for categorical variables can be counted in the
+    percentage.
 
 ## Setup and data
 
-To demonstrate the various functionalities of the function
-we will use the dataset `survival::colon`.
+To demonstrate the various functionalities of the function we will use
+the dataset `survival::colon`.
 
 ```{r, message = FALSE}
 library(survival)
@@ -56,45 +68,45 @@ colon1 <-  colon %>%
   
 ```
 
-
-
 ```{r, echo = FALSE}
 n_patients <- nrow(colon)
 ```
 
-The dataset `colon` contains data of `r n_patients` from one of the first successful trials of adjuvant chemotherapy for colon cancer. 
+The dataset `colon` contains data of `r n_patients` patients from one of
+the first successful trials of adjuvant chemotherapy for colon cancer.
 
-For simplicity, 
-we focus here on recurrence only, two treatment groups,
-and three variable (sex, age and extent). 
-We also add a few missing values for the variable extent. 
+For simplicity, we focus here on recurrence only, two treatment groups,
+and four variable: the treatment group (`rx`), the sex (`sex`), the age
+(`age` and `sex_char`) and the extent of local spread (`extent`). We
+also add a few missing values for the variable `extent`.
+
 ```{r}
 set.seed(123)
 colon2 <- colon1 %>%
   select(rx, sex, age, extent) %>%
   filter(rx != "Lev") %>%
-  mutate(sex = if_else(sex == 1, "male", "female"),
+  mutate(sex_char = if_else(sex == 1, "male", "female"),
          extent = if_else(row_number() %in% sample(row_number(), size = round(0.1 * n())), NA, extent))
 
 colon2$rx <- droplevels(colon2$rx)
 
 ```
 
-
 ```{r}
 head(colon2)
 ```
 
-
 ## Simple table
 
-By default, the function produces a table with all variables 
-present in the dataset. 
+By default, the function produces a table with all variables present in
+the dataset.
+
 ```{r}
 summaryTable(data = colon2)
 ```
-Currently, the name of the different variables cannot 
-be modified in the function directly, they have to be modified in the dataset. !! OK, or should we change that? !!
+
+**Currently, the name of the different variables cannot be modified in
+the function directly, they have to be modified in the dataset. OK?**
 
 ```{r}
 colon2 <- colon2 %>% 
@@ -107,24 +119,27 @@ colon2 <- colon2 %>%
 summaryTable(colon2)
 ```
 
-## Stratify per group 
+## Stratify per group
 
-The argument `group` indicates by which variable the 
-summary statistics will be stratified. 
+The argument `group` indicates by which variable the summary statistics
+will be stratified.
+
 ```{r}
 summaryTable(data = colon2, group = "Arm")
 ```
 
-## Only age
+## Continuous variables
 
-If only specific variables areto be included in the table, 
-they can be written in the argument `vars`. 
+If only specific variables are to be included in the table, they can be
+written in the argument `vars`.
+
 ```{r}
 summaryTable(data = colon2, group = "Arm", vars = "Age")
 ```
-By default, the function plots the median and (Q1, Q3) for 
-continuous variables. A number of other options are available,
-using the argument `stat_cont`. 
+
+By default, the function plots the median and (Q1, Q3) for continuous
+variables. A number of other options are available, using the argument
+`stat_cont`.
 
 ### Median and range
 
@@ -133,7 +148,7 @@ summaryTable(data = colon2, group = "Arm", vars = "Age",
              stat_cont = "median_range")
 ```
 
-### Mean and standard deviation 
+### Mean and standard deviation
 
 ```{r}
 summaryTable(data = colon2, 
@@ -144,9 +159,8 @@ summaryTable(data = colon2,
 
 ## Tests
 
-By default, no p-value and confidence  (CI)
-are displayed. p-values can be added with `test_cont`
-and CI with `ci_cont`. 
+By default, no p-value and confidence (CI) are displayed. p-values can
+be added with `test_cont` and CI with `ci_cont`.
 
 ```{r}
 summaryTable(data = colon2, 
@@ -158,12 +172,12 @@ summaryTable(data = colon2,
              )
 ```
 
+## Categorical variables
 
-## Categorical 
+For categorical variables, the percentage are not automatically added
+next to the missing. They can be added by setting the argument `missing`
+to `TRUE`.
 
-For categorical variables,
-the percentage are not automatically added next to the missing. 
-They can be added by setting the argument `missing` to `TRUE`. 
 ```{r}
 summaryTable(data = colon2, 
              group = "Arm", 
@@ -174,10 +188,11 @@ summaryTable(data = colon2,
 
 
 ```
-Note that the p-value is always calculated ignoring the missing values. 
 
+Note that the p-value is always calculated ignoring the missing values.
 
-Both can also be put next to each other: 
+Both can also be put next to each other:
+
 ```{r}
 summaryTable(data = colon2, 
              group = "Arm", 
@@ -188,18 +203,33 @@ summaryTable(data = colon2,
 
 ```
 
-
 ## Binary variables
 
+By default, both levels are showed for binary variables. Setting the
+argument `binary` to `TRUE` only shows one level:
 
 ```{r}
 summaryTable(data = colon2, 
              group = "Arm", 
-             vars = "Sex", 
-             binary = F
+             vars = "Sex"
              )
+
+summaryTable(data = colon2, 
+             group = "Arm", 
+             vars = "Sex", 
+             binary = TRUE)
 
 ```
 
+## Further customization 
 
+Digits can be customized with the arguments `digits_cont`and
+`digits_cat`.
 
+# To do: 
+
+-   Adding a column "total"
+
+-   summaryByVisit and summaryLevel?
+
+-   Time-to-event endpoints?
