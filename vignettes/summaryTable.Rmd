@@ -76,19 +76,21 @@ The dataset `colon` contains data of `r n_patients` patients from one of
 the first successful trials of adjuvant chemotherapy for colon cancer.
 
 For simplicity, we focus here on recurrence only, two treatment groups,
-and four variable: the treatment group (`rx`), the sex (`sex`), the age
-(`age` and `sex_char`) and the extent of local spread (`extent`). We
-also add a few missing values for the variable `extent`.
+and four variable: the treatment group (`rx`), the sex (`Male`), the age
+(`age`) and the extent of local spread (`extent`). We also add a few
+missing values for the variable `extent`.
 
 ```{r}
 set.seed(123)
 colon2 <- colon1 %>%
   select(rx, sex, age, extent) %>%
   filter(rx != "Lev") %>%
-  mutate(sex_char = if_else(sex == 1, "male", "female"),
-         extent = if_else(row_number() %in% sample(row_number(), size = round(0.1 * n())), NA, extent))
+  mutate(rx = if_else(rx == "Obs", "Control", rx),
+         extent = if_else(row_number() %in% sample(row_number(), size = round(0.1 * n())), NA, extent)) %>% 
+  rename(Male = sex) %>% 
+  mutate(extent = as.factor(extent))
 
-colon2$rx <- droplevels(colon2$rx)
+# colon2$rx <- droplevels(colon2$rx)
 
 ```
 
@@ -110,13 +112,12 @@ the function directly, they have to be modified in the dataset. OK?**
 
 ```{r}
 colon2 <- colon2 %>% 
-  rename(Arm = rx, Sex = sex, Age = age, Extent = extent) %>% 
-  mutate(Extent = as.factor(Extent))
+  rename(Arm = rx, Age = age, Extent = extent)
   
 ```
 
 ```{r}
-summaryTable(colon2)
+summaryTable(colon2, missing = TRUE)
 ```
 
 ## Stratify per group
@@ -128,6 +129,13 @@ will be stratified.
 summaryTable(data = colon2, group = "Arm")
 ```
 
+An "overall" column can be added by setting the argument `overall` to
+`TRUE`.
+
+```{r}
+summaryTable(data = colon2, group = "Arm", overall = TRUE)
+```
+
 ## Continuous variables
 
 If only specific variables are to be included in the table, they can be
@@ -137,15 +145,15 @@ written in the argument `vars`.
 summaryTable(data = colon2, group = "Arm", vars = "Age")
 ```
 
-By default, the function plots the median and (Q1, Q3) for continuous
+By default, the function plots the median and range for continuous
 variables. A number of other options are available, using the argument
 `stat_cont`.
 
-### Median and range
+### Median and IQR
 
 ```{r}
 summaryTable(data = colon2, group = "Arm", vars = "Age", 
-             stat_cont = "median_range")
+             stat_cont = "median_IQR")
 ```
 
 ### Mean and standard deviation
@@ -174,9 +182,9 @@ summaryTable(data = colon2,
 
 ## Categorical variables
 
-For categorical variables, the percentage are not automatically added
-next to the missing. They can be added by setting the argument `missing`
-to `TRUE`.
+For categorical variables, the percentage are automatically added next
+to the missing. This can be disabled by setting the argument `missing`
+to `FALSE`.
 
 ```{r}
 summaryTable(data = colon2, 
@@ -211,22 +219,22 @@ argument `binary` to `TRUE` only shows one level:
 ```{r}
 summaryTable(data = colon2, 
              group = "Arm", 
-             vars = "Sex"
+             vars = "Male"
              )
 
 summaryTable(data = colon2, 
              group = "Arm", 
-             vars = "Sex", 
+             vars = "Male", 
              binary = TRUE)
 
 ```
 
-## Further customization 
+## Further customization
 
 Digits can be customized with the arguments `digits_cont`and
 `digits_cat`.
 
-# To do: 
+# To do:
 
 -   Adding a column "total"
 

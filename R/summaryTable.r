@@ -13,7 +13,7 @@
 #' Default to NULL.
 #'
 #' @param stat_cont Summary statistic to display for continuous variables. Options
-#' include "median_IQR" (default), "median_range", "mean_sd", "mean_se" and
+#' include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
 #' "geomMean_sd".
 #'
 #' @param stat_cat Summary statistic to display for categorical variables.
@@ -55,7 +55,7 @@
 #' @param digits_cat Digits for summary statistics and CI of categorical
 #' variables. Default to 0.
 #'
-#' @param missing Indicates whether percentages for missings are shown (TRUE)
+#' @param missing Indicates whether percentages for missings are shown (TRUE, default)
 #' or not (FALSE). If "both", then both options are displayed next to each other.
 #'
 #' @param missing_text String indicating text shown on missing row. Default to
@@ -73,7 +73,7 @@
 summaryTable <- function(data,
                          vars = NULL,
                          group = NULL,
-                         stat_cont = "median_IQR" ,
+                         stat_cont = "median_range",
                          stat_cat = "n_percent",
                          test_cont = NULL,
                          test_cat = NULL,
@@ -84,9 +84,10 @@ summaryTable <- function(data,
                          layout_cat = NULL,
                          digits_cont = 1,
                          digits_cat = 0,
-                         missing = FALSE,
+                         missing = TRUE,
                          binary = FALSE,
-                         missing_text = "Missing"){
+                         missing_text = "Missing",
+                         overall = FALSE){
 
   # --------- Some checks --------------------------------------------------- #
 
@@ -239,6 +240,11 @@ summaryTable <- function(data,
 
 # --------------------------  missing = FALSE -------------------------------- #
 tbl <- tbl_noMissing
+
+if(overall == TRUE & !is.null(group)){
+  tbl <- tbl %>%
+    add_overall(last = TRUE)
+}
 }
 # --------------------------  missing = TRUE --------------------------------- #
 
@@ -304,6 +310,11 @@ if(missing != FALSE){
         add_p(pvalue_fun = label_style_pvalue(digits = 2),
               test = list(all_categorical() ~ test_cat)) |>
         modify_column_hide(c("stat_1", "stat_2"))
+
+      if(overall == TRUE & !is.null(group)){
+          tbl_noMissing_short <- tbl_noMissing_short %>%
+            add_overall(last = TRUE)
+        }
     }
 
     if (!is.null(test_cont)) {
@@ -318,10 +329,25 @@ if(missing != FALSE){
         add_p(pvalue_fun = label_style_pvalue(digits = 2),
               test = list(all_continuous() ~ test_cont)) |>
         modify_column_hide(c("stat_1", "stat_2"))
+
+      if(overall == TRUE & !is.null(group)){
+        tbl_noMissing_short <- tbl_noMissing_short %>%
+        add_overall(last = TRUE)
+      }
     }
 # merging table with missings and p-value
+    if(!is.null(test_cont)| !is.null(test_cat)){
 tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
         modify_spanning_header(everything()~NA_character_)
+
+    } else {
+  tbl_missingTRUE <- tbl_missing
+
+  if(overall == TRUE & !is.null(group)){
+    tbl_missingTRUE <- tbl_missingTRUE %>%
+      add_overall(last = TRUE)
+  }
+}
 
 }
 
@@ -352,5 +378,4 @@ if(missing == "both"){
   tbl <- tbl_both
 }
 tbl
-
 }
