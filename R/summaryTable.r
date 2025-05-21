@@ -65,8 +65,11 @@
 #' For binary variables, indicates whether all levels are
 #' displayed (FALSE, default) or only one.
 #'
-#' @importFrom gtsummary tbl_summary
-#' @import cardx dplyr Hmisc
+#' @param overall Logical. If TRUE, an additional column with the total is
+#' added to the table. Default to FALSE.
+#'
+#' @importFrom gtsummary
+#' @import cardx dplyr Hmisc gtsummary
 #' @export
 
 
