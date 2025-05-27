@@ -39,8 +39,7 @@ library(dplyr)
 library(tidyverse)
 library(SAKK)
 library(gtsummary)
-
-source("../R/summaryTable.R")
+library(summarySAKK)
 ```
 
 The function `summaryTable()` produces a table with descriptive
@@ -122,6 +121,8 @@ The displayed name of each variable is
                  labels = list(rx = "Arm", age = "Age", extent = "Extent"))
     ```
 
+Equivalently, labels can be added directly in the dataset.
+
 ## Stratify per group
 
 The argument `group` indicates by which variable the summary statistics
@@ -175,15 +176,20 @@ summaryTable(data = colon2,
 ## Tests
 
 By default, no p-value and confidence (CI) are displayed. p-values can
-be added with `test_cont` and CI with `ci_cont`.
+be added\
+by setting `test` to `TRUE` and CI by setting `ci` to `TRUE`.
+
+The default test and CI types for continuous variable is `t.test`. This
+can \
+be changed in `test_cont` and `ci_cont`, respectively.
 
 ```{r}
 summaryTable(data = colon2, 
              group = "rx", 
              vars = "age", 
              stat_cont = "mean_sd", 
-             test_cont = "t.test",
-             ci_cont = "t.test", 
+             test = TRUE,
+             ci = TRUE,
              labels = list(age = "Age")
              )
 ```
@@ -198,7 +204,8 @@ to `FALSE`.
 summaryTable(data = colon2, 
              group = "rx", 
              vars = "extent", 
-             test_cat = "chisq.test", 
+             test = TRUE,
+             ci = TRUE,
              missing = TRUE, 
              labels = list(extent = "Extent")
              )
@@ -206,15 +213,19 @@ summaryTable(data = colon2,
 
 ```
 
-Note that the p-value is always calculated ignoring the missing values.
+Note that the p-value is always calculated ignoring the missing values.\
+For categorical variables, the default test type is `fisher.test` and
+the default CI types is `wilson`. This can \
+be changed in `test_cat` and `ci_cat`, respectively.
 
-Both can also be put next to each other:
+The tables with and without missing values can also be put next to each
+other\
+by setting `missing` to `"both"`.
 
 ```{r}
 summaryTable(data = colon2, 
              group = "rx", 
              vars = "extent", 
-             test_cat = "chisq.test", 
              missing = "both", 
               labels = list(extent = "Extent")
              )

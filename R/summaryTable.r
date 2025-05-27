@@ -23,23 +23,27 @@
 #' @param stat_cat Summary statistic to display for categorical variables.
 #' Options include "n_percent" (default) and "n", and "n_N".
 #'
+#' @param test Logical. Indicates whether p-values are displayed (TRUE)
+#' or not (FALSE). Default to FALSE
+#'
 #' @param test_cont Test type used to calculate the p-value
-#' for continuous variables. Only used if `group` is not NULL.
-#' Options include "t.test", "oneway.test", "kruskal.test", "wilcox.test",
+#' for continuous variables. Only used if `test = TRUE`.
+#' Options include "t.test" (default), "oneway.test", "kruskal.test", "wilcox.test",
 #' "paired.t.test", "paired.wilcox.test"
-#' IF NULL (default), no p-value will be displayed.
 #'
 #' @param test_cat Test type used to calculated the p-value
-#' for categorical variables. Only used if `group` is not NULL.
-#' Options include "chisq.test", "chisq.test.no.correct", "fisher.test".
-#' IF NULL, no p-value will be displayed.
+#' for categorical variables.  Only used if `test = TRUE`.
+#' Options include "chisq.test", "chisq.test.no.correct", "fisher.test" (default).
+#'
+#' @param ci Logical. Indicates whether CI are displayed (TRUE) or
+#' not (FALSE). Default to FALSE.
 #'
 #' @param ci_cont Confidence interval method for continuous variables.
-#' Options include "t.test" and "wilcox.text".
-#' If NULL, no CI will be displayed.
+#'  Only used if `ci = TRUE`.
+#' Options include "t.test" (default) and "wilcox.test".
 #'
 #' @param ci_cat Confidence interval method for categorical variables.
-#' Options include "wilson", "wilson.no.correct", "clopper.pearson",
+#' Options include "wilson" (default), "wilson.no.correct", "clopper.pearson",
 #' "wald", "wald.no.correct", "agresti.coull" and "jeffreys".
 #' If NULL, no CI will be displayed.
 #'
@@ -60,7 +64,9 @@
 #' variables. Default to 0.
 #'
 #' @param missing Indicates whether percentages for missings are shown (TRUE, default)
-#' or not (FALSE). If "both", then both options are displayed next to each other.
+#' or not (FALSE) for categorical variables.Categorical variables need
+#' to be factors for it to work.
+#'  If "both", then both options are displayed next to each other.
 #'
 #' @param missing_text String indicating text shown on missing row. Default to
 #' "Missing".
@@ -84,10 +90,12 @@ summaryTable <- function(data,
                          labels = NULL,
                          stat_cont = "median_range",
                          stat_cat = "n_percent",
-                         test_cont = NULL,
-                         test_cat = NULL,
-                         ci_cont = NULL,
-                         ci_cat = NULL,
+                         test = FALSE,
+                         test_cont = "t.test",
+                         test_cat = "fisher.test",
+                         ci = FALSE,
+                         ci_cont = "t.test",
+                         ci_cat = "wilson",
                          conf_level = 0.95,
                          layout_cont = NULL,
                          layout_cat = NULL,
@@ -109,12 +117,12 @@ summaryTable <- function(data,
   # if (is.null(test_cont) != is.null(test_cat)) {
   #   stop("Error: Both 'test_cont' and 'test_cat' should be either NULL or both should be non-NULL.")
   # }
-
+  #
   # if (is.null(ci_cont) != is.null(ci_cat)) {
   #   stop("Error: Both 'ci_cont' and 'ci_cat' should be either NULL or both should be non-NULL.")
   # }
 
-  if((is.null(group) & !is.null(test_cont)) | (is.null(group) & !is.null(test_cat))){
+  if(is.null(group) & test == TRUE){
     stop("Error: 'group' needs to be given for a test to be calculated.")
   }
 
@@ -196,8 +204,8 @@ summaryTable <- function(data,
   if(missing == FALSE){
 
   tbl_noMissing <- tbl_summary(data = data,
-                     include = vars,
-                     by = group,
+                               include = all_of(vars),
+                               by = group,
                      label = labels,
                      statistic = list(all_continuous() ~ stat_cont,
                                       all_categorical() ~ stat_cat),
@@ -207,37 +215,23 @@ summaryTable <- function(data,
                                    all_continuous() ~ digits_cont))
 
 
-  if(!is.null(test_cont)) {
+  if(test == TRUE){
     tbl_noMissing <-  tbl_noMissing|>
       add_p(pvalue_fun = label_style_pvalue(digits = 2),
-            test = list(all_continuous() ~ test_cont))
+            test = list(all_continuous() ~ test_cont,
+                        (all_categorical() ~ test_cat)))
 
-  }
+}
 
-
-  if(!is.null(test_cat)) {
-    tbl_noMissing <-  tbl_noMissing|>
-      add_p(pvalue_fun = label_style_pvalue(digits = 2),
-            test = list(all_categorical() ~ test_cat))
-
-  }
-
-
-  if(!is.null(ci_cont)) {
+  if(ci == TRUE){
     tbl_noMissing <- tbl_noMissing |>
-      add_ci(method = list(all_continuous() ~ ci_cont),
+      add_ci(method = list(all_continuous() ~ ci_cont,
+                           all_categorical() ~ ci_cat_gt),
              conf.level = conf_level,
-             statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]"))
-  }
+             statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
+                              all_categorical() ~ "[{conf.low}%, {conf.high}%]"))
 
-
-  if(!is.null(ci_cat)) {
-    tbl_noMissing <- tbl_noMissing |>
-      add_ci(method = list(all_categorical() ~ ci_cat_gt),
-             conf.level = conf_level,
-             statistic = list(all_categorical() ~ "[{conf.low}%, {conf.high}%]"))
-  }
-
+}
   # CMI: will work on it.
   #   if(stat_cont == "mean_sd" | stat_cont == "mean_se"){
   #     tbl_noMissing <- tbl_noMissing |>
@@ -263,26 +257,29 @@ if(missing != FALSE){
   data2 <- data
 
     for (i in colnames(data2|>
-                       dplyr::select(vars, group))) {
+                       dplyr::select(all_of(c(vars, group))))) {
 
       if (is.factor(data2[[i]]) == TRUE | is.character(data2[[i]])) {
-        data2[[i]] <- forcats::fct_explicit_na(as.factor(data2[[i]]), na_level = missing_text)
+        data2[[i]] <- forcats::fct_na_value_to_level(as.factor(data2[[i]]), level = missing_text)
+        # data2[[i]] <- forcats::fct_explicit_na(as.factor(data2[[i]]), na_level = missing_text)
         if (!is.null(attr(data[[i]], "label"))) {
           Hmisc::label(data2[[i]]) <- attr(data[[i]], "label")
         }
       } else if (all(data2[[i]] %in% c(0, 1, NA))) {
-        # data2[[i]]<- forcats::fct_explicit_na(factor(data2[[i]], labels=c("No", "Yes")))
-        data2[[i]] <- forcats::fct_explicit_na(factor(data2[[i]]))
+         data2[[i]] <- forcats::fct_na_value_to_level(factor(data2[[i]]))
+        # data2[[i]] <- forcats::fct_explicit_na(factor(data2[[i]]))
         if (!is.null(attr(data[[i]], "label"))) {
           Hmisc::label(data2[[i]]) <- attr(data[[i]], "label")
         }
       }
     }
 
+  data2 <- droplevels(data2)
+
     tbl_missing <- data2|>
       tbl_summary(by = group,
                   label = labels,
-                  include = vars,
+                  include = all_of(vars),
                   statistic = list(all_continuous() ~ stat_cont,
                                    all_categorical() ~ stat_cat),
                   type = list(all_dichotomous() ~ "categorical"),
@@ -291,28 +288,23 @@ if(missing != FALSE){
                                 all_continuous() ~ digits_cont))
 
 
-    if(!is.null(ci_cont)) {
+    if(ci == TRUE) {
       tbl_missing <- tbl_missing |>
-        add_ci(method = list(all_continuous() ~ ci_cont),
+        add_ci(method = list(all_continuous() ~ ci_cont,
+                             all_categorical() ~ ci_cat_gt),
                conf.level = conf_level,
-               statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]"))
+               statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
+                                (all_categorical() ~ "[{conf.low}%, {conf.high}%]")))
     }
 
-
-    if(!is.null(ci_cat)) {
-      tbl_missing <- tbl_missing |>
-        add_ci(method = list(all_categorical() ~ ci_cat_gt),
-               conf.level = conf_level,
-               statistic = list(all_categorical() ~ "[{conf.low}%, {conf.high}%]"))
-    }
 
 
       # tests displayed (!missings not counted in calculation!)
     # -> only take p-value from other table
-    if (!is.null(test_cat)) {
+    if (test == TRUE) {
       tbl_noMissing_short <- tbl_summary(data = data,
                                          label = labels,
-                                   include = vars,
+                                         include = all_of(vars),
                                    missing = "no",
                                    missing_text = missing_text,
                                    by = group,
@@ -320,7 +312,8 @@ if(missing != FALSE){
                                    digits = list(all_categorical() ~ digits_cat)
       ) |>
         add_p(pvalue_fun = label_style_pvalue(digits = 2),
-              test = list(all_categorical() ~ test_cat)) |>
+              test = list(all_categorical() ~ test_cat,
+                          all_continuous() ~ test_cont)) |>
         modify_column_hide(c("stat_1", "stat_2"))
 
       if(overall == TRUE & !is.null(group)){
@@ -329,28 +322,9 @@ if(missing != FALSE){
         }
     }
 
-    if (!is.null(test_cont)) {
-      tbl_noMissing_short <- tbl_summary(data = data,
-                                         include = vars,
-                                         label = labels,
-                                         missing = "no",
-                                         missing_text = missing_text,
-                                         by = group,
-                                         statistic = list(all_continuous() ~ stat_cont),
-                                         digits = list(all_continuous() ~ digits_cont)
-      ) |>
-        add_p(pvalue_fun = label_style_pvalue(digits = 2),
-              test = list(all_continuous() ~ test_cont)) |>
-        modify_column_hide(c("stat_1", "stat_2"))
-
-      if(overall == TRUE & !is.null(group)){
-        tbl_noMissing_short <- tbl_noMissing_short %>%
-        add_overall(last = TRUE)
-      }
-    }
 
 # merging table with missings and p-value
-    if(!is.null(test_cont)| !is.null(test_cat)){
+    if(test == TRUE){
 tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
         modify_spanning_header(everything()~NA_character_)
 
@@ -373,7 +347,7 @@ tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
 
 if(missing == "both"){
   tbl_noMissing2 <- tbl_summary(data = data,
-                               include = vars,
+                                include = all_of(vars),
                                label = labels,
                                by = group,
                                statistic = list(all_continuous() ~ stat_cont,
@@ -385,17 +359,17 @@ if(missing == "both"){
                                              all_continuous() ~ digits_cont))
 
 
-if(!is.null(test_cont) | !is.null(test_cat)){
+if(test == TRUE){
   tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2, tbl_noMissing_short)) |>
     modify_spanning_header(c("stat_1_1", "stat_2_1") ~ "**With missing**",
                            c("stat_1_2", "stat_2_2") ~ "**Without missing**",
                            c("p.value_3") ~ "")
 }
 
-  if(is.null(test_cont) & is.null(test_cat)){
+  if(test == FALSE){
     tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2))|>
-      modify_spanning_header(c("stat_0_1") ~ "**With missing**",
-                             c("stat_0_2") ~ "**Without missing**")
+      modify_spanning_header(c("stat_1_1", "stat_2_1" ) ~ "**With missing**",
+                             c("stat_1_2", "stat_2_2") ~ "**Without missing**")
   }
   tbl <- tbl_both
 }

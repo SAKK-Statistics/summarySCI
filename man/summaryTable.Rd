@@ -11,10 +11,12 @@ summaryTable(
   labels = NULL,
   stat_cont = "median_range",
   stat_cat = "n_percent",
-  test_cont = NULL,
-  test_cat = NULL,
-  ci_cont = NULL,
-  ci_cat = NULL,
+  test = FALSE,
+  test_cont = "t.test",
+  test_cat = "fisher.test",
+  ci = FALSE,
+  ci_cont = "t.test",
+  ci_cat = "wilson",
   conf_level = 0.95,
   layout_cont = NULL,
   layout_cat = NULL,
@@ -47,23 +49,27 @@ include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
 \item{stat_cat}{Summary statistic to display for categorical variables.
 Options include "n_percent" (default) and "n", and "n_N".}
 
+\item{test}{Logical. Indicates whether p-values are displayed (TRUE)
+or not (FALSE). Default to FALSE}
+
 \item{test_cont}{Test type used to calculate the p-value
-for continuous variables. Only used if \code{group} is not NULL.
-Options include "t.test", "oneway.test", "kruskal.test", "wilcox.test",
-"paired.t.test", "paired.wilcox.test"
-IF NULL (default), no p-value will be displayed.}
+for continuous variables. Only used if \code{test = TRUE}.
+Options include "t.test" (default), "oneway.test", "kruskal.test", "wilcox.test",
+"paired.t.test", "paired.wilcox.test"}
 
 \item{test_cat}{Test type used to calculated the p-value
-for categorical variables. Only used if \code{group} is not NULL.
-Options include "chisq.test", "chisq.test.no.correct", "fisher.test".
-IF NULL, no p-value will be displayed.}
+for categorical variables.  Only used if \code{test = TRUE}.
+Options include "chisq.test", "chisq.test.no.correct", "fisher.test" (default).}
+
+\item{ci}{Logical. Indicates whether CI are displayed (TRUE) or
+not (FALSE). Default to FALSE.}
 
 \item{ci_cont}{Confidence interval method for continuous variables.
-Options include "t.test" and "wilcox.text".
-If NULL, no CI will be displayed.}
+Only used if \code{ci = TRUE}.
+Options include "t.test" (default) and "wilcox.test".}
 
 \item{ci_cat}{Confidence interval method for categorical variables.
-Options include "wilson", "wilson.no.correct", "clopper.pearson",
+Options include "wilson" (default), "wilson.no.correct", "clopper.pearson",
 "wald", "wald.no.correct", "agresti.coull" and "jeffreys".
 If NULL, no CI will be displayed.}
 
@@ -84,7 +90,9 @@ variables. Default to 1.}
 variables. Default to 0.}
 
 \item{missing}{Indicates whether percentages for missings are shown (TRUE, default)
-or not (FALSE). If "both", then both options are displayed next to each other.}
+or not (FALSE) for categorical variables.Categorical variables need
+to be factors for it to work.
+If "both", then both options are displayed next to each other.}
 
 \item{binary}{Only taken into account when missing = FALSE.
 For binary variables, indicates whether all levels are
