@@ -219,13 +219,15 @@ argument `binary` to `TRUE` only shows one level:
 ```{r}
 summaryTable(data = colon2, 
              group = "Arm", 
-             vars = "Male"
+             vars = "Male", 
+             missing = FALSE
              )
 
 summaryTable(data = colon2, 
              group = "Arm", 
              vars = "Male", 
-             binary = TRUE)
+             binary = TRUE, 
+             missing = FALSE)
 
 ```
 
@@ -234,10 +236,12 @@ summaryTable(data = colon2,
 Digits can be customized with the arguments `digits_cont`and
 `digits_cat`.
 
-# To do:
+# Further steps:
 
--   Adding a column "total"
+-   Adding time-to-event endpoints
 
--   summaryByVisit and summaryLevel?
+<!-- -->
 
--   Time-to-event endpoints?
+-   New functions: summaryByVisit and summaryLevel
+
+-   Adding tests

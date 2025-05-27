@@ -68,7 +68,6 @@
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Default to FALSE.
 #'
-#' @importFrom gtsummary
 #' @import cardx dplyr Hmisc gtsummary
 #' @export
 
@@ -338,6 +337,7 @@ if(missing != FALSE){
         add_overall(last = TRUE)
       }
     }
+
 # merging table with missings and p-value
     if(!is.null(test_cont)| !is.null(test_cat)){
 tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
@@ -373,11 +373,18 @@ if(missing == "both"){
                                              all_continuous() ~ digits_cont))
 
 
-
+if(!is.null(test_cont) | !is.null(test_cat)){
   tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2, tbl_noMissing_short)) |>
     modify_spanning_header(c("stat_1_1", "stat_2_1") ~ "**With missing**",
                            c("stat_1_2", "stat_2_2") ~ "**Without missing**",
                            c("p.value_3") ~ "")
+}
+
+  if(is.null(test_cont) & is.null(test_cat)){
+    tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2))|>
+      modify_spanning_header(c("stat_0_1") ~ "**With missing**",
+                             c("stat_0_2") ~ "**Without missing**")
+  }
   tbl <- tbl_both
 }
 tbl
