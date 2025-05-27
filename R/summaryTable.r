@@ -8,6 +8,10 @@
 #' @param vars Variables to include in the summary table. Default to
 #' all variables present in the data except `group`.
 #'
+#' @param labels A list containing the labels that should be used for the
+#' variables in the table. If NULL, labels are automaticall taken from the
+#' dataset. If no label present, the variable name is taken.
+#'
 #' @param group A single column from `data`.
 #' Summary statistics will be stratified according to this variable.
 #' Default to NULL.
@@ -68,13 +72,16 @@
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Default to FALSE.
 #'
-#' @import cardx dplyr Hmisc gtsummary
+#' @import cardx dplyr gtsummary forcats
+#' @importFrom Hmisc label
+#' @importFrom stats sd t.test
 #' @export
 
 
 summaryTable <- function(data,
                          vars = NULL,
                          group = NULL,
+                         labels = NULL,
                          stat_cont = "median_range",
                          stat_cat = "n_percent",
                          test_cont = NULL,
@@ -120,20 +127,20 @@ summaryTable <- function(data,
   }
 
   meanDiff <- function(data, variable, by, ...) {
-    ttest_result <- t.test(data[[variable]] ~ as.factor(data[[by]]), ...)
+    ttest_result <- stats::t.test(data[[variable]] ~ as.factor(data[[by]]), ...)
     mean_diff <- ttest_result$estimate[1] - ttest_result$estimate[2]
     return(mean_diff)
   }
 
 
   meanDiffCI <- function(data, variable, by, ...) {
-    ttest_result <- t.test(data[[variable]] ~ as.factor(data[[by]]), ...)
+    ttest_result <- stats::t.test(data[[variable]] ~ as.factor(data[[by]]), ...)
     ci_lower <- ttest_result$conf.int[1]
     ci_upper <- ttest_result$conf.int[2]
     return(paste0(round(ci_lower, 2), ", ", round(ci_upper, 2)))
   }
 
-  se <- function(x) sd(x)/sqrt(length(x))
+  se <- function(x) stats::sd(x)/sqrt(length(x))
 
   format_lookup <- list(
     mean_sd = "{mean} ({sd})",
@@ -191,6 +198,7 @@ summaryTable <- function(data,
   tbl_noMissing <- tbl_summary(data = data,
                      include = vars,
                      by = group,
+                     label = labels,
                      statistic = list(all_continuous() ~ stat_cont,
                                       all_categorical() ~ stat_cat),
                      type = list(all_dichotomous() ~ type_binary),
@@ -273,6 +281,7 @@ if(missing != FALSE){
 
     tbl_missing <- data2|>
       tbl_summary(by = group,
+                  label = labels,
                   include = vars,
                   statistic = list(all_continuous() ~ stat_cont,
                                    all_categorical() ~ stat_cat),
@@ -302,6 +311,7 @@ if(missing != FALSE){
     # -> only take p-value from other table
     if (!is.null(test_cat)) {
       tbl_noMissing_short <- tbl_summary(data = data,
+                                         label = labels,
                                    include = vars,
                                    missing = "no",
                                    missing_text = missing_text,
@@ -322,6 +332,7 @@ if(missing != FALSE){
     if (!is.null(test_cont)) {
       tbl_noMissing_short <- tbl_summary(data = data,
                                          include = vars,
+                                         label = labels,
                                          missing = "no",
                                          missing_text = missing_text,
                                          by = group,
@@ -363,6 +374,7 @@ tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
 if(missing == "both"){
   tbl_noMissing2 <- tbl_summary(data = data,
                                include = vars,
+                               label = labels,
                                by = group,
                                statistic = list(all_continuous() ~ stat_cont,
                                                 all_categorical() ~ stat_cat),

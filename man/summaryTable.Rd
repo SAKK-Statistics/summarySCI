@@ -8,7 +8,8 @@ summaryTable(
   data,
   vars = NULL,
   group = NULL,
-  stat_cont = "median_IQR",
+  labels = NULL,
+  stat_cont = "median_range",
   stat_cat = "n_percent",
   test_cont = NULL,
   test_cat = NULL,
@@ -19,9 +20,10 @@ summaryTable(
   layout_cat = NULL,
   digits_cont = 1,
   digits_cat = 0,
-  missing = FALSE,
+  missing = TRUE,
   binary = FALSE,
-  missing_text = "Missing"
+  missing_text = "Missing",
+  overall = FALSE
 )
 }
 \arguments{
@@ -34,8 +36,12 @@ all variables present in the data except \code{group}.}
 Summary statistics will be stratified according to this variable.
 Default to NULL.}
 
+\item{labels}{A list containing the labels that should be used for the
+variables in the table. If NULL, labels are automaticall taken from the
+dataset. If no label present, the variable name is taken.}
+
 \item{stat_cont}{Summary statistic to display for continuous variables. Options
-include "median_IQR" (default), "median_range", "mean_sd", "mean_se" and
+include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
 "geomMean_sd".}
 
 \item{stat_cat}{Summary statistic to display for categorical variables.
@@ -77,7 +83,7 @@ variables. Default to 1.}
 \item{digits_cat}{Digits for summary statistics and CI of categorical
 variables. Default to 0.}
 
-\item{missing}{Indicates whether percentages for missings are shown (TRUE)
+\item{missing}{Indicates whether percentages for missings are shown (TRUE, default)
 or not (FALSE). If "both", then both options are displayed next to each other.}
 
 \item{binary}{Only taken into account when missing = FALSE.
@@ -86,8 +92,11 @@ displayed (FALSE, default) or only one.}
 
 \item{missing_text}{String indicating text shown on missing row. Default to
 "Missing".}
+
+\item{overall}{Logical. If TRUE, an additional column with the total is
+added to the table. Default to FALSE.}
 }
 \description{
 Creates publication-ready summary tables based on the gtsummary
-package.
+package. test
 }

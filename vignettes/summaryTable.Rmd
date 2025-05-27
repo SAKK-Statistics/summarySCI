@@ -107,18 +107,20 @@ the dataset.
 summaryTable(data = colon2)
 ```
 
-**Currently, the name of the different variables cannot be modified in
-the function directly, they have to be modified in the dataset. OK?**
+The displayed name of each variable is
 
-```{r}
-colon2 <- colon2 %>% 
-  rename(Arm = rx, Age = age, Extent = extent)
-  
-```
+-   the label if it exists in the dataset
 
-```{r}
-summaryTable(colon2, missing = TRUE)
-```
+-   the variable name if no label is present in the dataset (which is
+    the case in our example).
+
+    In order to customize the displayed name, the argument `label`can be
+    used:
+
+    ```{r}
+    summaryTable(data = colon2, 
+                 labels = list(rx = "Arm", age = "Age", extent = "Extent"))
+    ```
 
 ## Stratify per group
 
@@ -126,14 +128,16 @@ The argument `group` indicates by which variable the summary statistics
 will be stratified.
 
 ```{r}
-summaryTable(data = colon2, group = "Arm")
+summaryTable(data = colon2, group = "rx", 
+             labels = list(age = "Age", extent = "Extent"))
 ```
 
 An "overall" column can be added by setting the argument `overall` to
 `TRUE`.
 
 ```{r}
-summaryTable(data = colon2, group = "Arm", overall = TRUE)
+summaryTable(data = colon2, group = "rx", overall = TRUE, 
+              labels = list(age = "Age", extent = "Extent"))
 ```
 
 ## Continuous variables
@@ -142,7 +146,8 @@ If only specific variables are to be included in the table, they can be
 written in the argument `vars`.
 
 ```{r}
-summaryTable(data = colon2, group = "Arm", vars = "Age")
+summaryTable(data = colon2, group = "rx", vars = "age",
+              labels = list(age = "Age"))
 ```
 
 By default, the function plots the median and range for continuous
@@ -152,17 +157,19 @@ variables. A number of other options are available, using the argument
 ### Median and IQR
 
 ```{r}
-summaryTable(data = colon2, group = "Arm", vars = "Age", 
-             stat_cont = "median_IQR")
+summaryTable(data = colon2, group = "rx", vars = "age", 
+             stat_cont = "median_IQR", 
+              labels = list(age = "Age"))
 ```
 
 ### Mean and standard deviation
 
 ```{r}
 summaryTable(data = colon2, 
-             group = "Arm", 
-             vars = "Age", 
-             stat_cont = "mean_sd")
+             group = "rx", 
+             vars = "age", 
+             stat_cont = "mean_sd", 
+              labels = list(age = "Age"))
 ```
 
 ## Tests
@@ -172,11 +179,12 @@ be added with `test_cont` and CI with `ci_cont`.
 
 ```{r}
 summaryTable(data = colon2, 
-             group = "Arm", 
-             vars = "Age", 
+             group = "rx", 
+             vars = "age", 
              stat_cont = "mean_sd", 
              test_cont = "t.test",
-             ci_cont = "t.test"
+             ci_cont = "t.test", 
+             labels = list(age = "Age")
              )
 ```
 
@@ -188,10 +196,11 @@ to `FALSE`.
 
 ```{r}
 summaryTable(data = colon2, 
-             group = "Arm", 
-             vars = "Extent", 
+             group = "rx", 
+             vars = "extent", 
              test_cat = "chisq.test", 
-             missing = TRUE
+             missing = TRUE, 
+             labels = list(extent = "Extent")
              )
 
 
@@ -203,10 +212,11 @@ Both can also be put next to each other:
 
 ```{r}
 summaryTable(data = colon2, 
-             group = "Arm", 
-             vars = "Extent", 
+             group = "rx", 
+             vars = "extent", 
              test_cat = "chisq.test", 
-             missing = "both"
+             missing = "both", 
+              labels = list(extent = "Extent")
              )
 
 ```
@@ -218,13 +228,13 @@ argument `binary` to `TRUE` only shows one level:
 
 ```{r}
 summaryTable(data = colon2, 
-             group = "Arm", 
+             group = "rx", 
              vars = "Male", 
              missing = FALSE
              )
 
 summaryTable(data = colon2, 
-             group = "Arm", 
+             group = "rx", 
              vars = "Male", 
              binary = TRUE, 
              missing = FALSE)

@@ -2,13 +2,16 @@ Package: summarySAKK
 Title: Produces publication-ready summary tables
 Version: 0.1.0
 Authors@R: 
-    c(person("Sämi", "Schär", , "Saemi.Schaer@sakk.ch", role = "aut"),
-      person("Charlotte", "Micheloud", "Charlotte.Micheloud@sakk.ch", 
+    c(person("Sämi", "Schär", email = "Saemi.Schaer@sakk.ch", role = "aut"),
+      person("Charlotte", "Micheloud", email = "Charlotte.Micheloud@sakk.ch", 
       role = c("cre", "aut")))
 Description: The package produces table with descriptive statistics 
  for continuous, categorical and dichotomous variables. 
  It is largely based on the package gtsummary.
-License: GPL (>= 3)
+License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+Imports: Hmisc, cardx, dplyr, gtsummary, forcats
+Suggests:  knitr, tidyverse, SAKK, survival
+VignetteBuilder: knitr
