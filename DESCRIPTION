@@ -1,10 +1,13 @@
 Package: summarySAKK
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Produces publication-ready summary tables
+Version: 0.1.0
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    c(person("Sämi", "Schär", , "Saemi.Schaer@sakk.ch", role = "aut"),
+      person("Charlotte", "Micheloud", "Charlotte.Micheloud@sakk.ch", 
+      role = c("cre", "aut")))
+Description: The package produces table with descriptive statistics 
+ for continuous, categorical and dichotomous variables. 
+ It is largely based on the package gtsummary.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
