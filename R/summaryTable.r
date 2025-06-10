@@ -9,7 +9,7 @@
 #' all variables present in the data except `group`.
 #'
 #' @param labels A list containing the labels that should be used for the
-#' variables in the table. If empty, labels are automatically taken from the
+#' variables in the table. If NULL, labels are automatically taken from the
 #' dataset. If no label present, the variable name is taken.
 #'
 #' @param group A single column from `data`.
@@ -49,14 +49,6 @@
 #'
 #' @param conf_level Confidence level. Default to 0.95.
 #'
-#' @param layout_cont Layout for continuous variables. Is the CI in the same
-#' column as the summary statistics. Only used if ci_cont is not NULL.
-#' Default to ...
-#'
-#' @param layout_cat Layout for continuous variables. Is the CI in the same
-#' column as the summary statistics. Only used if ci_cat is not NULL.
-#' Default to ...
-#'
 #' @param digits_cont Digits for summary statistics and CI of continuous
 #' variables. Default to 1.
 #'
@@ -78,6 +70,9 @@
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Default to FALSE.
 #'
+#' @param as_flex_table Logical. If TRUE (default) the gtsummary object is
+#' converted to a flextable object. Useful when rendering to Word.
+#'
 #' @examples
 #' library(SAKK)
 #' library(survival)
@@ -96,7 +91,7 @@
 summaryTable <- function(data,
                          vars = NULL,
                          group = NULL,
-                         labels,
+                         labels = NULL,
                          stat_cont = "median_range",
                          stat_cat = "n_percent",
                          test = FALSE,
@@ -106,14 +101,13 @@ summaryTable <- function(data,
                          ci_cont = "wilcox.test",
                          ci_cat = "wilson",
                          conf_level = 0.95,
-                         layout_cont = NULL,
-                         layout_cat = NULL,
                          digits_cont = 1,
                          digits_cat = 0,
                          missing = TRUE,
                          binary = FALSE,
                          missing_text = "Missing",
-                         overall = FALSE){
+                         overall = FALSE,
+                         as_flex_table = TRUE){
 
   # --------- Some checks --------------------------------------------------- #
 
@@ -241,7 +235,9 @@ summaryTable <- function(data,
 }
 
 
+if(is.null(labels)){
 labels <- get_labels(data, vars)
+}
 
 
 
@@ -423,6 +419,11 @@ if(test == TRUE){
   }
   tbl <- tbl_both
 }
+
+if(as_flex_table == TRUE){
+  gtsummary::as_flex_table(tbl)
+} else{
 tbl
+}
 }
 

@@ -8,7 +8,7 @@ summaryTable(
   data,
   vars = NULL,
   group = NULL,
-  labels,
+  labels = NULL,
   stat_cont = "median_range",
   stat_cat = "n_percent",
   test = FALSE,
@@ -18,14 +18,13 @@ summaryTable(
   ci_cont = "wilcox.test",
   ci_cat = "wilson",
   conf_level = 0.95,
-  layout_cont = NULL,
-  layout_cat = NULL,
   digits_cont = 1,
   digits_cat = 0,
   missing = TRUE,
   binary = FALSE,
   missing_text = "Missing",
-  overall = FALSE
+  overall = FALSE,
+  as_flex_table = TRUE
 )
 }
 \arguments{
@@ -39,7 +38,7 @@ Summary statistics will be stratified according to this variable.
 Default to NULL.}
 
 \item{labels}{A list containing the labels that should be used for the
-variables in the table. If empty, labels are automatically taken from the
+variables in the table. If NULL, labels are automatically taken from the
 dataset. If no label present, the variable name is taken.}
 
 \item{stat_cont}{Summary statistic to display for continuous variables. Options
@@ -75,14 +74,6 @@ If NULL, no CI will be displayed.}
 
 \item{conf_level}{Confidence level. Default to 0.95.}
 
-\item{layout_cont}{Layout for continuous variables. Is the CI in the same
-column as the summary statistics. Only used if ci_cont is not NULL.
-Default to ...}
-
-\item{layout_cat}{Layout for continuous variables. Is the CI in the same
-column as the summary statistics. Only used if ci_cat is not NULL.
-Default to ...}
-
 \item{digits_cont}{Digits for summary statistics and CI of continuous
 variables. Default to 1.}
 
@@ -103,6 +94,9 @@ displayed (FALSE, default) or only one.}
 
 \item{overall}{Logical. If TRUE, an additional column with the total is
 added to the table. Default to FALSE.}
+
+\item{as_flex_table}{Logical. If TRUE (default) the gtsummary object is
+converted to a flextable object. Useful when rendering to Word.}
 }
 \description{
 Creates publication-ready summary tables based on the gtsummary
