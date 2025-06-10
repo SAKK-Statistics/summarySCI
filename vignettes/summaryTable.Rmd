@@ -180,7 +180,7 @@ be added\
 by setting `test` to `TRUE` and CI by setting `ci` to `TRUE`.
 
 The default test and CI types for continuous variable is `t.test`. This
-can \
+can\
 be changed in `test_cont` and `ci_cont`, respectively.
 
 ```{r}
@@ -215,7 +215,7 @@ summaryTable(data = colon2,
 
 Note that the p-value is always calculated ignoring the missing values.\
 For categorical variables, the default test type is `fisher.test` and
-the default CI types is `wilson`. This can \
+the default CI types is `wilson`. This can\
 be changed in `test_cat` and `ci_cat`, respectively.
 
 The tables with and without missing values can also be put next to each

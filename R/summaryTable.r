@@ -28,19 +28,19 @@
 #'
 #' @param test_cont Test type used to calculate the p-value
 #' for continuous variables. Only used if `test = TRUE`.
-#' Options include "t.test" (default), "oneway.test", "kruskal.test", "wilcox.test",
+#' Options include "t.test", "oneway.test", "kruskal.test", "wilcox.test" (default),
 #' "paired.t.test", "paired.wilcox.test"
 #'
 #' @param test_cat Test type used to calculated the p-value
 #' for categorical variables.  Only used if `test = TRUE`.
-#' Options include "chisq.test", "chisq.test.no.correct", "fisher.test" (default).
+#' Options include "chisq.test" (default), "chisq.test.no.correct", "fisher.test".
 #'
 #' @param ci Logical. Indicates whether CI are displayed (TRUE) or
 #' not (FALSE). Default to FALSE.
 #'
 #' @param ci_cont Confidence interval method for continuous variables.
 #'  Only used if `ci = TRUE`.
-#' Options include "t.test" (default) and "wilcox.test".
+#' Options include "t.test" and "wilcox.test" (default).
 #'
 #' @param ci_cat Confidence interval method for categorical variables.
 #' Options include "wilson" (default), "wilson.no.correct", "clopper.pearson",
@@ -78,6 +78,15 @@
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Default to FALSE.
 #'
+#' @examples
+#' library(SAKK)
+#' library(survival)
+#' data("cancer")
+#' summaryTable(data = cancer,vars = c("inst", "time","age", "ph.ecog"),
+#'              labels = list(inst = "Institution code",
+#'                            time = "Time",
+#'                            age = "Age",
+#'                            ph.ecog = "ECOG score"))
 #' @import cardx dplyr gtsummary forcats
 #' @importFrom Hmisc label
 #' @importFrom stats sd t.test
@@ -91,10 +100,10 @@ summaryTable <- function(data,
                          stat_cont = "median_range",
                          stat_cat = "n_percent",
                          test = FALSE,
-                         test_cont = "t.test",
-                         test_cat = "fisher.test",
+                         test_cont = "wilcox.test",
+                         test_cat = "chisq.test",
                          ci = FALSE,
-                         ci_cont = "t.test",
+                         ci_cont = "wilcox.test",
                          ci_cat = "wilson",
                          conf_level = 0.95,
                          layout_cont = NULL,
