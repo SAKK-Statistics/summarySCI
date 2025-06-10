@@ -209,6 +209,23 @@ summaryTable <- function(data,
   }
 
 
+
+# if integer will less than 10 unique values -> transform to factors
+# otherwise, there is no % next to the "missing"
+
+
+  data <- data %>%
+    mutate(across(all_of(vars), ~ {
+      if (is.numeric(.) && length(unique(.)) < 10 && all(. %% 1 == 0, na.rm = TRUE)) {
+        factor(.)
+      } else {
+        .
+      }
+    }))
+
+
+
+
   # -------------- # table for missing = FALSE (default in gtsummary)----- #
   if(missing == FALSE){
 
@@ -284,6 +301,8 @@ if(missing != FALSE){
     }
 
   data2 <- droplevels(data2)
+
+
 
     tbl_missing <- data2|>
       tbl_summary(by = group,
