@@ -1,7 +1,7 @@
 #' Creates publication-ready summary tables
 #'
 #' Creates publication-ready summary tables based on the gtsummary
-#' package. test
+#' package.
 #'
 #' @param data A data frame or tibble containing the data to be summarized.
 #'
@@ -9,7 +9,7 @@
 #' all variables present in the data except `group`.
 #'
 #' @param labels A list containing the labels that should be used for the
-#' variables in the table. If NULL, labels are automaticall taken from the
+#' variables in the table. If empty, labels are automatically taken from the
 #' dataset. If no label present, the variable name is taken.
 #'
 #' @param group A single column from `data`.
@@ -96,7 +96,7 @@
 summaryTable <- function(data,
                          vars = NULL,
                          group = NULL,
-                         labels = NULL,
+                         labels,
                          stat_cont = "median_range",
                          stat_cat = "n_percent",
                          test = FALSE,
@@ -222,6 +222,28 @@ summaryTable <- function(data,
         .
       }
     }))
+
+
+  # Extract labels from variables in `vars`
+
+  get_labels <- function(data, vars) {
+    labels <- lapply(vars, function(var) {
+      lbl <- attr(data[[var]], "label")
+      if (!is.null(lbl) && is.character(lbl) && length(lbl) == 1) {
+        return(lbl)
+      } else {
+        return(NULL)
+      }
+    })
+    names(labels) <- vars
+    labels <- labels[!sapply(labels, is.null)]
+    return(labels)
+}
+
+
+labels <- get_labels(data, vars)
+
+
 
 
 
@@ -403,3 +425,4 @@ if(test == TRUE){
 }
 tbl
 }
+

@@ -8,7 +8,7 @@ summaryTable(
   data,
   vars = NULL,
   group = NULL,
-  labels = NULL,
+  labels,
   stat_cont = "median_range",
   stat_cat = "n_percent",
   test = FALSE,
@@ -39,7 +39,7 @@ Summary statistics will be stratified according to this variable.
 Default to NULL.}
 
 \item{labels}{A list containing the labels that should be used for the
-variables in the table. If NULL, labels are automaticall taken from the
+variables in the table. If empty, labels are automatically taken from the
 dataset. If no label present, the variable name is taken.}
 
 \item{stat_cont}{Summary statistic to display for continuous variables. Options
@@ -106,7 +106,7 @@ added to the table. Default to FALSE.}
 }
 \description{
 Creates publication-ready summary tables based on the gtsummary
-package. test
+package.
 }
 \examples{
 library(SAKK)
