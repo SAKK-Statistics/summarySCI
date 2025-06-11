@@ -1,7 +1,7 @@
 #' Creates publication-ready summary tables
 #'
 #' Creates publication-ready summary tables based on the gtsummary
-#' package.
+#' package. this is a test
 #'
 #' @param data A data frame or tibble containing the data to be summarized.
 #'
