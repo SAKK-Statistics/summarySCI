@@ -3,4 +3,7 @@ pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
   summaryTable: summaryTable.html
-last_built: 2025-07-10T09:11Z
+last_built: 2025-07-10T09:30Z
+urls:
+  reference: https://sakk-statistics.github.io/summarySAKK/reference
+  article: https://sakk-statistics.github.io/summarySAKK/articles
