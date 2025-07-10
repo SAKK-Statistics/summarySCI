@@ -1,0 +1,6 @@
+pandoc: 3.6.2
+pkgdown: 2.1.1
+pkgdown_sha: ~
+articles:
+  summaryTable: summaryTable.html
+last_built: 2025-07-10T08:50Z
