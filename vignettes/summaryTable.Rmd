@@ -37,9 +37,9 @@ colorize <- function(text, color) {
 ```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
 library(dplyr)
 library(tidyverse)
-library(SAKK)
 library(gtsummary)
 library(summarySAKK)
+library(flextable)
 ```
 
 The function `summaryTable()` produces a table with descriptive
@@ -260,9 +260,6 @@ Digits can be customized with the arguments `digits_cont`and
 # Further steps:
 
 -   Adding time-to-event endpoints
-
-<!-- -->
-
 -   New functions: summaryByVisit and summaryLevel
 
 -   Adding tests

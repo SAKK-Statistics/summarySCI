@@ -103,7 +103,7 @@ Creates publication-ready summary tables based on the gtsummary
 package.
 }
 \examples{
-library(SAKK)
+
 library(survival)
 data("cancer")
 summaryTable(data = cancer,vars = c("inst", "time","age", "ph.ecog"),

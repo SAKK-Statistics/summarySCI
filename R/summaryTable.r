@@ -74,7 +74,7 @@
 #' converted to a flextable object. Useful when rendering to Word.
 #'
 #' @examples
-#' library(SAKK)
+#'
 #' library(survival)
 #' data("cancer")
 #' summaryTable(data = cancer,vars = c("inst", "time","age", "ph.ecog"),
