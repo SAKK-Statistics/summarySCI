@@ -38,7 +38,7 @@ colorize <- function(text, color) {
 library(dplyr)
 library(tidyverse)
 library(gtsummary)
-library(summarySAKK)
+library(summarySCI)
 library(flextable)
 ```
 

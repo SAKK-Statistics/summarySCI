@@ -1,9 +1,9 @@
-Package: summarySAKK
+Package: summarySCI
 Title: Produces publication-ready summary tables
 Version: 0.1.0
 Authors@R: 
-    c(person("Sämi", "Schär", email = "Saemi.Schaer@sakk.ch", role = "aut"),
-      person("Charlotte", "Micheloud", email = "Charlotte.Micheloud@sakk.ch", 
+    c(person("Sämi", "Schär", email = "Saemi.Schaer@swisscancerinstitute.ch", role = "aut"),
+      person("Charlotte", "Micheloud", email = "Charlotte.Micheloud@swisscancerinstitute.ch", 
       role = c("cre", "aut")))
 Description: The package produces table with descriptive statistics 
  for continuous, categorical and dichotomous variables. 
@@ -12,7 +12,7 @@ License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-Imports: Hmisc, cardx, dplyr, gtsummary, forcats, flextable
-Suggests: knitr, tidyverse, survival
+Imports: Hmisc, cardx, dplyr, gtsummary, forcats
+Suggests: knitr, tidyverse, survival, flextable
 VignetteBuilder: knitr
-URL: https://sakk-statistics.github.io/summarySAKK/
+URL: https://swisscancerinstitute-statistics.github.io/summaryswisscancerinstitute/
