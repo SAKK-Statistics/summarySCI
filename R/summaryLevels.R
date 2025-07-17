@@ -1,7 +1,6 @@
-#' Creates publication-ready summary tables
+#' summaryLevels
 #'
-#' Creates publication-ready summary tables based on the gtsummary
-#' package. test
+#' Collapses factor levels from multiple columns into one and creates summary table.
 #'
 #' @param data A data frame or tibble containing the data to be summarized.
 #'
@@ -32,10 +31,6 @@
 #' @param ci Logical. Indicates whether CI are displayed (TRUE) or
 #' not (FALSE). Default to FALSE.
 #'
-#' @param ci_cont Confidence interval method for continuous variables.
-#'  Only used if `ci = TRUE`.
-#' Options include "t.test" (default) and "wilcox.test".
-#'
 #' @param ci_cat Confidence interval method for categorical variables.
 #' Options include "wilson" (default), "wilson.no.correct", "clopper.pearson",
 #' "wald", "wald.no.correct", "agresti.coull" and "jeffreys".
@@ -45,6 +40,9 @@
 #'
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Default to FALSE.
+#'
+#' @param as_flex_table Logical. If TRUE (default) the gtsummary object is
+#' converted to a flextable object. Useful when rendering to Word.
 #'
 #' @import cardx dplyr gtsummary forcats
 #' @importFrom Hmisc label
@@ -63,7 +61,8 @@ summaryLevels <- function(data,
                          ci = FALSE,
                          ci_cat = "wilson",
                          conf_level = 0.95,
-                         overall = FALSE){
+                         overall = FALSE,
+                         as_flex_table = TRUE){
 
   # --------- Some checks --------------------------------------------------- #
 
@@ -80,7 +79,7 @@ summaryLevels <- function(data,
     stop("'vars' must be categorical.")
   }
 
-  data <- data.frame(data)
+  data <- as.data.frame(data)
 
   if(!is.null(ci_cat)){
 
@@ -183,7 +182,7 @@ summaryLevels <- function(data,
       }
   # ---------------------------- add label if any --------------------------- #
   if (!is.null(label)){
-    tbl|>
+    tbl<-tbl|>
       modify_header(update = list(label ~ paste0("**", label, "**")))|>
       modify_table_styling(
         columns = label,
@@ -191,10 +190,15 @@ summaryLevels <- function(data,
       )
   }
   else{
-    tbl|>
+    tbl<-tbl|>
       modify_table_styling(
         columns = label,
         footnote = "More than one entry possible"
       )
+  }
+  if(as_flex_table==TRUE){
+    gtsummary::as_flex_table(tbl)
+  }else{
+    tbl
   }
 }
