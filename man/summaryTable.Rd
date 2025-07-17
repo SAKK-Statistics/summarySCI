@@ -11,9 +11,11 @@ summaryTable(
   labels = NULL,
   stat_cont = "median_range",
   stat_cat = "n_percent",
+  type = NULL,
+  value = NULL,
   test = FALSE,
   test_cont = "wilcox.test",
-  test_cat = "chisq.test",
+  test_cat = "fisher.test",
   ci = FALSE,
   ci_cont = "wilcox.test",
   ci_cat = "wilson",
@@ -21,7 +23,6 @@ summaryTable(
   digits_cont = 1,
   digits_cat = 0,
   missing = TRUE,
-  binary = FALSE,
   missing_text = "Missing",
   overall = FALSE,
   as_flex_table = TRUE
@@ -48,6 +49,12 @@ include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
 \item{stat_cat}{Summary statistic to display for categorical variables.
 Options include "n_percent" (default) and "n", and "n_N".}
 
+\item{type}{Specifies the summary type.
+Accepted values are \code{c("continuous", "continuous2", "categorical", "dichotomous")}.
+If not specified, default type is assigned. See below for details.}
+
+\item{value}{Specifies the level of a variable to display on a single row.}
+
 \item{test}{Logical. Indicates whether p-values are displayed (TRUE)
 or not (FALSE). Default to FALSE}
 
@@ -58,7 +65,7 @@ Options include "t.test", "oneway.test", "kruskal.test", "wilcox.test" (default)
 
 \item{test_cat}{Test type used to calculated the p-value
 for categorical variables.  Only used if \code{test = TRUE}.
-Options include "chisq.test" (default), "chisq.test.no.correct", "fisher.test".}
+Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".}
 
 \item{ci}{Logical. Indicates whether CI are displayed (TRUE) or
 not (FALSE). Default to FALSE.}
@@ -85,10 +92,6 @@ or not (FALSE) for categorical variables.Categorical variables need
 to be factors for it to work.
 If "both", then both options are displayed next to each other.}
 
-\item{binary}{Only taken into account when missing = FALSE.
-For binary variables, indicates whether all levels are
-displayed (FALSE, default) or only one.}
-
 \item{missing_text}{String indicating text shown on missing row. Default to
 "Missing".}
 
@@ -101,6 +104,10 @@ converted to a flextable object. Useful when rendering to Word.}
 \description{
 Creates publication-ready summary tables based on the gtsummary
 package.
+}
+\details{
+Type and values arguments
+Syntax is the following:
 }
 \examples{
 

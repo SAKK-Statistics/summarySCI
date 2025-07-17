@@ -247,7 +247,6 @@ summaryTable(data = colon2,
 summaryTable(data = colon2, 
              group = "rx", 
              vars = "Male", 
-             binary = TRUE, 
              missing = FALSE)
 
 ```

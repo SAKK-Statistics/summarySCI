@@ -23,6 +23,12 @@
 #' @param stat_cat Summary statistic to display for categorical variables.
 #' Options include "n_percent" (default) and "n", and "n_N".
 #'
+#' @param type Specifies the summary type.
+#' Accepted values are `c("continuous", "continuous2", "categorical", "dichotomous")`.
+#' If not specified, default type is assigned. See below for details.
+#'
+#' @param value Specifies the level of a variable to display on a single row.
+#'
 #' @param test Logical. Indicates whether p-values are displayed (TRUE)
 #' or not (FALSE). Default to FALSE
 #'
@@ -33,7 +39,7 @@
 #'
 #' @param test_cat Test type used to calculated the p-value
 #' for categorical variables.  Only used if `test = TRUE`.
-#' Options include "chisq.test" (default), "chisq.test.no.correct", "fisher.test".
+#' Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".
 #'
 #' @param ci Logical. Indicates whether CI are displayed (TRUE) or
 #' not (FALSE). Default to FALSE.
@@ -63,15 +69,17 @@
 #' @param missing_text String indicating text shown on missing row. Default to
 #' "Missing".
 #'
-#' @param binary Only taken into account when missing = FALSE.
-#' For binary variables, indicates whether all levels are
-#' displayed (FALSE, default) or only one.
-#'
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Default to FALSE.
 #'
 #' @param as_flex_table Logical. If TRUE (default) the gtsummary object is
 #' converted to a flextable object. Useful when rendering to Word.
+#'
+#'
+#' @details
+#' Type and values arguments
+#' Syntax is the following:
+#'
 #'
 #' @examples
 #'
@@ -94,9 +102,11 @@ summaryTable <- function(data,
                          labels = NULL,
                          stat_cont = "median_range",
                          stat_cat = "n_percent",
+                         type = NULL,
+                         value = NULL,
                          test = FALSE,
                          test_cont = "wilcox.test",
-                         test_cat = "chisq.test",
+                         test_cat = "fisher.test",
                          ci = FALSE,
                          ci_cont = "wilcox.test",
                          ci_cat = "wilson",
@@ -104,7 +114,6 @@ summaryTable <- function(data,
                          digits_cont = 1,
                          digits_cat = 0,
                          missing = TRUE,
-                         binary = FALSE,
                          missing_text = "Missing",
                          overall = FALSE,
                          as_flex_table = TRUE){
@@ -115,20 +124,12 @@ summaryTable <- function(data,
   if (missing(data)) {
     stop("'data' must be specified.")
   }
-  data <- data.frame(data)
+  data <- as.data.frame(data)
 
-  # if (is.null(test_cont) != is.null(test_cat)) {
-  #   stop("Error: Both 'test_cont' and 'test_cat' should be either NULL or both should be non-NULL.")
-  # }
-  #
-  # if (is.null(ci_cont) != is.null(ci_cat)) {
-  #   stop("Error: Both 'ci_cont' and 'ci_cat' should be either NULL or both should be non-NULL.")
-  # }
-
+  # test is TRUE only if group is given.
   if(is.null(group) & test == TRUE){
     stop("Error: 'group' needs to be given for a test to be calculated.")
   }
-
 
 
   # --------- A few required  functions ------------------------------------------
@@ -137,21 +138,7 @@ summaryTable <- function(data,
     exp(mean(log(x), na.rm = na.rm))
   }
 
-  meanDiff <- function(data, variable, by, ...) {
-    ttest_result <- stats::t.test(data[[variable]] ~ as.factor(data[[by]]), ...)
-    mean_diff <- ttest_result$estimate[1] - ttest_result$estimate[2]
-    return(mean_diff)
-  }
-
-
-  meanDiffCI <- function(data, variable, by, ...) {
-    ttest_result <- stats::t.test(data[[variable]] ~ as.factor(data[[by]]), ...)
-    ci_lower <- ttest_result$conf.int[1]
-    ci_upper <- ttest_result$conf.int[2]
-    return(paste0(round(ci_lower, 2), ", ", round(ci_upper, 2)))
-  }
-
-  se <- function(x) stats::sd(x)/sqrt(length(x))
+    se <- function(x) stats::sd(x)/sqrt(length(x))
 
   format_lookup <- list(
     mean_sd = "{mean} ({sd})",
@@ -174,16 +161,11 @@ summaryTable <- function(data,
     vars <- setdiff(names(data), group)
   }
 
+
   # Summary stat for continuous variables
   stat_cont <- format_lookup[[stat_cont]]
   stat_cat <- format_lookup_cat[[stat_cat]]
 
-  # binary variables as categorical or binary
-  if(binary == FALSE){
-    type_binary = "categorical"
-  } else {
-    type_binary = "dichotomous"
-  }
 
   if(!is.null(ci_cat)){
 
@@ -203,21 +185,6 @@ summaryTable <- function(data,
   }
 
 
-
-# if integer will less than 10 unique values -> transform to factors
-# otherwise, there is no % next to the "missing"
-
-
-  data <- data %>%
-    mutate(across(all_of(vars), ~ {
-      if (is.numeric(.) && length(unique(.)) < 10 && all(. %% 1 == 0, na.rm = TRUE)) {
-        factor(.)
-      } else {
-        .
-      }
-    }))
-
-
   # Extract labels from variables in `vars`
 
   get_labels <- function(data, vars) {
@@ -232,7 +199,38 @@ summaryTable <- function(data,
     names(labels) <- vars
     labels <- labels[!sapply(labels, is.null)]
     return(labels)
-}
+  }
+
+
+  get_labels <- function(data, vars) {
+    labels <- lapply(vars, function(var) {
+      # Ensure column exists
+      if (!var %in% names(data)) return(NULL)
+
+      # Use tryCatch in case attr access throws errors on weird types
+      lbl <- tryCatch({
+        attr(data[[var]], "label")
+      }, error = function(e) NULL)
+
+      # If still NULL, attempt labelled::var_label if available
+      if (is.null(lbl) && requireNamespace("labelled", quietly = TRUE)) {
+        lbl <- labelled::var_label(data[[var]])
+        if (is.list(lbl)) lbl <- unlist(lbl)  # var_label returns a named list
+      }
+
+      # Final check
+      if (!is.null(lbl) && is.character(lbl) && nzchar(lbl)) {
+        return(lbl)
+      } else {
+        return(NULL)
+      }
+    })
+
+    # Clean up result
+    names(labels) <- vars
+    labels <- labels[!sapply(labels, is.null)]
+    return(labels)
+  }
 
 
 if(is.null(labels)){
@@ -240,7 +238,16 @@ labels <- get_labels(data, vars)
 }
 
 
+  ## Trick for fisher.test as default and if NULL, take the default.
 
+  if(test == TRUE){
+test_list <- list(all_continuous() ~ test_cont)
+
+if (!is.null(test_cat)) {
+    test_list <- c(test_list, all_categorical() ~ test_cat)
+}
+
+}
 
 
 
@@ -250,20 +257,22 @@ labels <- get_labels(data, vars)
   tbl_noMissing <- tbl_summary(data = data,
                                include = all_of(vars),
                                by = group,
+                               type = type,
+                               value = value,
                      label = labels,
                      statistic = list(all_continuous() ~ stat_cont,
                                       all_categorical() ~ stat_cat),
-                     type = list(all_dichotomous() ~ type_binary),
                      missing_text = missing_text,
                      digits = list(all_categorical() ~ digits_cat,
                                    all_continuous() ~ digits_cont))
 
 
   if(test == TRUE){
+
+
     tbl_noMissing <-  tbl_noMissing|>
       add_p(pvalue_fun = label_style_pvalue(digits = 2),
-            test = list(all_continuous() ~ test_cont,
-                        (all_categorical() ~ test_cat)))
+            test = test_list)
 
 }
 
@@ -276,15 +285,7 @@ labels <- get_labels(data, vars)
                               all_categorical() ~ "[{conf.low}%, {conf.high}%]"))
 
 }
-  # CMI: will work on it.
-  #   if(stat_cont == "mean_sd" | stat_cont == "mean_se"){
-  #     tbl_noMissing <- tbl_noMissing |>
-  #       add_stat(fns = all_continuous() ~ meanDiff) |>
-  #       add_stat(fns = all_continuous() ~ meanDiffCI) |>
-  #       modify_header(add_stat_1 = "Mean difference") |>
-  #       modify_header(add_stat_2 = "CI")
-  #
-  # }
+
 
 # --------------------------  missing = FALSE -------------------------------- #
 tbl <- tbl_noMissing
@@ -298,7 +299,20 @@ if(overall == TRUE & !is.null(group)){
 
 if(missing != FALSE){
 
+  # if integer with less than 10 unique values -> transform to factors
+  # otherwise, there is no % next to the "missing"
+
+  data <- data %>%
+    mutate(across(all_of(vars), ~ {
+      if (is.numeric(.) && length(unique(.)) < 10 && all(. %% 1 == 0, na.rm = TRUE)) {
+        factor(.)
+      } else {
+        .
+      }
+    }))
+
   data2 <- data
+  colnames(data2) <-  colnames(data)
 
     for (i in colnames(data2|>
                        dplyr::select(all_of(c(vars, group))))) {
@@ -326,9 +340,10 @@ if(missing != FALSE){
       tbl_summary(by = group,
                   label = labels,
                   include = all_of(vars),
+                  type = type,
+                  value = value,
                   statistic = list(all_continuous() ~ stat_cont,
                                    all_categorical() ~ stat_cat),
-                  type = list(all_dichotomous() ~ "categorical"),
                   missing_text = missing_text,
                   digits = list(all_categorical() ~ digits_cat,
                                 all_continuous() ~ digits_cont))
@@ -351,6 +366,8 @@ if(missing != FALSE){
       tbl_noMissing_short <- tbl_summary(data = data,
                                          label = labels,
                                          include = all_of(vars),
+                                         type = type,
+                                         value = value,
                                    missing = "no",
                                    missing_text = missing_text,
                                    by = group,
@@ -358,8 +375,7 @@ if(missing != FALSE){
                                    digits = list(all_categorical() ~ digits_cat)
       ) |>
         add_p(pvalue_fun = label_style_pvalue(digits = 2),
-              test = list(all_categorical() ~ test_cat,
-                          all_continuous() ~ test_cont)) |>
+              test = test_list) |>
         modify_column_hide(c("stat_1", "stat_2"))
 
       if(overall == TRUE & !is.null(group)){
@@ -396,9 +412,10 @@ if(missing == "both"){
                                 include = all_of(vars),
                                label = labels,
                                by = group,
+                               type = type,
+                               value = value,
                                statistic = list(all_continuous() ~ stat_cont,
                                                 all_categorical() ~ stat_cat),
-                               type = list(all_dichotomous() ~ "categorical"),
                                missing = "no",
                                missing_text = missing_text,
                                digits = list(all_categorical() ~ digits_cat,
