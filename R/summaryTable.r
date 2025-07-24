@@ -41,6 +41,10 @@
 #' for categorical variables.  Only used if `test = TRUE`.
 #' Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".
 #'
+#' @param continuous_as Type for the continuous variables
+#'
+#' @param dichotomous_as Type for the dichotomous variables
+#'
 #' @param ci Logical. Indicates whether CI are displayed (TRUE) or
 #' not (FALSE). Default to FALSE.
 #'
@@ -61,9 +65,9 @@
 #' @param digits_cat Digits for summary statistics and CI of categorical
 #' variables. Default to 0.
 #'
-#' @param missing Indicates whether percentages for missings are shown (TRUE, default)
-#' or not (FALSE) for categorical variables.Categorical variables need
-#' to be factors for it to work.
+#'
+#' @param missing_percent Indicates whether percentages for missings are shown (TRUE, default)
+#' or not (FALSE) for categorical variables.
 #'  If "both", then both options are displayed next to each other.
 #'
 #' @param missing_text String indicating text shown on missing row. Default to
@@ -72,13 +76,19 @@
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Default to FALSE.
 #'
+#' @param add_n Logical. If TRUE, an additional column with the total
+#' number of non-missing observations for each variable.
+#'
 #' @param as_flex_table Logical. If TRUE (default) the gtsummary object is
 #' converted to a flextable object. Useful when rendering to Word.
 #'
 #'
 #' @details
 #' Type and values arguments
-#' Syntax is the following:
+#' By default, numeric variables with more than 2 unique values are
+#' considered continuous.
+#' This can be changed using the type argument
+#' type = list(vars ~ "categorical")
 #'
 #'
 #' @examples
@@ -102,6 +112,8 @@ summaryTable <- function(data,
                          labels = NULL,
                          stat_cont = "median_range",
                          stat_cat = "n_percent",
+                         continuous_as = "continuous",
+                         dichotomous_as = "dichotomous",
                          type = NULL,
                          value = NULL,
                          test = FALSE,
@@ -113,9 +125,12 @@ summaryTable <- function(data,
                          conf_level = 0.95,
                          digits_cont = 1,
                          digits_cat = 0,
-                         missing = TRUE,
+                         missing_percent = TRUE,
+                         # missing_percent = TRUE / FALSE / "both" # altes missing
+                         # missing = TRUE /FALSE,
                          missing_text = "Missing",
                          overall = FALSE,
+                         add_n = FALSE,
                          as_flex_table = TRUE){
 
   # --------- Some checks --------------------------------------------------- #
@@ -187,19 +202,6 @@ summaryTable <- function(data,
 
   # Extract labels from variables in `vars`
 
-  get_labels <- function(data, vars) {
-    labels <- lapply(vars, function(var) {
-      lbl <- attr(data[[var]], "label")
-      if (!is.null(lbl) && is.character(lbl) && length(lbl) == 1) {
-        return(lbl)
-      } else {
-        return(NULL)
-      }
-    })
-    names(labels) <- vars
-    labels <- labels[!sapply(labels, is.null)]
-    return(labels)
-  }
 
 
   get_labels <- function(data, vars) {
@@ -238,7 +240,7 @@ labels <- get_labels(data, vars)
 }
 
 
-  ## Trick for fisher.test as default and if NULL, take the default.
+## Trick for fisher.test as default and if NULL, take the default.
 
   if(test == TRUE){
 test_list <- list(all_continuous() ~ test_cont)
@@ -251,8 +253,39 @@ if (!is.null(test_cat)) {
 
 
 
+
+
+
   # -------------- # table for missing = FALSE (default in gtsummary)----- #
-  if(missing == FALSE){
+  if(missing_percent == FALSE){
+
+
+    # we might need to code twice.
+    # We want to identify continuous variables with more than
+    # two unique values and treat them as continuous (and not factors)
+
+    # Identify numeric variables
+    numeric_vars <- intersect(vars, names(data)[sapply(data, is.numeric)])
+
+    # Find dichotomous (binary) numeric variables
+    dichotomous_vars <- numeric_vars[
+      sapply(data[numeric_vars], function(x) length(unique(na.omit(x))) == 2)
+    ]
+
+    # Continuous variables = numeric minus binary
+    continuous_vars <- setdiff(numeric_vars, dichotomous_vars)
+
+    # Build default type only if user hasn't specified one
+    if (is.null(type)) {
+      type <- list()
+
+      if (length(continuous_vars) > 0) {
+        type <- append(type, list(all_of(continuous_vars) ~ continuous_as))
+      }
+      if (length(dichotomous_vars) > 0) {
+        type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
+      }
+    }
 
   tbl_noMissing <- tbl_summary(data = data,
                                include = all_of(vars),
@@ -297,19 +330,8 @@ if(overall == TRUE & !is.null(group)){
 }
 # --------------------------  missing = TRUE --------------------------------- #
 
-if(missing != FALSE){
+if(missing_percent != FALSE){
 
-  # if integer with less than 10 unique values -> transform to factors
-  # otherwise, there is no % next to the "missing"
-
-  data <- data %>%
-    mutate(across(all_of(vars), ~ {
-      if (is.numeric(.) && length(unique(.)) < 10 && all(. %% 1 == 0, na.rm = TRUE)) {
-        factor(.)
-      } else {
-        .
-      }
-    }))
 
   data2 <- data
   colnames(data2) <-  colnames(data)
@@ -324,7 +346,7 @@ if(missing != FALSE){
           Hmisc::label(data2[[i]]) <- attr(data[[i]], "label")
         }
       } else if (all(data2[[i]] %in% c(0, 1, NA))) {
-         data2[[i]] <- forcats::fct_na_value_to_level(factor(data2[[i]]))
+         data2[[i]] <- forcats::fct_na_value_to_level(factor(data2[[i]]), level = missing_text)
         # data2[[i]] <- forcats::fct_explicit_na(factor(data2[[i]]))
         if (!is.null(attr(data[[i]], "label"))) {
           Hmisc::label(data2[[i]]) <- attr(data[[i]], "label")
@@ -333,6 +355,37 @@ if(missing != FALSE){
     }
 
   data2 <- droplevels(data2)
+
+  # We want to identify continuous variables with more than
+  # two unique values and treat them as continuous (and not factors)
+
+  # Identify numeric variables
+  numeric_vars <- intersect(vars, names(data2)[sapply(data2, is.numeric)])
+
+  if (length(numeric_vars) == 0) {
+    dichotomous_vars <- character(0)
+    continuous_vars <- character(0)
+  } else {
+    # Find dichotomous (binary) numeric variables
+    dichotomous_vars <- numeric_vars[
+      sapply(data2[numeric_vars], function(x) length(unique(na.omit(x))) == 2)
+    ]
+
+    # Continuous variables = numeric minus binary
+    continuous_vars <- setdiff(numeric_vars, dichotomous_vars)
+  }
+
+  # Build default type only if user hasn't specified one
+  if (is.null(type)) {
+    type <- list()
+
+    if (length(continuous_vars) > 0) {
+      type <- append(type, list(all_of(continuous_vars) ~ continuous_as))
+    }
+    if (length(dichotomous_vars) > 0) {
+      type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
+    }
+  }
 
 
 
@@ -401,13 +454,13 @@ tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
 
 }
 
-  if(missing == TRUE){
+  if(missing_percent == TRUE){
     tbl <- tbl_missingTRUE
   }
 
 
 
-if(missing == "both"){
+if(missing_percent == "both"){
   tbl_noMissing2 <- tbl_summary(data = data,
                                 include = all_of(vars),
                                label = labels,
@@ -436,6 +489,10 @@ if(test == TRUE){
   }
   tbl <- tbl_both
 }
+
+if(add_n == TRUE)
+  tbl <- tbl %>%
+    add_n()
 
 if(as_flex_table == TRUE){
   gtsummary::as_flex_table(tbl)

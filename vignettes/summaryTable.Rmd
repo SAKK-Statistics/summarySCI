@@ -206,7 +206,7 @@ summaryTable(data = colon2,
              vars = "extent", 
              test = TRUE,
              ci = TRUE,
-             missing = TRUE, 
+             missing_percent = TRUE, 
              labels = list(extent = "Extent")
              )
 
@@ -226,7 +226,7 @@ by setting `missing` to `"both"`.
 summaryTable(data = colon2, 
              group = "rx", 
              vars = "extent", 
-             missing = "both", 
+             missing_percent = "both", 
               labels = list(extent = "Extent")
              )
 
@@ -241,13 +241,13 @@ argument `binary` to `TRUE` only shows one level:
 summaryTable(data = colon2, 
              group = "rx", 
              vars = "Male", 
-             missing = FALSE
+             missing_percent = FALSE
              )
 
 summaryTable(data = colon2, 
              group = "rx", 
              vars = "Male", 
-             missing = FALSE)
+             missing_percent = FALSE)
 
 ```
 

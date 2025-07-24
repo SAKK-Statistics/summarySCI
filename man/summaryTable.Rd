@@ -11,6 +11,8 @@ summaryTable(
   labels = NULL,
   stat_cont = "median_range",
   stat_cat = "n_percent",
+  continuous_as = "continuous",
+  dichotomous_as = "dichotomous",
   type = NULL,
   value = NULL,
   test = FALSE,
@@ -22,9 +24,10 @@ summaryTable(
   conf_level = 0.95,
   digits_cont = 1,
   digits_cat = 0,
-  missing = TRUE,
+  missing_percent = TRUE,
   missing_text = "Missing",
   overall = FALSE,
+  add_n = FALSE,
   as_flex_table = TRUE
 )
 }
@@ -48,6 +51,10 @@ include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
 
 \item{stat_cat}{Summary statistic to display for categorical variables.
 Options include "n_percent" (default) and "n", and "n_N".}
+
+\item{continuous_as}{Type for the continuous variables}
+
+\item{dichotomous_as}{Type for the dichotomous variables}
 
 \item{type}{Specifies the summary type.
 Accepted values are \code{c("continuous", "continuous2", "categorical", "dichotomous")}.
@@ -87,9 +94,8 @@ variables. Default to 1.}
 \item{digits_cat}{Digits for summary statistics and CI of categorical
 variables. Default to 0.}
 
-\item{missing}{Indicates whether percentages for missings are shown (TRUE, default)
-or not (FALSE) for categorical variables.Categorical variables need
-to be factors for it to work.
+\item{missing_percent}{Indicates whether percentages for missings are shown (TRUE, default)
+or not (FALSE) for categorical variables.
 If "both", then both options are displayed next to each other.}
 
 \item{missing_text}{String indicating text shown on missing row. Default to
@@ -97,6 +103,9 @@ If "both", then both options are displayed next to each other.}
 
 \item{overall}{Logical. If TRUE, an additional column with the total is
 added to the table. Default to FALSE.}
+
+\item{add_n}{Logical. If TRUE, an additional column with the total
+number of non-missing observations for each variable.}
 
 \item{as_flex_table}{Logical. If TRUE (default) the gtsummary object is
 converted to a flextable object. Useful when rendering to Word.}
@@ -107,7 +116,10 @@ package.
 }
 \details{
 Type and values arguments
-Syntax is the following:
+By default, numeric variables with more than 2 unique values are
+considered continuous.
+This can be changed using the type argument
+type = list(vars ~ "categorical")
 }
 \examples{
 
