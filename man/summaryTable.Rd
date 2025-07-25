@@ -24,6 +24,7 @@ summaryTable(
   conf_level = 0.95,
   digits_cont = 1,
   digits_cat = 0,
+  missing = TRUE,
   missing_percent = TRUE,
   missing_text = "Missing",
   overall = FALSE,

@@ -3,6 +3,7 @@
 export(summaryTable)
 import(cardx)
 import(dplyr)
+import(flextable)
 import(forcats)
 import(gtsummary)
 importFrom(Hmisc,label)

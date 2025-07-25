@@ -100,7 +100,7 @@
 #'                            time = "Time",
 #'                            age = "Age",
 #'                            ph.ecog = "ECOG score"))
-#' @import cardx dplyr gtsummary forcats
+#' @import cardx dplyr gtsummary forcats flextable
 #' @importFrom Hmisc label
 #' @importFrom stats sd t.test
 #' @export
@@ -125,9 +125,8 @@ summaryTable <- function(data,
                          conf_level = 0.95,
                          digits_cont = 1,
                          digits_cat = 0,
+                         missing = TRUE, ## !
                          missing_percent = TRUE,
-                         # missing_percent = TRUE / FALSE / "both" # altes missing
-                         # missing = TRUE /FALSE,
                          missing_text = "Missing",
                          overall = FALSE,
                          add_n = FALSE,
@@ -169,6 +168,14 @@ summaryTable <- function(data,
       n = "{n}",
       n_N = "{n}/{N}"
     )
+
+
+  FitFlextableToPage <- function(ft, pgwidth = 6){
+    ft_out <- ft %>% flextable::autofit()
+    ft_out <- flextable::width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable::flextable_dim(ft_out)$widths))
+    return(ft_out)
+  }
+
   #  -----------------------------------------------------------------------------
 
   # if vars = NULL, take all the variables (except group if not NULL).
@@ -257,8 +264,14 @@ if (!is.null(test_cat)) {
 
 
   # -------------- # table for missing = FALSE (default in gtsummary)----- #
-  if(missing_percent == FALSE){
+  if(missing_percent == FALSE | missing == FALSE){
 
+
+    if(missing == FALSE){
+      missing_var <-  "no"
+    } else {
+      missing_var <-  "ifany"
+    }
 
     # we might need to code twice.
     # We want to identify continuous variables with more than
@@ -269,22 +282,50 @@ if (!is.null(test_cat)) {
 
     # Find dichotomous (binary) numeric variables
     dichotomous_vars <- numeric_vars[
-      sapply(data[numeric_vars], function(x) length(unique(na.omit(x))) == 2)
+      sapply(data[numeric_vars], function(x) {
+        values <- sort(unique(na.omit(x)))
+        length(values) == 2 && all(values == c(0, 1))
+      })
     ]
 
     # Continuous variables = numeric minus binary
     continuous_vars <- setdiff(numeric_vars, dichotomous_vars)
 
-    # Build default type only if user hasn't specified one
+    ## 26.07.25 -> might come back later
+    # # Initialize type if it's NULL
+    # if (is.null(type)) {
+    #   type <- list()
+    # }
+    #
+    # # Append continuous variable types if any
+    # if (length(continuous_vars) > 0) {
+    #   type <- append(type, list(all_of(continuous_vars) ~ continuous_as))
+    # }
+    #
+    # # Append dichotomous variable types if any
+    # if (length(dichotomous_vars) > 0) {
+    #   type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
+    # }
+
+
+    # Ensure 'type' is a named list
     if (is.null(type)) {
       type <- list()
+    }
 
-      if (length(continuous_vars) > 0) {
-        type <- append(type, list(all_of(continuous_vars) ~ continuous_as))
-      }
-      if (length(dichotomous_vars) > 0) {
-        type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
-      }
+    # Helper: Get variables already specified in 'type'
+    specified_vars <- purrr::map_chr(type, ~ as.character(rlang::f_lhs(.x)))
+
+    # Append continuous types only for variables not already in 'type'
+    vars_to_add <- setdiff(continuous_vars, specified_vars)
+    if (length(vars_to_add) > 0) {
+      type <- append(type, list(all_of(vars_to_add) ~ continuous_as))
+    }
+
+    # Append dichotomous types only for variables not already in 'type'
+    vars_to_add <- setdiff(dichotomous_vars, specified_vars)
+    if (length(vars_to_add) > 0) {
+      type <- append(type, list(all_of(vars_to_add) ~ dichotomous_as))
     }
 
   tbl_noMissing <- tbl_summary(data = data,
@@ -296,6 +337,7 @@ if (!is.null(test_cat)) {
                      statistic = list(all_continuous() ~ stat_cont,
                                       all_categorical() ~ stat_cat),
                      missing_text = missing_text,
+                     missing = missing_var,
                      digits = list(all_categorical() ~ digits_cat,
                                    all_continuous() ~ digits_cont))
 
@@ -330,8 +372,7 @@ if(overall == TRUE & !is.null(group)){
 }
 # --------------------------  missing = TRUE --------------------------------- #
 
-if(missing_percent != FALSE){
-
+if(missing_percent != FALSE & missing != FALSE){
 
   data2 <- data
   colnames(data2) <-  colnames(data)
@@ -368,23 +409,29 @@ if(missing_percent != FALSE){
   } else {
     # Find dichotomous (binary) numeric variables
     dichotomous_vars <- numeric_vars[
-      sapply(data2[numeric_vars], function(x) length(unique(na.omit(x))) == 2)
+      sapply(data2[numeric_vars], function(x) {
+        values <- sort(unique(na.omit(x)))
+        length(values) == 2 && all(values == c(0, 1))
+      })
     ]
 
     # Continuous variables = numeric minus binary
     continuous_vars <- setdiff(numeric_vars, dichotomous_vars)
   }
 
-  # Build default type only if user hasn't specified one
+  # Initialize type if it's NULL
   if (is.null(type)) {
     type <- list()
+  }
 
-    if (length(continuous_vars) > 0) {
-      type <- append(type, list(all_of(continuous_vars) ~ continuous_as))
-    }
-    if (length(dichotomous_vars) > 0) {
-      type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
-    }
+  # Append continuous variable types if any
+  if (length(continuous_vars) > 0) {
+    type <- append(type, list(all_of(continuous_vars) ~ continuous_as))
+  }
+
+  # Append dichotomous variable types if any
+  if (length(dichotomous_vars) > 0) {
+    type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
   }
 
 
@@ -454,13 +501,13 @@ tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
 
 }
 
-  if(missing_percent == TRUE){
+  if(missing_percent == TRUE & missing != FALSE){
     tbl <- tbl_missingTRUE
   }
 
 
 
-if(missing_percent == "both"){
+if(missing_percent == "both" & missing != FALSE){
   tbl_noMissing2 <- tbl_summary(data = data,
                                 include = all_of(vars),
                                label = labels,
@@ -495,7 +542,7 @@ if(add_n == TRUE)
     add_n()
 
 if(as_flex_table == TRUE){
-  gtsummary::as_flex_table(tbl)
+  FitFlextableToPage(gtsummary::as_flex_table(tbl))
 } else{
 tbl
 }
