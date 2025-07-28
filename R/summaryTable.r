@@ -176,6 +176,23 @@ summaryTable <- function(data,
     return(ft_out)
   }
 
+
+  add_by_n <- function(data, variable, by, ...) {
+    data |>
+      select(all_of(c(variable, by))) |>
+      dplyr::arrange(pick(all_of(c(by, variable)))) |>
+      dplyr::group_by(.data[[by]]) |>
+      dplyr::summarise_all(~sum(!is.na(.))) %>%
+      rlang::set_names(c("by", "variable")) %>%
+      mutate(
+        by_col = paste0("add_n_stat_", dplyr::row_number()),
+        variable = style_number(variable)
+      ) %>%
+      select(-by) %>%
+      tidyr::pivot_wider(names_from = by_col,
+                         values_from = variable)
+  }
+
   #  -----------------------------------------------------------------------------
 
   # if vars = NULL, take all the variables (except group if not NULL).
@@ -537,9 +554,24 @@ if(test == TRUE){
   tbl <- tbl_both
 }
 
-if(add_n == TRUE)
+if(add_n == TRUE & is.null(group)){
   tbl <- tbl %>%
     add_n()
+}
+
+  if(add_n == TRUE & !is.null(group)){
+    tbl <- tbl %>%
+      add_stat(
+        fns = everything() ~ add_by_n
+      ) %>%
+      modify_header(starts_with("add_n_stat") ~ "**N**") %>%
+      modify_table_body(
+        ~ .x %>%
+          dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
+          dplyr::relocate(add_n_stat_2, .before = stat_2)
+      )
+
+  }
 
 if(as_flex_table == TRUE){
   FitFlextableToPage(gtsummary::as_flex_table(tbl))
