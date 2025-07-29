@@ -1,52 +1,35 @@
-#' Creates publication-ready summary tables grouped by visit
-#'
-#' Creates publication-ready summary tables based on the gtsummary
-#' package. test
+#' Creates publication-ready summary tables for continuous data grouped, by visit
 #'
 #' @param data A data frame or tibble containing the data to be summarized.
 #'
-#' @param vars Variables to include in the summary table. Default to
+#' @param vars Continuous variables to include in the summary table. Default to
 #' all variables present in the data except `group`.
 #'
 #' @param group A single column from `data`.
 #' Summary statistics will be stratified according to this variable.
-#' Default to NULL.
+#' Default to NULL. A maximum of 3 groups are currently supported.
 #'
-#' @param label A list containing the labels that should be used for the
-#' variables in the table. If NULL, labels are automaticall taken from the
-#' dataset. If no label present, the variable name is taken.
+#' @param stat_cont	Summary statistic to display for continuous variables.
+#' Options include "median_IQR", "median_range" (default), "mean_sd",
+#' "mean_se" and "geomMean_sd".
 #'
-#' @param levels = A vector containing the values indicating presence of
-#' the factor level. Included by defaul are "1", "yes", "Yes".
+#' @param visit Name of the stratum for which summary statistics are
+#' displayed by line. Typically, this would be "visit".
 #'
-#' @param stat_cat Summary statistic to display for categorical variables.
-#' Options include "n_percent" (default) and "n", and "n_N".
+#' @param visitgroup A grouping variable for the stratum for which summary
+#' statistics are displayed by line. Must be an ordered factor.
+#' Typically, this would be a visit group such as e.g., baseline, follow-up etc.
 #'
-#' @param test Logical. Indicates whether p-values are displayed (TRUE)
-#' or not (FALSE). Default to FALSE
-#'
-#' @param test_cat Test type used to calculated the p-value
-#' for categorical variables.  Only used if `test = TRUE`.
-#' Options include "chisq.test", "chisq.test.no.correct", "fisher.test" (default).
-#'
-#' @param ci Logical. Indicates whether CI are displayed (TRUE) or
-#' not (FALSE). Default to FALSE.
-#'
-#' @param ci_cont Confidence interval method for continuous variables.
-#'  Only used if `ci = TRUE`.
-#' Options include "t.test" (default) and "wilcox.test".
-#'
-#' @param ci_cat Confidence interval method for categorical variables.
-#' Options include "wilson" (default), "wilson.no.correct", "clopper.pearson",
-#' "wald", "wald.no.correct", "agresti.coull" and "jeffreys".
-#' If NULL, no CI will be displayed.
-#'
-#' @param conf_level Confidence level. Default to 0.95.
+#' @param add_n Logical. If a column with sample size (N) should be shown.
+#' Default is FALSE.
 #'
 #' @param overall Logical. If TRUE, an additional column with the total is
-#' added to the table. Default to FALSE.
+#' added to the table. Ignored, if no groups are defined. Default to FALSE.
 #'
-#' @import cardx dplyr gtsummary forcats
+#' @param as_flex_table Logical. If TRUE, the output is converted to a flex_table
+#' object. Default is TRUE.
+#'
+#' @import cardx dplyr gtsummary forcats purrr
 #' @importFrom Hmisc label
 #' @importFrom stats sd t.test
 #' @export
@@ -56,9 +39,11 @@ summaryByVisit<- function(data,
                           vars = NULL,
                           group = NULL,
                           stat_cont = "median_range",
-                          stat_cat = "n_percent",
+                          visit = "visit",
                           visitgroup = NULL,
-                          visit = "visit"){
+                          add_n = FALSE,
+                          overall = FALSE,
+                          as_flex_table = TRUE){
 
   # --------- Some checks --------------------------------------------------- #
 
@@ -67,25 +52,17 @@ summaryByVisit<- function(data,
     stop("'data' must be specified.")
   }
 
+  # stop if more than 3 groups are requested
+  if (!is.null(group)){
+    if (length(unique(data[[group]]))>3){
+      stop("'A maximum of 3 groups are currently supported'")
+    }
+  }
 
   # --------- A few required  functions ------------------------------------------
 
   geom_mean <- function(x, na.rm = TRUE) {
     exp(mean(log(x), na.rm = na.rm))
-  }
-
-  meanDiff <- function(data, variable, by, ...) {
-    ttest_result <- stats::t.test(data[[variable]] ~ as.factor(data[[by]]), ...)
-    mean_diff <- ttest_result$estimate[1] - ttest_result$estimate[2]
-    return(mean_diff)
-  }
-
-
-  meanDiffCI <- function(data, variable, by, ...) {
-    ttest_result <- stats::t.test(data[[variable]] ~ as.factor(data[[by]]), ...)
-    ci_lower <- ttest_result$conf.int[1]
-    ci_upper <- ttest_result$conf.int[2]
-    return(paste0(round(ci_lower, 2), ", ", round(ci_upper, 2)))
   }
 
   se <- function(x) stats::sd(x)/sqrt(length(x))
@@ -98,79 +75,230 @@ summaryByVisit<- function(data,
     geomMean_sd = "{geom_mean} ({sd})"
   )
 
-  format_lookup_cat <-
-    list(
-      n_percent = "{n} ({p}%)",
-      n = "{n}",
-      n_N = "{n}/{N}"
-    )
-  # --------- categorical formats ------------------------------------------- #
+  add_by_n <- function(data, variable, by, ...) {
+    data |>
+      select(all_of(c(variable, by))) |>
+      dplyr::arrange(pick(all_of(c(by, variable)))) |>
+      dplyr::group_by(.data[[by]]) |>
+      dplyr::summarise_all(~sum(!is.na(.))) %>%
+      rlang::set_names(c("by", "variable")) %>%
+      mutate(
+        by_col = paste0("add_n_stat_", dplyr::row_number()),
+        variable = style_number(variable)
+      ) %>%
+      select(-by) %>%
+      tidyr::pivot_wider(names_from = by_col,
+                         values_from = variable)
+  }
+
+  FitFlextableToPage <- function(ft, pgwidth = 6){
+    ft_out <- ft %>% flextable::autofit()
+    ft_out <- flextable::width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable::flextable_dim(ft_out)$widths))
+    return(ft_out)
+  }
+
+  # ---------------------------------------------------- #
 
   # Summary stat for continuous variables
   stat_cont <- format_lookup[[stat_cont]]
-  stat_cat <- format_lookup_cat[[stat_cat]]
 
   # if vars = NULL, take all the variables (except group if not NULL).
   if (is.null(vars)) {
     vars <- setdiff(names(data), group)
   }
 
-  data<-as.data.frame(data)
+  # order visit numbers not lexicographic
+  data <- data|>
+    dplyr::mutate(group_num = as.numeric(gsub("[^0-9]", "", visit)))|>
+    dplyr::arrange(group_num)|>
+    dplyr::mutate(visit = factor(visit, levels = unique(visit)))|>
+    as.data.frame()
 
   tbl<-NULL
-  tbx<-NULL
 
-  myu<- unlist(as.vector(unique(data[visit])))
+    for (i in 1:length(vars)){
 
-  # without visitgroup
-  if (is.null(visitgroup)){
-    for (i in 1:length(myu)){
-      dat <- data[(data[visit]==paste0(myu[i])),]
-      assign(paste0("t", i), dat|>
-               dplyr::select(vars, group)|>
-               tbl_summary(by=paste0(group),
-                           missing="no",
-                         #  type = vars~ "continuous",
-                           label = vars ~ paste0(myu[i]))|>
-               modify_header(update = list(label ~ paste0("**", visit ,"**")))|>
-               add_n())
-
-      if (i > 1){
-        tbl <- tbl_stack(list(tbl, get(paste0("t", i))), quiet = TRUE)
+      # without visitgroup
+      if (is.null(visitgroup)){
+        strata0=visit
+        indent=1
+        select_vars=c(visit, vars[i])
       }
+      # with visitgroup
       else{
-        tbl<-t1
+        strata0=c(visitgroup, visit)
+        indent=2
+        select_vars=c(visitgroup, visit, vars[i])
       }
+      ### create nested table
+      # Without groups
+      if (is.null(group)){
+            assign(paste0("t", i), data|>
+                     dplyr::select(select_vars)|>
+                tbl_strata_nested_stack(
+                           .x ,
+                           strata = strata0,
+                           .tbl_fun = ~ .x |>
+                             tbl_summary(missing="no",
+                              statistic = list(all_continuous() ~ stat_cont),
+                              label = vars[i]~ "",
+                              type= vars[i] ~ "continuous")|>
+                              add_n()|>
+                              add_overall()|>
+                              modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
+                )
+      }
+      # for 2 groups
+      else {
+      if (length(unique(data[[group]]))==2){
+        assign(paste0("t", i), data|>
+                 dplyr::select(select_vars, group)|>
+                 tbl_strata_nested_stack(
+                   .x ,
+                   strata = strata0,
+                   .tbl_fun = ~ .x |>
+                     tbl_summary(missing="no",
+                                 statistic = list(all_continuous() ~ stat_cont),
+                                 label = vars[i]~ "",
+                                 by=group,
+                                 type= vars[i] ~ "continuous")|>
+                     add_n()|>
+                     add_overall()|>
+                     add_stat(
+                       fns = everything() ~ add_by_n
+                     ) %>%
+                     modify_header(starts_with("add_n_stat") ~ "**N**") %>%
+                     modify_table_body(
+                       ~ .x %>%
+                         dplyr::relocate(n, .before = stat_0) %>%
+                         dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
+                         dplyr::relocate(add_n_stat_2, .before = stat_2)
+                     )|>
+                     modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
+        )
+      }
+      # for 3 groups
+      if (length(unique(data[[group]]))==3){
+        assign(paste0("t", i), data|>
+                 dplyr::select(select_vars, group)|>
+                 tbl_strata_nested_stack(
+                   .x ,
+                   strata = strata0,
+                   .tbl_fun = ~ .x |>
+                     tbl_summary(missing="no",
+                                 statistic = list(all_continuous() ~ stat_cont),
+                                 label = vars[i]~ "",
+                                 by=group,
+                                 type= vars[i] ~ "continuous")|>
+                     add_n()|>
+                     add_overall()|>
+                     add_stat(
+                       fns = everything() ~ add_by_n
+                     ) %>%
+                     modify_header(starts_with("add_n_stat") ~ "**N**") %>%
+                     modify_table_body(
+                       ~ .x %>%
+                         dplyr::relocate(n, .before = stat_0) %>%
+                         dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
+                         dplyr::relocate(add_n_stat_2, .before = stat_2)%>%
+                         dplyr::relocate(add_n_stat_3, .before = stat_3)
+                     )|>
+                     modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
+          )
+        }
+      }
+
+           if (i > 1){
+             tbl$table_body <- rbind(tbl$table_body, c(i,1, vars[i], rep(NA, ncol(tbl$table_body)-3)),
+                                     get(paste0("t", i))$table_body)
+          }
+          else{
+             tbl<-t1
+             tbl$table_body<- rbind(c(i,1, vars[i], rep(NA, ncol(tbl$table_body)-3)), t1$table_body)
+          }
+    }
+
+  # some edits within the object table_body
+  # without grouping variable
+  if (is.null(group)){
+    tbl$table_body <- tbl$table_body %>%
+      dplyr::mutate(variable=ifelse(tbl_indent_id1==indent, dplyr::lead(variable), variable),
+             var_type= ifelse(tbl_indent_id1==indent, dplyr::lead(var_type), var_type),
+             row_type= ifelse(tbl_indent_id1==indent, dplyr::lead(row_type), row_type),
+             var_label= ifelse(tbl_indent_id1==indent, dplyr::lead(var_label), var_label),
+             n=ifelse(tbl_indent_id1==indent, dplyr::lead(n), n),
+             stat_0= ifelse(tbl_indent_id1==indent, dplyr::lead(stat_0), stat_0)
+             )|>
+            dplyr::filter(tbl_indent_id1 !=0)
+    if (is.null(visitgroup)){
+      tbl[["table_body"]][["tbl_indent_id1"]]<- ifelse(is.na(tbl[["table_body"]][["stat_0"]]), 1, 0)
     }
   }
-
-  # with visitgroup
-  myv<- unlist(as.vector((data|>select(visit, visitgroup)|> dplyr::distinct())[2]))
-
-  if (!is.null(visitgroup)){
-    tbl<-c("")
-    for (i in 1:length(myu)){
-      dat <- data[(data[visit]==paste0(myu[i])),]
-      assign(paste0("t", i), dat|>
-               dplyr::select(vars, group, visitgroup)|>
-               tbl_summary(by=paste0(group),
-                           missing="no",
-                           statistic = list(all_continuous() ~ stat_cont),
-                           label = vars ~ c(paste0(myu[i])),
-                           type=all_continuous() ~ "continuous")|>
-               modify_header(update = list(label ~ paste0("**", visit,"**")))|>
-               add_n()|>
-               modify_table_body(
-                 ~ .x %>%
-                   dplyr::mutate(vg_ = dat[visitgroup]))
-      )
-      if (i > 1){
-        tbl <- tbl_stack(list(tbl, get(paste0("t", i))), quiet = TRUE)
-      }
-      else{
-        tbl<-t1
-      }
+  else {
+    # if 3 groups
+    if (length(unique(data[[group]]))==3){
+    tbl$table_body <- tbl$table_body %>%
+      dplyr::mutate(variable=ifelse(tbl_indent_id1==indent, dplyr::lead(variable), variable),
+                    var_type= ifelse(tbl_indent_id1==indent, dplyr::lead(var_type), var_type),
+                    row_type= ifelse(tbl_indent_id1==indent, dplyr::lead(row_type), row_type),
+                    var_label= ifelse(tbl_indent_id1==indent, dplyr::lead(var_label), var_label),
+                    n=ifelse(tbl_indent_id1==indent, dplyr::lead(n), n),
+                    add_n_stat_1=ifelse(tbl_indent_id1==indent, dplyr::lead(add_n_stat_1), add_n_stat_1),
+                    add_n_stat_2=ifelse(tbl_indent_id1==indent, dplyr::lead(add_n_stat_2), add_n_stat_2),
+                    add_n_stat_3=ifelse(tbl_indent_id1==indent, dplyr::lead(add_n_stat_3), add_n_stat_3),
+                    stat_0= ifelse(tbl_indent_id1==indent, dplyr::lead(stat_0), stat_0),
+                    stat_1= ifelse(tbl_indent_id1==indent, dplyr::lead(stat_1), stat_1),
+                    stat_2= ifelse(tbl_indent_id1==indent, dplyr::lead(stat_2), stat_2),
+                    stat_3= ifelse(tbl_indent_id1==indent, dplyr::lead(stat_3), stat_3)
+      )|>
+      dplyr::filter(tbl_indent_id1 !=0)
+    }
+    # if 2 groups
+    else{
+      tbl$table_body <- tbl$table_body %>%
+        dplyr::mutate(variable=ifelse(tbl_indent_id1==indent, dplyr::lead(variable), variable),
+                      var_type= ifelse(tbl_indent_id1==indent, dplyr::lead(var_type), var_type),
+                      row_type= ifelse(tbl_indent_id1==indent, dplyr::lead(row_type), row_type),
+                      var_label= ifelse(tbl_indent_id1==indent, dplyr::lead(var_label), var_label),
+                      n=ifelse(tbl_indent_id1==indent, dplyr::lead(n), n),
+                      add_n_stat_1=ifelse(tbl_indent_id1==indent, dplyr::lead(add_n_stat_1), add_n_stat_1),
+                      add_n_stat_2=ifelse(tbl_indent_id1==indent, dplyr::lead(add_n_stat_2), add_n_stat_2),
+                      stat_0= ifelse(tbl_indent_id1==indent, dplyr::lead(stat_0), stat_0),
+                      stat_1= ifelse(tbl_indent_id1==indent, dplyr::lead(stat_1), stat_1),
+                      stat_2= ifelse(tbl_indent_id1==indent, dplyr::lead(stat_2), stat_2)
+        )|>
+        dplyr::filter(tbl_indent_id1 !=0)
+    }
+    if (is.null(visitgroup)){
+      tbl[["table_body"]][["tbl_indent_id1"]]<- ifelse(is.na(tbl[["table_body"]][["stat_1"]]), 1, 0)
     }
   }
-  tbl
+  # if N column not desired
+    if (add_n==FALSE){
+      if (is.null(group)){
+        tbl<-tbl|>
+          modify_column_hide(columns = "n")
+        }
+      else {
+      if (length(unique(data[[group]]))==2){
+        tbl<-tbl|>
+          modify_column_hide(columns = c("n", "add_n_stat_1", "add_n_stat_2"))
+        }
+      if (length(unique(data[[group]]))==3){
+        tbl<-tbl|>
+          modify_column_hide(columns = c("n", "add_n_stat_1", "add_n_stat_2", "add_n_stat_3"))
+        }
+      }
+    }
+  # if overall column not desired
+    if (overall==FALSE & !is.null(group)){
+      tbl<-tbl|>
+        modify_column_hide(columns = c("stat_0", "n"))
+    }
+  # if flex_table is needed
+    if(as_flex_table == TRUE){
+      FitFlextableToPage(gtsummary::as_flex_table(tbl))
+    } else{
+      tbl
+    }
 }
