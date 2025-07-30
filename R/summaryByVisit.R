@@ -77,22 +77,22 @@ summaryByVisit<- function(data,
 
   add_by_n <- function(data, variable, by, ...) {
     data |>
-      select(all_of(c(variable, by))) |>
+      dplyr::select(all_of(c(variable, by))) |>
       dplyr::arrange(pick(all_of(c(by, variable)))) |>
       dplyr::group_by(.data[[by]]) |>
-      dplyr::summarise_all(~sum(!is.na(.))) %>%
-      rlang::set_names(c("by", "variable")) %>%
-      mutate(
+      dplyr::summarise_all(~sum(!is.na(.))) |>
+      rlang::set_names(c("by", "variable")) |>
+      dplyr::mutate(
         by_col = paste0("add_n_stat_", dplyr::row_number()),
-        variable = style_number(variable)
-      ) %>%
-      select(-by) %>%
+        variable = gtsummary::style_number(variable)
+      ) |>
+      dplyr::select(-by) |>
       tidyr::pivot_wider(names_from = by_col,
                          values_from = variable)
   }
 
   FitFlextableToPage <- function(ft, pgwidth = 6){
-    ft_out <- ft %>% flextable::autofit()
+    ft_out <- ft |> flextable::autofit()
     ft_out <- flextable::width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable::flextable_dim(ft_out)$widths))
     return(ft_out)
   }
@@ -135,17 +135,17 @@ summaryByVisit<- function(data,
       if (is.null(group)){
             assign(paste0("t", i), data|>
                      dplyr::select(select_vars)|>
-                tbl_strata_nested_stack(
+                     gtsummary::tbl_strata_nested_stack(
                            .x ,
                            strata = strata0,
                            .tbl_fun = ~ .x |>
-                             tbl_summary(missing="no",
-                              statistic = list(all_continuous() ~ stat_cont),
+                             gtsummary::tbl_summary(missing="no",
+                              statistic = list(gtsummary::all_continuous() ~ stat_cont),
                               label = vars[i]~ "",
                               type= vars[i] ~ "continuous")|>
-                              add_n()|>
-                              add_overall()|>
-                              modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
+                             gtsummary::add_n()|>
+                             gtsummary::add_overall()|>
+                             gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
                 )
       }
       # for 2 groups
@@ -153,57 +153,57 @@ summaryByVisit<- function(data,
       if (length(unique(data[[group]]))==2){
         assign(paste0("t", i), data|>
                  dplyr::select(select_vars, group)|>
-                 tbl_strata_nested_stack(
+                 gtsummary::tbl_strata_nested_stack(
                    .x ,
                    strata = strata0,
                    .tbl_fun = ~ .x |>
-                     tbl_summary(missing="no",
-                                 statistic = list(all_continuous() ~ stat_cont),
+                     gtsummary::tbl_summary(missing="no",
+                                 statistic = list(gtsummary::all_continuous() ~ stat_cont),
                                  label = vars[i]~ "",
                                  by=group,
                                  type= vars[i] ~ "continuous")|>
-                     add_n()|>
-                     add_overall()|>
-                     add_stat(
-                       fns = everything() ~ add_by_n
-                     ) %>%
-                     modify_header(starts_with("add_n_stat") ~ "**N**") %>%
-                     modify_table_body(
-                       ~ .x %>%
-                         dplyr::relocate(n, .before = stat_0) %>%
-                         dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
+                     gtsummary::add_n()|>
+                     gtsummary::add_overall()|>
+                     gtsummary::add_stat(
+                       fns = dplyr::everything() ~ add_by_n
+                     ) |>
+                     gtsummary::modify_header(starts_with("add_n_stat") ~ "**N**") |>
+                     gtsummary::modify_table_body(
+                       ~ .x |>
+                         dplyr::relocate(n, .before = stat_0) |>
+                         dplyr::relocate(add_n_stat_1, .before = stat_1) |>
                          dplyr::relocate(add_n_stat_2, .before = stat_2)
                      )|>
-                     modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
+                     gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
         )
       }
       # for 3 groups
       if (length(unique(data[[group]]))==3){
         assign(paste0("t", i), data|>
                  dplyr::select(select_vars, group)|>
-                 tbl_strata_nested_stack(
+                 gtsummary::tbl_strata_nested_stack(
                    .x ,
                    strata = strata0,
                    .tbl_fun = ~ .x |>
-                     tbl_summary(missing="no",
-                                 statistic = list(all_continuous() ~ stat_cont),
+                     gtsummary::tbl_summary(missing="no",
+                                 statistic = list(gtsummary::all_continuous() ~ stat_cont),
                                  label = vars[i]~ "",
                                  by=group,
                                  type= vars[i] ~ "continuous")|>
-                     add_n()|>
-                     add_overall()|>
-                     add_stat(
-                       fns = everything() ~ add_by_n
-                     ) %>%
-                     modify_header(starts_with("add_n_stat") ~ "**N**") %>%
-                     modify_table_body(
-                       ~ .x %>%
-                         dplyr::relocate(n, .before = stat_0) %>%
-                         dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
-                         dplyr::relocate(add_n_stat_2, .before = stat_2)%>%
+                     gtsummary::add_n()|>
+                     gtsummary::add_overall()|>
+                     gtsummary::add_stat(
+                       fns = dplyr::everything() ~ add_by_n
+                     ) |>
+                     gtsummary::modify_header(starts_with("add_n_stat") ~ "**N**") |>
+                     gtsummary::modify_table_body(
+                       ~ .x |>
+                         dplyr::relocate(n, .before = stat_0) |>
+                         dplyr::relocate(add_n_stat_1, .before = stat_1) |>
+                         dplyr::relocate(add_n_stat_2, .before = stat_2)|>
                          dplyr::relocate(add_n_stat_3, .before = stat_3)
                      )|>
-                     modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
+                     gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
           )
         }
       }
@@ -221,7 +221,7 @@ summaryByVisit<- function(data,
   # some edits within the object table_body
   # without grouping variable
   if (is.null(group)){
-    tbl$table_body <- tbl$table_body %>%
+    tbl$table_body <- tbl$table_body |>
       dplyr::mutate(variable=ifelse(tbl_indent_id1==indent, dplyr::lead(variable), variable),
              var_type= ifelse(tbl_indent_id1==indent, dplyr::lead(var_type), var_type),
              row_type= ifelse(tbl_indent_id1==indent, dplyr::lead(row_type), row_type),
@@ -237,7 +237,7 @@ summaryByVisit<- function(data,
   else {
     # if 3 groups
     if (length(unique(data[[group]]))==3){
-    tbl$table_body <- tbl$table_body %>%
+    tbl$table_body <- tbl$table_body |>
       dplyr::mutate(variable=ifelse(tbl_indent_id1==indent, dplyr::lead(variable), variable),
                     var_type= ifelse(tbl_indent_id1==indent, dplyr::lead(var_type), var_type),
                     row_type= ifelse(tbl_indent_id1==indent, dplyr::lead(row_type), row_type),
@@ -255,7 +255,7 @@ summaryByVisit<- function(data,
     }
     # if 2 groups
     else{
-      tbl$table_body <- tbl$table_body %>%
+      tbl$table_body <- tbl$table_body |>
         dplyr::mutate(variable=ifelse(tbl_indent_id1==indent, dplyr::lead(variable), variable),
                       var_type= ifelse(tbl_indent_id1==indent, dplyr::lead(var_type), var_type),
                       row_type= ifelse(tbl_indent_id1==indent, dplyr::lead(row_type), row_type),
@@ -277,23 +277,23 @@ summaryByVisit<- function(data,
     if (add_n==FALSE){
       if (is.null(group)){
         tbl<-tbl|>
-          modify_column_hide(columns = "n")
+          gtsummary::modify_column_hide(columns = "n")
         }
       else {
       if (length(unique(data[[group]]))==2){
         tbl<-tbl|>
-          modify_column_hide(columns = c("n", "add_n_stat_1", "add_n_stat_2"))
+          gtsummary::modify_column_hide(columns = c("n", "add_n_stat_1", "add_n_stat_2"))
         }
       if (length(unique(data[[group]]))==3){
         tbl<-tbl|>
-          modify_column_hide(columns = c("n", "add_n_stat_1", "add_n_stat_2", "add_n_stat_3"))
+          gtsummary::modify_column_hide(columns = c("n", "add_n_stat_1", "add_n_stat_2", "add_n_stat_3"))
         }
       }
     }
   # if overall column not desired
     if (overall==FALSE & !is.null(group)){
       tbl<-tbl|>
-        modify_column_hide(columns = c("stat_0", "n"))
+        gtsummary::modify_column_hide(columns = c("stat_0", "n"))
     }
   # if flex_table is needed
     if(as_flex_table == TRUE){
