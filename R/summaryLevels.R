@@ -126,46 +126,46 @@ summaryLevels <- function(data,
         if (is.null(group)){
           assign(paste0("t", i), data|>
                    dplyr::select(vars[i])|>
-                   tbl_summary(missing="no"))
+                   gtsummary::tbl_summary(missing="no"))
         }
         if (!is.null(group)){
           if (overall==FALSE & test==FALSE){
             assign(paste0("t", i), data|>
                  dplyr::select(vars[i], group)|>
-                 tbl_summary(by= paste0(group), missing="no"))
+                 gtsummary::tbl_summary(by= paste0(group), missing="no"))
           }
           if (overall==TRUE & test==FALSE){
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
-                     tbl_summary(by= paste0(group), missing="no")|>
-                     add_overall())
+                     gtsummary::tbl_summary(by= paste0(group), missing="no")|>
+                     gtsummary::add_overall())
           }
           if (overall==TRUE & test==TRUE){
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
-                     tbl_summary(by= paste0(group), missing="no")|>
-                     add_overall()|>
-                     add_p(pvalue_fun = label_style_pvalue(digits = 2),
-                           test = list((all_categorical() ~ test_cat))))
+                     gtsummary::tbl_summary(by= paste0(group), missing="no")|>
+                     gtsummary::add_overall()|>
+                     gtsummary::add_p(pvalue_fun = gtsummary::label_style_pvalue(digits = 2),
+                           test = list((gtsummary::all_categorical() ~ test_cat))))
           }
           if (overall==FALSE & test==TRUE){
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
-                     tbl_summary(by= paste0(group), missing="no")|>
-                     add_p(pvalue_fun = label_style_pvalue(digits = 2),
-                           test = list((all_categorical() ~ test_cat))))
+                     gtsummary::tbl_summary(by= paste0(group), missing="no")|>
+                     gtsummary::add_p(pvalue_fun = gtsummary::label_style_pvalue(digits = 2),
+                           test = list((gtsummary::all_categorical() ~ test_cat))))
           }
         }
       if (i > 1){
         if (ci==FALSE){
-          tbl <- tbl_stack(list(tbl, get(paste0("t", i))))
+          tbl <- gtsummary::tbl_stack(list(tbl, get(paste0("t", i))))
         }
         if (ci==TRUE){
          assign(paste0("x", i), get(paste0("t", i))|>
-            add_ci(method = list(all_categorical() ~ ci_cat_gt),
+            gtsummary::add_ci(method = list(gtsummary::all_categorical() ~ ci_cat_gt),
                    conf.level = conf_level,
-                   statistic = list(all_categorical() ~ "[{conf.low}%, {conf.high}%]")))
-          tbl <- tbl_stack(list(tbl, get(paste0("x", i))))
+                   statistic = list(gtsummary::all_categorical() ~ "[{conf.low}%, {conf.high}%]")))
+          tbl <- gtsummary::tbl_stack(list(tbl, get(paste0("x", i))))
         }
       }
         else {
@@ -174,24 +174,24 @@ summaryLevels <- function(data,
           }
           if (ci==TRUE){
             tbl <- t1|>
-              add_ci(method = list(all_categorical() ~ ci_cat_gt),
+              gtsummary::add_ci(method = list(gtsummary::all_categorical() ~ ci_cat_gt),
                      conf.level = conf_level,
-                     statistic = list(all_categorical() ~ "[{conf.low}%, {conf.high}%]"))
+                     statistic = list(gtsummary::all_categorical() ~ "[{conf.low}%, {conf.high}%]"))
           }
         }
       }
   # ---------------------------- add label if any --------------------------- #
   if (!is.null(label)){
     tbl<-tbl|>
-      modify_header(update = list(label ~ paste0("**", label, "**")))|>
-      modify_table_styling(
+      gtsummary::modify_header(update = list(label ~ paste0("**", label, "**")))|>
+      gtsummary::modify_table_styling(
         columns = label,
         footnote = "More than one entry possible"
       )
   }
   else{
     tbl<-tbl|>
-      modify_table_styling(
+      gtsummary::modify_table_styling(
         columns = label,
         footnote = "More than one entry possible"
       )
