@@ -12,7 +12,7 @@ License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-Imports: Hmisc, cardx, dplyr, gtsummary, forcats
-Suggests: knitr, tidyverse, survival, flextable
+Imports: Hmisc, cardx, dplyr, gtsummary, forcats, labelled, purrr, rlang, tidyr, flextable
+Suggests: knitr, tidyverse, survival 
 VignetteBuilder: knitr
 URL: https://swisscancerinstitute-statistics.github.io/summaryswisscancerinstitute/

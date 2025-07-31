@@ -65,6 +65,8 @@
 #' @param digits_cat Digits for summary statistics and CI of categorical
 #' variables. Default to 0.
 #'
+#' @param missing Logical. If TRUE (default), the missing values are shown.
+#'
 #'
 #' @param missing_percent Indicates whether percentages for missings are shown (TRUE, default)
 #' or not (FALSE) for categorical variables.
@@ -102,7 +104,7 @@
 #'                            ph.ecog = "ECOG score"))
 #' @import cardx dplyr gtsummary forcats flextable
 #' @importFrom Hmisc label
-#' @importFrom stats sd t.test
+#' @importFrom stats sd t.test na.omit
 #' @export
 
 
@@ -184,7 +186,7 @@ summaryTable <- function(data,
       dplyr::group_by(.data[[by]]) |>
       dplyr::summarise_all(~sum(!is.na(.))) %>%
       rlang::set_names(c("by", "variable")) %>%
-      mutate(
+      dplyr::mutate(
         by_col = paste0("add_n_stat_", dplyr::row_number()),
         variable = style_number(variable)
       ) %>%

@@ -95,6 +95,8 @@ variables. Default to 1.}
 \item{digits_cat}{Digits for summary statistics and CI of categorical
 variables. Default to 0.}
 
+\item{missing}{Logical. If TRUE (default), the missing values are shown.}
+
 \item{missing_percent}{Indicates whether percentages for missings are shown (TRUE, default)
 or not (FALSE) for categorical variables.
 If "both", then both options are displayed next to each other.}
