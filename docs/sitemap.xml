@@ -1,10 +1,15 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://sakk-statistics.github.io/summarySAKK/404.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySAKK/articles/index.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySAKK/articles/summaryByVisit.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySAKK/articles/summaryLevels.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySAKK/articles/summaryTable.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySAKK/authors.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySAKK/index.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySAKK/news/index.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySAKK/reference/index.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySAKK/reference/summaryByVisit.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySAKK/reference/summaryLevels.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySAKK/reference/summaryTable.html</loc></url>
 </urlset>
 
