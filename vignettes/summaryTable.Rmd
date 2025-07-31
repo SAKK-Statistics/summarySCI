@@ -50,6 +50,7 @@ compared to `tbl_summary` are:
 -   Simplification of syntax
 -   Missing values for categorical variables can be counted in the
     percentage.
+- Possibility to add the number of observation per group as a column.
 
 ## Setup and data
 
@@ -89,7 +90,6 @@ colon2 <- colon1 %>%
   rename(Male = sex) %>% 
   mutate(extent = as.factor(extent))
 
-# colon2$rx <- droplevels(colon2$rx)
 
 ```
 
@@ -106,6 +106,9 @@ the dataset.
 summaryTable(data = colon2)
 ```
 
+
+### Displayed name of variables
+
 The displayed name of each variable is
 
 -   the label if it exists in the dataset
@@ -113,15 +116,29 @@ The displayed name of each variable is
 -   the variable name if no label is present in the dataset (which is
     the case in our example).
 
-    In order to customize the displayed name, the argument `label`can be
-    used:
+In order to customize the displayed name, the argument `labels` can be
+used:
 
-    ```{r}
-    summaryTable(data = colon2, 
+```{r}
+summaryTable(data = colon2, 
                  labels = list(rx = "Arm", age = "Age", extent = "Extent"))
-    ```
+```
 
-Equivalently, labels can be added directly in the dataset.
+Equivalently, labels can be added directly in the datase.
+
+## Add number of observations 
+
+The number of obervations can be added as a column seting the 
+argument `add_n` to `TRUE`.
+
+```{r}
+summaryTable(data = colon2, 
+                 labels = list(rx = "Arm", age = "Age", extent = "Extent"), 
+             add_n = TRUE)
+```
+
+
+
 
 ## Stratify per group
 
@@ -141,7 +158,15 @@ summaryTable(data = colon2, group = "rx", overall = TRUE,
               labels = list(age = "Age", extent = "Extent"))
 ```
 
-## Continuous variables
+## Variable types
+
+The defaults in `summaryTable` are different from the default in
+`gtsummary::tbl_summary`. 
+
+The following rules apply: 
+
+- factor variables: !!! What about categorical variables wih two levels? are they 
+considered as dichotomous? Check that! And then write the rest. 
 
 If only specific variables are to be included in the table, they can be
 written in the argument `vars`.
@@ -206,7 +231,7 @@ summaryTable(data = colon2,
              vars = "extent", 
              test = TRUE,
              ci = TRUE,
-             missing = TRUE, 
+             missing_percent = TRUE, 
              labels = list(extent = "Extent")
              )
 
@@ -226,7 +251,7 @@ by setting `missing` to `"both"`.
 summaryTable(data = colon2, 
              group = "rx", 
              vars = "extent", 
-             missing = "both", 
+             missing_percent = "both", 
               labels = list(extent = "Extent")
              )
 
@@ -241,14 +266,13 @@ argument `binary` to `TRUE` only shows one level:
 summaryTable(data = colon2, 
              group = "rx", 
              vars = "Male", 
-             missing = FALSE
+             missing_percent = FALSE
              )
 
 summaryTable(data = colon2, 
              group = "rx", 
              vars = "Male", 
-             binary = TRUE, 
-             missing = FALSE)
+             missing_percent = FALSE)
 
 ```
 
