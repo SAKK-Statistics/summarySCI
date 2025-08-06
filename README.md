@@ -1,8 +1,10 @@
 # summarySCI
 
-Welcome to the development branch of the package function summaryTable from the package summarySCI. 
+Welcome to the Git repository of the package `summarySCI`.
 
-You can install this development version using 
+
+## Installation 
+You can install the package using
 
 
 ```
@@ -12,3 +14,11 @@ devtools::install_github(
   dependencies = TRUE
 )
 ```
+
+## Functions
+
+Currently, the package contains three functions: 
+
+- `summaryTable()`
+- `summaryLevels()`
+- summaryByVisit()`
