@@ -23,11 +23,9 @@
 #' @param stat_cat Summary statistic to display for categorical variables.
 #' Options include "n_percent" (default) and "n", and "n_N".
 #'
-#' @param type Specifies the summary type.
+#' @param type NOT IMPLEMENTED YET.  Specifies the summary type.
 #' Accepted values are `c("continuous", "continuous2", "categorical", "dichotomous")`.
 #' If not specified, default type is assigned. See below for details.
-#'
-#' @param value Specifies the level of a variable to display on a single row.
 #'
 #' @param test Logical. Indicates whether p-values are displayed (TRUE)
 #' or not (FALSE). Default to FALSE
@@ -40,10 +38,21 @@
 #' @param test_cat Test type used to calculated the p-value
 #' for categorical variables.  Only used if `test = TRUE`.
 #' Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".
+#' If NULL, the function decides itself: "chisq.test.no.correct" for categorical
+#' variables with all expected
+#' cell counts >=5, and "fisher.test" for categorical variables with
+#' any expected cell count <5
 #'
-#' @param continuous_as Type for the continuous variables
+#' @param continuous_as Type for the continuous variables. Can either
+#' be "continous" (default) or "categorical".
 #'
-#' @param dichotomous_as Type for the dichotomous variables
+#' @param dichotomous_as Type for the dichotomous variables. Can either be
+#' "categorical" (default, one row per level) or "dichotomous" (only
+#' one row with reference level (see argument `value`), only works if `missing = "FALSE"` or
+#' `missing_percent = FALSE`.
+#'
+#' @param value Specifies the reference level of a variable to display on a single row.
+#' Default is NULL. The syntax is as follows: `value = list(varname ~ "level to show")`.
 #'
 #' @param ci Logical. Indicates whether CI are displayed (TRUE) or
 #' not (FALSE). Default to FALSE.
@@ -68,7 +77,8 @@
 #' @param missing Logical. If TRUE (default), the missing values are shown.
 #'
 #'
-#' @param missing_percent Indicates whether percentages for missings are shown (TRUE, default)
+#' @param missing_percent Indicates whether percentages for missings are shown
+#' (TRUE, default)
 #' or not (FALSE) for categorical variables.
 #'  If "both", then both options are displayed next to each other.
 #'
@@ -102,9 +112,10 @@
 #'                            time = "Time",
 #'                            age = "Age",
 #'                            ph.ecog = "ECOG score"))
-#' @import cardx dplyr gtsummary forcats flextable
+#' @import cardx dplyr gtsummary forcats
 #' @importFrom Hmisc label
 #' @importFrom stats sd t.test na.omit
+#' @importFrom flextable autofit width flextable_dim
 #' @export
 
 
@@ -310,41 +321,21 @@ if (!is.null(test_cat)) {
     # Continuous variables = numeric minus binary
     continuous_vars <- setdiff(numeric_vars, dichotomous_vars)
 
-    ## 26.07.25 -> might come back later
-    # # Initialize type if it's NULL
-    # if (is.null(type)) {
-    #   type <- list()
-    # }
-    #
-    # # Append continuous variable types if any
-    # if (length(continuous_vars) > 0) {
-    #   type <- append(type, list(all_of(continuous_vars) ~ continuous_as))
-    # }
-    #
-    # # Append dichotomous variable types if any
-    # if (length(dichotomous_vars) > 0) {
-    #   type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
-    # }
 
 
-    # Ensure 'type' is a named list
+    # Initialize type if it's NULL
     if (is.null(type)) {
       type <- list()
     }
 
-    # Helper: Get variables already specified in 'type'
-    specified_vars <- purrr::map_chr(type, ~ as.character(rlang::f_lhs(.x)))
-
-    # Append continuous types only for variables not already in 'type'
-    vars_to_add <- setdiff(continuous_vars, specified_vars)
-    if (length(vars_to_add) > 0) {
-      type <- append(type, list(all_of(vars_to_add) ~ continuous_as))
+    # Append continuous variable types if any
+    if (length(continuous_vars) > 0) {
+      type <- append(type, list(all_of(continuous_vars) ~ continuous_as))
     }
 
-    # Append dichotomous types only for variables not already in 'type'
-    vars_to_add <- setdiff(dichotomous_vars, specified_vars)
-    if (length(vars_to_add) > 0) {
-      type <- append(type, list(all_of(vars_to_add) ~ dichotomous_as))
+    # Append dichotomous variable types if any
+    if (length(dichotomous_vars) > 0) {
+      type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
     }
 
   tbl_noMissing <- tbl_summary(data = data,
@@ -359,6 +350,24 @@ if (!is.null(test_cat)) {
                      missing = missing_var,
                      digits = list(all_categorical() ~ digits_cat,
                                    all_continuous() ~ digits_cont))
+
+
+  # need that for the add_n()
+
+  tbl_for_add_n <- tbl_noMissing %>% add_n()
+
+  if(!is.null(group)){
+   tbl_for_add_n <-  tbl_noMissing %>%
+      add_stat(
+        fns = everything() ~ add_by_n
+      ) %>%
+      modify_header(starts_with("add_n_stat") ~ "**N**") %>%
+      modify_table_body(
+        ~ .x %>%
+          dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
+          dplyr::relocate(add_n_stat_2, .before = stat_2)
+      )
+  }
 
 
   if(test == TRUE){
@@ -467,6 +476,44 @@ if(missing_percent != FALSE & missing != FALSE){
                   digits = list(all_categorical() ~ digits_cat,
                                 all_continuous() ~ digits_cont))
 
+    # need that for the add_n()
+
+    tbl_for_add_n <- data|>
+      tbl_summary(by = group,
+                  label = labels,
+                  include = all_of(vars),
+                  type = type,
+                  value = value,
+                  statistic = list(all_continuous() ~ stat_cont,
+                                   all_categorical() ~ stat_cat),
+                  missing_text = missing_text,
+                  digits = list(all_categorical() ~ digits_cat,
+                                all_continuous() ~ digits_cont)) %>% add_n()
+
+      if(!is.null(group)){
+        tbl_for_add_n <-  data|>
+          tbl_summary(by = group,
+                      label = labels,
+                      include = all_of(vars),
+                      type = type,
+                      value = value,
+                      statistic = list(all_continuous() ~ stat_cont,
+                                       all_categorical() ~ stat_cat),
+                      missing_text = missing_text,
+                      digits = list(all_categorical() ~ digits_cat,
+                                    all_continuous() ~ digits_cont)) %>%
+          add_stat(
+            fns = everything() ~ add_by_n
+          ) %>%
+          modify_header(starts_with("add_n_stat") ~ "**N**") %>%
+          modify_table_body(
+            ~ .x %>%
+              dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
+              dplyr::relocate(add_n_stat_2, .before = stat_2)
+          )
+      }
+
+
 
     if(ci == TRUE) {
       tbl_missing <- tbl_missing |>
@@ -556,23 +603,68 @@ if(test == TRUE){
   tbl <- tbl_both
 }
 
-if(add_n == TRUE & is.null(group)){
-  tbl <- tbl %>%
-    add_n()
-}
+# I am here, might have to glue some tables.
 
-  if(add_n == TRUE & !is.null(group)){
+
+  if(add_n == TRUE & is.null(group)){
+
+    # Step 1: Extract n values from the reference table
+    n_values <- tbl_for_add_n$table_body %>%
+      filter(row_type == "label") %>%
+      select(variable, n) %>%
+      rename(n_custom = n)
+
+    # Step 2: Add n_custom as a new column and place it next to the variable name
     tbl <- tbl %>%
-      add_stat(
-        fns = everything() ~ add_by_n
-      ) %>%
-      modify_header(starts_with("add_n_stat") ~ "**N**") %>%
       modify_table_body(
         ~ .x %>%
-          dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
-          dplyr::relocate(add_n_stat_2, .before = stat_2)
-      )
+          left_join(n_values, by = "variable") %>%
+          mutate(N = ifelse(row_type == "label", as.character(n_custom), NA)) %>%
+          relocate(N, .after = label)  # This moves N right after label
+      ) %>%
+      modify_table_styling(columns = "N") %>%
+      modify_header(N ~ "N") %>%
+      modify_column_alignment(columns = "N", align = "center")
 
+  }
+
+
+# if(add_n == TRUE & is.null(group) & missing == TRUE & missing_percent == TRUE){
+#   tbl <- tbl %>%
+#     add_n()
+# }
+
+  if(add_n == TRUE & !is.null(group)){
+
+
+
+
+
+  # Step 1: Extract group-specific n values from the reference table
+
+  n_values <- tbl_for_add_n$table_body %>%
+    filter(row_type == "label") %>%
+    select(variable, add_n_stat_1 = add_n_stat_1, add_n_stat_2 = add_n_stat_2)
+
+
+  # Step 2: Add n values to the stratified table
+  tbl <- tbl %>%
+    modify_table_body(
+      ~ .x %>%
+        left_join(n_values, by = "variable") %>%
+        mutate(
+          add_n_stat_1 = ifelse(row_type == "label", as.character(add_n_stat_1), NA),
+          add_n_stat_2 = ifelse(row_type == "label", as.character(add_n_stat_2), NA)
+        ) %>%
+        relocate(add_n_stat_1, .before = stat_1) %>%
+        relocate(add_n_stat_2, .before = stat_2)
+    ) %>%
+    modify_header(
+      add_n_stat_1 ~ "**N**",
+      add_n_stat_2 ~ "**N**"
+    ) %>%
+    modify_column_alignment(columns = c("add_n_stat_1", "add_n_stat_2"), align = "center") %>%
+    modify_table_styling(columns = c("add_n_stat_1", "add_n_stat_2"), footnote = "N without missing values")
   }
 
 if(as_flex_table == TRUE){

@@ -105,30 +105,38 @@ the dataset.
 ```{r}
 summaryTable(data = colon2)
 ```
+If only specific variables are to be included, the need to be entered 
+in the argument `vars`. The argument `group` allows the summary 
+statistics to be stratified by this variable. 
+
+```{r}
+summaryTable(data = colon2, 
+             vars = c("Male", "age", "extent"), 
+             group = "rx")
+```
 
 
 ### Displayed name of variables
 
 The displayed name of each variable is
 
--   the label if it exists in the dataset
+-   the label if it exists in the dataset, or
 
 -   the variable name if no label is present in the dataset (which is
     the case in our example).
 
 In order to customize the displayed name, the argument `labels` can be
-used:
+used. Please note that it needs to be entered as a list, as shown below:
 
 ```{r}
 summaryTable(data = colon2, 
                  labels = list(rx = "Arm", age = "Age", extent = "Extent"))
 ```
 
-Equivalently, labels can be added directly in the datase.
 
-## Add number of observations 
+## Adding number of observations 
 
-The number of obervations can be added as a column seting the 
+The number of observations which are not missing values can be added as a column setting the 
 argument `add_n` to `TRUE`.
 
 ```{r}
@@ -160,16 +168,17 @@ summaryTable(data = colon2, group = "rx", overall = TRUE,
 
 ## Variable types
 
-The defaults in `summaryTable` are different from the default in
-`gtsummary::tbl_summary`. 
+Per default, numeric variables are considered continuous, unless 
+they only have two unique values: 0 and 1. In that case, they are considered 
+dichotomous.
+Continuous variable can be displayed as continuous with 
+`continuous_as = continuous` (default) but can also be displayed as categorical 
+with `continuous_as = categorical`. 
+For dichotomous variables, all levels are displayed per default 
+(`dichotomous_as = categorical`), but only one row can be shown using `dichotomous_as = dichotomous`. In that case, the reference value is chosen with the argument 
+`value = list(variable ~ "level to show")`. 
 
-The following rules apply: 
 
-- factor variables: !!! What about categorical variables wih two levels? are they 
-considered as dichotomous? Check that! And then write the rest. 
-
-If only specific variables are to be included in the table, they can be
-written in the argument `vars`.
 
 ```{r}
 summaryTable(data = colon2, group = "rx", vars = "age",
@@ -180,15 +189,16 @@ By default, the function plots the median and range for continuous
 variables. A number of other options are available, using the argument
 `stat_cont`.
 
-### Median and IQR
+### Stat
+
+The statistics to be displayed can be chosen using `stat_cont` and
+`stat_cat`, for example: 
 
 ```{r}
 summaryTable(data = colon2, group = "rx", vars = "age", 
              stat_cont = "median_IQR", 
               labels = list(age = "Age"))
 ```
-
-### Mean and standard deviation
 
 ```{r}
 summaryTable(data = colon2, 
@@ -201,11 +211,11 @@ summaryTable(data = colon2,
 ## Tests
 
 By default, no p-value and confidence (CI) are displayed. p-values can
-be added\
+be added
 by setting `test` to `TRUE` and CI by setting `ci` to `TRUE`.
 
 The default test and CI types for continuous variable is `wilcox.test`.
-This can\
+This can
 be changed in `test_cont` and `ci_cont`, respectively.
 
 ```{r}
@@ -219,7 +229,6 @@ summaryTable(data = colon2,
              )
 ```
 
-## Categorical variables
 
 For categorical variables, the percentage are automatically added next
 to the missing. This can be disabled by setting the argument `missing`
@@ -244,7 +253,7 @@ default CI types is `wilson`. This can be changed in `test_cat` and
 `ci_cat`, respectively.
 
 The tables with and without missing values can also be put next to each
-other\
+other
 by setting `missing` to `"both"`.
 
 ```{r}
@@ -257,24 +266,7 @@ summaryTable(data = colon2,
 
 ```
 
-## Binary variables
 
-By default, both levels are showed for binary variables. Setting the
-argument `binary` to `TRUE` only shows one level:
-
-```{r}
-summaryTable(data = colon2, 
-             group = "rx", 
-             vars = "Male", 
-             missing_percent = FALSE
-             )
-
-summaryTable(data = colon2, 
-             group = "rx", 
-             vars = "Male", 
-             missing_percent = FALSE)
-
-```
 
 ## Further customization
 

@@ -53,15 +53,20 @@ include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
 \item{stat_cat}{Summary statistic to display for categorical variables.
 Options include "n_percent" (default) and "n", and "n_N".}
 
-\item{continuous_as}{Type for the continuous variables}
+\item{continuous_as}{Type for the continuous variables. Can either
+be "continous" (default) or "categorical".}
 
-\item{dichotomous_as}{Type for the dichotomous variables}
+\item{dichotomous_as}{Type for the dichotomous variables. Can either be
+"categorical" (default, one row per level) or "dichotomous" (only
+one row with reference level (see argument \code{value}), only works if \code{missing = "FALSE"} or
+\code{missing_percent = FALSE}.}
 
-\item{type}{Specifies the summary type.
+\item{type}{NOT IMPLEMENTED YET.  Specifies the summary type.
 Accepted values are \code{c("continuous", "continuous2", "categorical", "dichotomous")}.
 If not specified, default type is assigned. See below for details.}
 
-\item{value}{Specifies the level of a variable to display on a single row.}
+\item{value}{Specifies the reference level of a variable to display on a single row.
+Default is NULL. The syntax is as follows: \code{value = list(varname ~ "level to show")}.}
 
 \item{test}{Logical. Indicates whether p-values are displayed (TRUE)
 or not (FALSE). Default to FALSE}
@@ -73,7 +78,11 @@ Options include "t.test", "oneway.test", "kruskal.test", "wilcox.test" (default)
 
 \item{test_cat}{Test type used to calculated the p-value
 for categorical variables.  Only used if \code{test = TRUE}.
-Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".}
+Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".
+If NULL, the function decides itself: "chisq.test.no.correct" for categorical
+variables with all expected
+cell counts >=5, and "fisher.test" for categorical variables with
+any expected cell count <5}
 
 \item{ci}{Logical. Indicates whether CI are displayed (TRUE) or
 not (FALSE). Default to FALSE.}
@@ -97,7 +106,8 @@ variables. Default to 0.}
 
 \item{missing}{Logical. If TRUE (default), the missing values are shown.}
 
-\item{missing_percent}{Indicates whether percentages for missings are shown (TRUE, default)
+\item{missing_percent}{Indicates whether percentages for missings are shown
+(TRUE, default)
 or not (FALSE) for categorical variables.
 If "both", then both options are displayed next to each other.}
 
