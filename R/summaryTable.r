@@ -310,17 +310,21 @@ if (!is.null(test_cat)) {
     # Identify numeric variables
     numeric_vars <- intersect(vars, names(data)[sapply(data, is.numeric)])
 
-    # Find dichotomous (binary) numeric variables
-    dichotomous_vars <- numeric_vars[
-      sapply(data[numeric_vars], function(x) {
-        values <- sort(unique(na.omit(x)))
-        length(values) == 2 && all(values == c(0, 1))
-      })
-    ]
+    if (length(numeric_vars) == 0) {
+      dichotomous_vars <- character(0)
+      continuous_vars <- character(0)
+    } else {
+      # Find dichotomous (binary) numeric variables
+      dichotomous_vars <- numeric_vars[
+        sapply(data[numeric_vars], function(x) {
+          values <- sort(unique(na.omit(x)))
+          length(values) == 2 && all(values == c(0, 1))
+        })
+      ]
 
-    # Continuous variables = numeric minus binary
-    continuous_vars <- setdiff(numeric_vars, dichotomous_vars)
-
+      # Continuous variables = numeric minus binary
+      continuous_vars <- setdiff(numeric_vars, dichotomous_vars)
+    }
 
 
     # Initialize type if it's NULL

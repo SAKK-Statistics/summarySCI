@@ -44,13 +44,13 @@ library(flextable)
 
 The function `summaryTable()` produces a table with descriptive
 statistics for continuous, categorical and dichotomous variables. It is
-largely based on the function `gtsummary::tbl_summary()`. The changes as
-compared to `tbl_summary` are:
+based on the function `gtsummary::tbl_summary()`, 
+with several enhancements and simplifications, such as
 
--   Simplification of syntax
--   Missing values for categorical variables can be counted in the
-    percentage.
-- Possibility to add the number of observation per group as a column.
+-   Simplified syntax for easier and more intuitive use.
+-   Display of missing values for categorical variables: Option to show (or not) the percentage
+of missing values next to the count. 
+- Columns with the number of non-missing observations can be added for each group
 
 ## Setup and data
 
@@ -76,8 +76,14 @@ The dataset `colon` contains data of `r n_patients` patients from one of
 the first successful trials of adjuvant chemotherapy for colon cancer.
 
 For simplicity, we focus here on recurrence only, two treatment groups,
-and four variable: the treatment group (`rx`), the sex (`Male`), the age
-(`age`) and the extent of local spread (`extent`). We also add a few
+and four variable: 
+
+- the treatment group (`rx`), 
+- the sex (`Male`), 
+- the age (`age`) and 
+- the extent of local spread (`extent`).
+
+We also add a few
 missing values for the variable `extent`.
 
 ```{r}
@@ -105,7 +111,7 @@ the dataset.
 ```{r}
 summaryTable(data = colon2)
 ```
-If only specific variables are to be included, the need to be entered 
+If only specific variables are to be included, they need to be entered 
 in the argument `vars`. The argument `group` allows the summary 
 statistics to be stratified by this variable. 
 
@@ -126,86 +132,84 @@ The displayed name of each variable is
     the case in our example).
 
 In order to customize the displayed name, the argument `labels` can be
-used. Please note that it needs to be entered as a list, as shown below:
+used. Please note that the labels need to be entered as a list, as shown below:
 
 ```{r}
 summaryTable(data = colon2, 
-                 labels = list(rx = "Arm", age = "Age", extent = "Extent"))
+             group = "rx",
+             labels = list(age = "Age", extent = "Extent"))
 ```
 
 
 ## Adding number of observations 
 
-The number of observations which are not missing values can be added as a column setting the 
-argument `add_n` to `TRUE`.
+The number of observations **which are not missing values** can be added as a 
+column by setting the argument `add_n` to `TRUE`.
 
 ```{r}
 summaryTable(data = colon2, 
-                 labels = list(rx = "Arm", age = "Age", extent = "Extent"), 
+             group = "rx",
+            labels = list(rx = "Arm", age = "Age", extent = "Extent"), 
              add_n = TRUE)
 ```
 
 
 
-
-## Stratify per group
-
-The argument `group` indicates by which variable the summary statistics
-will be stratified.
-
-```{r}
-summaryTable(data = colon2, group = "rx", 
-             labels = list(age = "Age", extent = "Extent"))
-```
+## Overall column 
 
 An "overall" column can be added by setting the argument `overall` to
 `TRUE`.
 
 ```{r}
-summaryTable(data = colon2, group = "rx", overall = TRUE, 
-              labels = list(age = "Age", extent = "Extent"))
+summaryTable(data = colon2, 
+             group = "rx",
+             overall = TRUE, 
+             labels = list(age = "Age", extent = "Extent"))
 ```
 
 ## Variable types
 
-Per default, numeric variables are considered continuous, unless 
-they only have two unique values: 0 and 1. In that case, they are considered 
-dichotomous.
-Continuous variable can be displayed as continuous with 
-`continuous_as = continuous` (default) but can also be displayed as categorical 
-with `continuous_as = categorical`. 
-For dichotomous variables, all levels are displayed per default 
-(`dichotomous_as = categorical`), but only one row can be shown using `dichotomous_as = dichotomous`. In that case, the reference value is chosen with the argument 
+The function `gtsummary::tbl_summary` considers
+numeric variables with fewer than 10 unique values as categorical by default.
+This is not the case in the function `summaryTable`. 
+
+Per default, all numeric variables are considered as continuous, unless 
+they only have two unique values: 0 and 1. In that case, they are considered as
+dichotomous. This can be changed by setting the argument `continuous_as` to `categorical`.
+
+For dichotomous variables, all levels are displayed by default. 
+To show only one row, use the argument
+`dichotomous_as = dichotomous`. 
+The reference level is specified using the argument
 `value = list(variable ~ "level to show")`. 
 
 
-
 ```{r}
-summaryTable(data = colon2, group = "rx", vars = "age",
-              labels = list(age = "Age"))
+summaryTable(data = colon2,
+             group = "rx",
+             vars = "Male",
+            labels = list(age = "Age"), 
+            dichotomous_as = "dichotomous", 
+            value = list(Male ~ "1"),
+            missing = FALSE)
 ```
 
 By default, the function plots the median and range for continuous
 variables. A number of other options are available, using the argument
 `stat_cont`.
 
-### Stat
+### Statistic type
 
-The statistics to be displayed can be chosen using `stat_cont` and
-`stat_cat`, for example: 
+The statistics to be displayed can be chosen using the argument `stat_cont` 
+(options: `median_IQR`, `median_range` (default), `"mean_sd"`, `"mean_se"`
+and `"geomMean_sd"`) and `stat_cat` (options: `"n_percent"` (default) `"n"`
+and `"n_N"`). 
 
 ```{r}
-summaryTable(data = colon2, group = "rx", vars = "age", 
+summaryTable(data = colon2, group = "rx", 
              stat_cont = "median_IQR", 
-              labels = list(age = "Age"))
-```
-
-```{r}
-summaryTable(data = colon2, 
-             group = "rx", 
-             vars = "age", 
-             stat_cont = "mean_sd", 
-              labels = list(age = "Age"))
+             stat_cat = "n_N",
+              labels = list(age = "Age", sex = "Sex", extent = "Extent"))
 ```
 
 ## Tests
@@ -214,24 +218,33 @@ By default, no p-value and confidence (CI) are displayed. p-values can
 be added
 by setting `test` to `TRUE` and CI by setting `ci` to `TRUE`.
 
-The default test and CI types for continuous variable is `wilcox.test`.
+The default test type for continuous variable is `wilcox.test`, 
+and `fisher.test` for categorical variables.
 This can
-be changed in `test_cont` and `ci_cont`, respectively.
+be changed in `test_cont` and `test_cat`, respectively.
+
+The default CI type for continuous variables is `wilcox.test` and `wilson`
+for categorical variables. 
+This can be changed in `ci_cont` and `ci_cat`, respectively. 
 
 ```{r}
 summaryTable(data = colon2, 
              group = "rx", 
-             vars = "age", 
+             vars = c("age", "extent"), 
              stat_cont = "mean_sd", 
              test = TRUE,
              ci = TRUE,
-             labels = list(age = "Age")
+             labels = list(age = "Age", extent = "Extent")
              )
 ```
 
+## Missing values
 
-For categorical variables, the percentage are automatically added next
-to the missing. This can be disabled by setting the argument `missing`
+Per default, missing values are shown as a separate category. This can 
+be disabled by setting `missing` to `FALSE`.
+
+For `missing = TRUE`, the percentage are automatically added next to the 
+missing number.  This can be disabled by setting the argument `missing_percentage`
 to `FALSE`.
 
 ```{r}
@@ -240,17 +253,13 @@ summaryTable(data = colon2,
              vars = "extent", 
              test = TRUE,
              ci = TRUE,
-             missing_percent = TRUE, 
+             missing_percent = FALSE, 
              labels = list(extent = "Extent")
              )
 
 
 ```
 
-Note that the p-value is always calculated ignoring the missing values.\
-For categorical variables, the default test type is `chisq.test` and the
-default CI types is `wilson`. This can be changed in `test_cat` and
-`ci_cat`, respectively.
 
 The tables with and without missing values can also be put next to each
 other
@@ -270,12 +279,13 @@ summaryTable(data = colon2,
 
 ## Further customization
 
-Digits can be customized with the arguments `digits_cont`and
-`digits_cat`.
+Digits can be customized with the arguments `digits_cont` and
+`digits_cat`. The argument `as_flex_table` (default to `TRUE`)
+converts the gtsummary object to a flextable object, which is better
+for Word output. 
 
-# Further steps:
+# Next steps
 
--   Adding time-to-event endpoints
--   New functions: summaryByVisit and summaryLevel
-
--   Adding tests
+The argument `type`
+will be introduced in a future release to enable more 
+fine-grained customization of the variables types.
