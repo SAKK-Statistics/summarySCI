@@ -21,4 +21,4 @@ Currently, the package contains three functions:
 
 - `summaryTable()`
 - `summaryLevels()`
-- summaryByVisit()`
+- summaryByVisit()` 
