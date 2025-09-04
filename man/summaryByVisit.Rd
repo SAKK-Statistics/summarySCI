@@ -57,6 +57,7 @@ object. Default is TRUE.}
 
 \item{border}{Logical. If TRUE, a border will be drawn around the table. Only
 available if flex_table = TRUE. Default is TRUE.}
+
 }
 \description{
 Creates publication-ready summary tables for continuous data grouped, by visit
