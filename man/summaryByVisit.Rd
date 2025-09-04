@@ -8,12 +8,16 @@ summaryByVisit(
   data,
   vars = NULL,
   group = NULL,
+  labels = NULL,
   stat_cont = "median_range",
   visit = "visit",
+  order = NULL,
   visitgroup = NULL,
+  digits_cont = 1,
   add_n = FALSE,
   overall = FALSE,
-  as_flex_table = TRUE
+  as_flex_table = TRUE,
+  border = TRUE
 )
 }
 \arguments{
@@ -33,9 +37,14 @@ Options include "median_IQR", "median_range" (default), "mean_sd",
 \item{visit}{Name of the stratum for which summary statistics are
 displayed by line. Typically, this would be "visit".}
 
+\item{order}{A numerical variable defining the visit order.}
+
 \item{visitgroup}{A grouping variable for the stratum for which summary
 statistics are displayed by line. Must be an ordered factor.
 Typically, this would be a visit group such as e.g., baseline, follow-up etc.}
+
+\item{digits_cont}{Digits for summary statistics and CI of continuous
+variables. Default to 1.}
 
 \item{add_n}{Logical. If a column with sample size (N) should be shown.
 Default is FALSE.}
@@ -45,6 +54,10 @@ added to the table. Ignored, if no groups are defined. Default to FALSE.}
 
 \item{as_flex_table}{Logical. If TRUE, the output is converted to a flex_table
 object. Default is TRUE.}
+
+\item{border}{Logical. If TRUE, a border will be drawn around the table. Only
+available if flex_table = TRUE. Default is TRUE.}
+
 }
 \description{
 Creates publication-ready summary tables for continuous data grouped, by visit
