@@ -5,7 +5,9 @@
 #'
 #' @param data A data frame or tibble containing the data to be summarized.
 #'
-#' @param vars Variables to include in the summary table. Default to
+#' @param vars Variables to include in the summary table.
+#' Need to be specified with quotes, e.g. `"age"` or `"c(age, response)`.
+#' Default to
 #' all variables present in the data except `group`.
 #'
 #' @param labels A list containing the labels that should be used for the
@@ -13,6 +15,7 @@
 #' dataset. If no label present, the variable name is taken.
 #'
 #' @param group A single column from `data`.
+#' Need to be specified with quotes, e.g. `"treatment"`.
 #' Summary statistics will be stratified according to this variable.
 #' Default to NULL.
 #'
@@ -22,10 +25,6 @@
 #'
 #' @param stat_cat Summary statistic to display for categorical variables.
 #' Options include "n_percent" (default) and "n", and "n_N".
-#'
-#' @param type NOT IMPLEMENTED YET.  Specifies the summary type.
-#' Accepted values are `c("continuous", "continuous2", "categorical", "dichotomous")`.
-#' If not specified, default type is assigned. See below for details.
 #'
 #' @param test Logical. Indicates whether p-values are displayed (TRUE)
 #' or not (FALSE). Default to FALSE
@@ -66,12 +65,12 @@
 #' "wald", "wald.no.correct", "agresti.coull" and "jeffreys".
 #' If NULL, no CI will be displayed.
 #'
-#' @param conf_level Confidence level. Default to 0.95.
+#' @param conf_level Numeric. Confidence level. Default to 0.95.
 #'
-#' @param digits_cont Digits for summary statistics and CI of continuous
+#' @param digits_cont Numeric. Digits for summary statistics and CI of continuous
 #' variables. Default to 1.
 #'
-#' @param digits_cat Digits for summary statistics and CI of categorical
+#' @param digits_cat Numeric. Digits for summary statistics and CI of categorical
 #' variables. Default to 0.
 #'
 #' @param missing Logical. If TRUE (default), the missing values are shown.
@@ -94,13 +93,12 @@
 #' @param as_flex_table Logical. If TRUE (default) the gtsummary object is
 #' converted to a flextable object. Useful when rendering to Word.
 #'
+#' @param word_output Logical. If TRUE, the table is also saved in a word document.
 #'
-#' @details
-#' Type and values arguments
-#' By default, numeric variables with more than 2 unique values are
-#' considered continuous.
-#' This can be changed using the type argument
-#' type = list(vars ~ "categorical")
+#' @param file_name Character string.
+#' Specify the name of the Word document containing the table.
+#' Only used when `word_output` is TRUE. Needs to end with ".docx".
+
 #'
 #'
 #' @examples
@@ -116,6 +114,7 @@
 #' @importFrom Hmisc label
 #' @importFrom stats sd t.test na.omit
 #' @importFrom flextable autofit width flextable_dim
+#' @importFrom officer read_docx
 #' @export
 
 
@@ -127,7 +126,6 @@ summaryTable <- function(data,
                          stat_cat = "n_percent",
                          continuous_as = "continuous",
                          dichotomous_as = "dichotomous",
-                         type = NULL,
                          value = NULL,
                          test = FALSE,
                          test_cont = "wilcox.test",
@@ -143,7 +141,9 @@ summaryTable <- function(data,
                          missing_text = "Missing",
                          overall = FALSE,
                          add_n = FALSE,
-                         as_flex_table = TRUE){
+                         as_flex_table = TRUE,
+                         word_output = FALSE,
+                         file_name = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
   # --------- Some checks --------------------------------------------------- #
 
@@ -153,6 +153,7 @@ summaryTable <- function(data,
   }
   data <- as.data.frame(data)
 
+
   # test is TRUE only if group is given.
   if(is.null(group) & test == TRUE){
     stop("Error: 'group' needs to be given for a test to be calculated.")
@@ -161,11 +162,6 @@ summaryTable <- function(data,
 
   # --------- A few required  functions ------------------------------------------
 
-  geom_mean <- function(x, na.rm = TRUE) {
-    exp(mean(log(x), na.rm = na.rm))
-  }
-
-    se <- function(x) stats::sd(x)/sqrt(length(x))
 
   format_lookup <- list(
     mean_sd = "{mean} ({sd})",
@@ -241,36 +237,6 @@ summaryTable <- function(data,
 
 
 
-  get_labels <- function(data, vars) {
-    labels <- lapply(vars, function(var) {
-      # Ensure column exists
-      if (!var %in% names(data)) return(NULL)
-
-      # Use tryCatch in case attr access throws errors on weird types
-      lbl <- tryCatch({
-        attr(data[[var]], "label")
-      }, error = function(e) NULL)
-
-      # If still NULL, attempt labelled::var_label if available
-      if (is.null(lbl) && requireNamespace("labelled", quietly = TRUE)) {
-        lbl <- labelled::var_label(data[[var]])
-        if (is.list(lbl)) lbl <- unlist(lbl)  # var_label returns a named list
-      }
-
-      # Final check
-      if (!is.null(lbl) && is.character(lbl) && nzchar(lbl)) {
-        return(lbl)
-      } else {
-        return(NULL)
-      }
-    })
-
-    # Clean up result
-    names(labels) <- vars
-    labels <- labels[!sapply(labels, is.null)]
-    return(labels)
-  }
-
 
 if(is.null(labels)){
 labels <- get_labels(data, vars)
@@ -327,10 +293,7 @@ if (!is.null(test_cat)) {
     }
 
 
-    # Initialize type if it's NULL
-    if (is.null(type)) {
-      type <- list()
-    }
+    type <- list()
 
     # Append continuous variable types if any
     if (length(continuous_vars) > 0) {
@@ -451,10 +414,7 @@ if(missing_percent != FALSE & missing != FALSE){
     continuous_vars <- setdiff(numeric_vars, dichotomous_vars)
   }
 
-  # Initialize type if it's NULL
-  if (is.null(type)) {
     type <- list()
-  }
 
   # Append continuous variable types if any
   if (length(continuous_vars) > 0) {
@@ -607,7 +567,6 @@ if(test == TRUE){
   tbl <- tbl_both
 }
 
-# I am here, might have to glue some tables.
 
 
   if(add_n == TRUE & is.null(group)){
@@ -633,10 +592,6 @@ if(test == TRUE){
   }
 
 
-# if(add_n == TRUE & is.null(group) & missing == TRUE & missing_percent == TRUE){
-#   tbl <- tbl %>%
-#     add_n()
-# }
 
   if(add_n == TRUE & !is.null(group)){
 
@@ -671,10 +626,26 @@ if(test == TRUE){
     modify_table_styling(columns = c("add_n_stat_1", "add_n_stat_2"), footnote = "N without missing values")
   }
 
-if(as_flex_table == TRUE){
-  FitFlextableToPage(gtsummary::as_flex_table(tbl))
-} else{
-tbl
-}
+if(as_flex_table == TRUE | word_output == TRUE){
+  tbl_print <- FitFlextableToPage(gtsummary::as_flex_table(tbl))
+} else {
+  tbl_print <- tbl
+  }
+
+
+  if (word_output == TRUE) {
+
+    # Create Word document
+    doc <- officer::read_docx()
+    doc <- flextable::body_add_flextable(doc, value = tbl_print)
+
+    # Save to specified location
+    print(doc, target = file_name)
+
+    message("Table saved to: ", normalizePath(file_name))
+  }
+
+  tbl_print
+
 }
 

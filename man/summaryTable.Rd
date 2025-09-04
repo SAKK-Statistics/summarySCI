@@ -13,7 +13,6 @@ summaryTable(
   stat_cat = "n_percent",
   continuous_as = "continuous",
   dichotomous_as = "dichotomous",
-  type = NULL,
   value = NULL,
   test = FALSE,
   test_cont = "wilcox.test",
@@ -29,16 +28,21 @@ summaryTable(
   missing_text = "Missing",
   overall = FALSE,
   add_n = FALSE,
-  as_flex_table = TRUE
+  as_flex_table = TRUE,
+  word_output = FALSE,
+  file_name = paste0("SummaryTable_", format(Sys.Date(), "\%Y\%m\%d"), ".docx")
 )
 }
 \arguments{
 \item{data}{A data frame or tibble containing the data to be summarized.}
 
-\item{vars}{Variables to include in the summary table. Default to
+\item{vars}{Variables to include in the summary table.
+Need to be specified with quotes, e.g. \code{"age"} or \verb{"c(age, response)}.
+Default to
 all variables present in the data except \code{group}.}
 
 \item{group}{A single column from \code{data}.
+Need to be specified with quotes, e.g. \code{"treatment"}.
 Summary statistics will be stratified according to this variable.
 Default to NULL.}
 
@@ -60,10 +64,6 @@ be "continous" (default) or "categorical".}
 "categorical" (default, one row per level) or "dichotomous" (only
 one row with reference level (see argument \code{value}), only works if \code{missing = "FALSE"} or
 \code{missing_percent = FALSE}.}
-
-\item{type}{NOT IMPLEMENTED YET.  Specifies the summary type.
-Accepted values are \code{c("continuous", "continuous2", "categorical", "dichotomous")}.
-If not specified, default type is assigned. See below for details.}
 
 \item{value}{Specifies the reference level of a variable to display on a single row.
 Default is NULL. The syntax is as follows: \code{value = list(varname ~ "level to show")}.}
@@ -96,12 +96,12 @@ Options include "wilson" (default), "wilson.no.correct", "clopper.pearson",
 "wald", "wald.no.correct", "agresti.coull" and "jeffreys".
 If NULL, no CI will be displayed.}
 
-\item{conf_level}{Confidence level. Default to 0.95.}
+\item{conf_level}{Numeric. Confidence level. Default to 0.95.}
 
-\item{digits_cont}{Digits for summary statistics and CI of continuous
+\item{digits_cont}{Numeric. Digits for summary statistics and CI of continuous
 variables. Default to 1.}
 
-\item{digits_cat}{Digits for summary statistics and CI of categorical
+\item{digits_cat}{Numeric. Digits for summary statistics and CI of categorical
 variables. Default to 0.}
 
 \item{missing}{Logical. If TRUE (default), the missing values are shown.}
@@ -122,17 +122,16 @@ number of non-missing observations for each variable.}
 
 \item{as_flex_table}{Logical. If TRUE (default) the gtsummary object is
 converted to a flextable object. Useful when rendering to Word.}
+
+\item{word_output}{Logical. If TRUE, the table is also saved in a word document.}
+
+\item{file_name}{Character string.
+Specify the name of the Word document containing the table.
+Only used when \code{word_output} is TRUE. Needs to end with ".docx".}
 }
 \description{
 Creates publication-ready summary tables based on the gtsummary
 package.
-}
-\details{
-Type and values arguments
-By default, numeric variables with more than 2 unique values are
-considered continuous.
-This can be changed using the type argument
-type = list(vars ~ "categorical")
 }
 \examples{
 
