@@ -233,7 +233,6 @@ summaryTable <- function(data,
   }
 
 
-  # Extract labels from variables in `vars`
 
 
 
