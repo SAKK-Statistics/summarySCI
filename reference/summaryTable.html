@@ -22,7 +22,7 @@ package."><!-- dependencies from examples --><link href="libs/tabwid-1.1.3/tabwi
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/summaryByVisit.html">summaryByVisit</a></li>
     <li><a class="dropdown-item" href="../articles/summaryLevels.html">summaryLevels</a></li>
-    <li><a class="dropdown-item" href="../articles/summaryTable.html">Summary table</a></li>
+    <li><a class="dropdown-item" href="../articles/summaryTable.html">summaryTable</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -56,7 +56,6 @@ package.</p>
 <span>  stat_cat <span class="op">=</span> <span class="st">"n_percent"</span>,</span>
 <span>  continuous_as <span class="op">=</span> <span class="st">"continuous"</span>,</span>
 <span>  dichotomous_as <span class="op">=</span> <span class="st">"dichotomous"</span>,</span>
-<span>  type <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  value <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  test <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  test_cont <span class="op">=</span> <span class="st">"wilcox.test"</span>,</span>
@@ -71,8 +70,11 @@ package.</p>
 <span>  missing_percent <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  missing_text <span class="op">=</span> <span class="st">"Missing"</span>,</span>
 <span>  overall <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  add_n <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  as_flex_table <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  add_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  as_flex_table <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  border <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  word_output <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"SummaryTable_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"%Y%m%d"</span><span class="op">)</span>, <span class="st">".docx"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -85,12 +87,15 @@ package.</p>
 
 
 <dt id="arg-vars">vars<a class="anchor" aria-label="anchor" href="#arg-vars"></a></dt>
-<dd><p>Variables to include in the summary table. Default to
+<dd><p>Variables to include in the summary table.
+Need to be specified with quotes, e.g. <code>"age"</code> or <code>c("age", "response")</code>.
+Default to
 all variables present in the data except <code>group</code>.</p></dd>
 
 
 <dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
 <dd><p>A single column from <code>data</code>.
+Need to be specified with quotes, e.g. <code>"treatment"</code>.
 Summary statistics will be stratified according to this variable.
 Default to NULL.</p></dd>
 
@@ -124,12 +129,6 @@ one row with reference level (see argument <code>value</code>), only works if <c
 <code>missing_percent = FALSE</code>.</p></dd>
 
 
-<dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
-<dd><p>NOT IMPLEMENTED YET.  Specifies the summary type.
-Accepted values are <code>c("continuous", "continuous2", "categorical", "dichotomous")</code>.
-If not specified, default type is assigned. See below for details.</p></dd>
-
-
 <dt id="arg-value">value<a class="anchor" aria-label="anchor" href="#arg-value"></a></dt>
 <dd><p>Specifies the reference level of a variable to display on a single row.
 Default is NULL. The syntax is as follows: <code>value = list(varname ~ "level to show")</code>.</p></dd>
@@ -154,7 +153,7 @@ Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".
 If NULL, the function decides itself: "chisq.test.no.correct" for categorical
 variables with all expected
 cell counts &gt;=5, and "fisher.test" for categorical variables with
-any expected cell count &lt;5</p></dd>
+any expected cell count &lt;5.</p></dd>
 
 
 <dt id="arg-ci">ci<a class="anchor" aria-label="anchor" href="#arg-ci"></a></dt>
@@ -176,16 +175,16 @@ If NULL, no CI will be displayed.</p></dd>
 
 
 <dt id="arg-conf-level">conf_level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
-<dd><p>Confidence level. Default to 0.95.</p></dd>
+<dd><p>Numeric. Confidence level. Default to 0.95.</p></dd>
 
 
 <dt id="arg-digits-cont">digits_cont<a class="anchor" aria-label="anchor" href="#arg-digits-cont"></a></dt>
-<dd><p>Digits for summary statistics and CI of continuous
+<dd><p>Numeric. Digits for summary statistics and CI of continuous
 variables. Default to 1.</p></dd>
 
 
 <dt id="arg-digits-cat">digits_cat<a class="anchor" aria-label="anchor" href="#arg-digits-cat"></a></dt>
-<dd><p>Digits for summary statistics and CI of categorical
+<dd><p>Numeric. Digits for summary statistics and CI of categorical
 variables. Default to 0.</p></dd>
 
 
@@ -211,23 +210,30 @@ added to the table. Default to FALSE.</p></dd>
 
 
 <dt id="arg-add-n">add_n<a class="anchor" aria-label="anchor" href="#arg-add-n"></a></dt>
-<dd><p>Logical. If TRUE, an additional column with the total
-number of non-missing observations for each variable.</p></dd>
+<dd><p>Logical. If TRUE (default), an additional column with the total
+number of non-missing observations for each variable is added.</p></dd>
 
 
 <dt id="arg-as-flex-table">as_flex_table<a class="anchor" aria-label="anchor" href="#arg-as-flex-table"></a></dt>
 <dd><p>Logical. If TRUE (default) the gtsummary object is
 converted to a flextable object. Useful when rendering to Word.</p></dd>
 
+
+<dt id="arg-border">border<a class="anchor" aria-label="anchor" href="#arg-border"></a></dt>
+<dd><p>Logical. If TRUE, a border will be drawn around the table. Only
+available if flex_table = TRUE. Default is TRUE.</p></dd>
+
+
+<dt id="arg-word-output">word_output<a class="anchor" aria-label="anchor" href="#arg-word-output"></a></dt>
+<dd><p>Logical. If TRUE, the table is also saved in a word document.</p></dd>
+
+
+<dt id="arg-file-name">file_name<a class="anchor" aria-label="anchor" href="#arg-file-name"></a></dt>
+<dd><p>Character string.
+Specify the name of the Word document containing the table.
+Only used when <code>word_output</code> is TRUE. Needs to end with ".docx".</p></dd>
+
 </dl></div>
-    <div class="section level2">
-    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Type and values arguments
-By default, numeric variables with more than 2 unique values are
-considered continuous.
-This can be changed using the type argument
-type = list(vars ~ "categorical")</p>
-    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
@@ -239,7 +245,7 @@ type = list(vars ~ "categorical")</p>
 <span class="r-in"><span>                           time <span class="op">=</span> <span class="st">"Time"</span>,</span></span>
 <span class="r-in"><span>                           age <span class="op">=</span> <span class="st">"Age"</span>,</span></span>
 <span class="r-in"><span>                           ph.ecog <span class="op">=</span> <span class="st">"ECOG score"</span><span class="op">)</span><span class="op">)</span></span></span>
-<style></style><div class="tabwid"><style>.cl-28584372{}.cl-28517240{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-28517254{font-family:'DejaVu Sans';font-size:6.6pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;position: relative;bottom:3.3pt;}.cl-2851725e{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-28545712{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2pt;padding-top:2pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-2854571c{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2pt;padding-top:2pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-2854571d{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-28545726{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-28545727{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:15pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-28545730{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-28547698{width:2.706in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-285476a2{width:3.294in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-285476a3{width:2.706in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-285476ac{width:3.294in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-285476ad{width:2.706in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-285476b6{width:3.294in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-285476b7{width:2.706in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2854774c{width:3.294in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-28547756{width:2.706in;background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-28547757{width:3.294in;background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-28547758{width:2.706in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-28547760{width:3.294in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="table cl-28584372"><thead><tr style="overflow-wrap:break-word;"><th class="cl-28547698"><p class="cl-28545712"><span class="cl-28517240">Characteristic</span></p></th><th class="cl-285476a2"><p class="cl-2854571c"><span class="cl-28517240">N = 228</span><span class="cl-28517254">1</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-285476a3"><p class="cl-2854571d"><span class="cl-2851725e">Institution code</span></p></td><td class="cl-285476ac"><p class="cl-28545726"><span class="cl-2851725e">11.0 (1.0, 33.0)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-285476ad"><p class="cl-28545727"><span class="cl-2851725e">Missing</span></p></td><td class="cl-285476b6"><p class="cl-28545726"><span class="cl-2851725e">1</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-285476a3"><p class="cl-2854571d"><span class="cl-2851725e">Time</span></p></td><td class="cl-285476ac"><p class="cl-28545726"><span class="cl-2851725e">255.5 (5.0, 1,022.0)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-285476b7"><p class="cl-2854571d"><span class="cl-2851725e">Age</span></p></td><td class="cl-2854774c"><p class="cl-28545726"><span class="cl-2851725e">63.0 (39.0, 82.0)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-285476a3"><p class="cl-2854571d"><span class="cl-2851725e">ECOG score</span></p></td><td class="cl-285476ac"><p class="cl-28545726"><span class="cl-2851725e">1.0 (0.0, 3.0)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-28547756"><p class="cl-28545727"><span class="cl-2851725e">Missing</span></p></td><td class="cl-28547757"><p class="cl-28545726"><span class="cl-2851725e">1</span></p></td></tr></tbody><tfoot><tr style="overflow-wrap:break-word;"><td colspan="2" class="cl-28547758"><p class="cl-28545730"><span class="cl-28517254">1</span><span class="cl-2851725e">Median (Min, Max)</span></p></td></tr></tfoot></table></div></code></pre></div>
+<style></style><div class="tabwid"><style>.cl-6b445394{}.cl-6b3daf12{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-6b3daf26{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-6b3daf27{font-family:'DejaVu Sans';font-size:6.6pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;position: relative;bottom:3.3pt;}.cl-6b407d64{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2pt;padding-top:2pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-6b407d6e{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2pt;padding-top:2pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-6b407d78{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-6b407d79{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-6b407d82{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:15pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-6b407d83{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-6b409d30{width:2.303in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(102, 102, 102, 1.00);border-top: 1pt solid rgba(102, 102, 102, 1.00);border-left: 1pt solid rgba(102, 102, 102, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d3a{width:0.892in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(102, 102, 102, 1.00);border-top: 1pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d3b{width:2.805in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(102, 102, 102, 1.00);border-top: 1pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(102, 102, 102, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d44{width:2.303in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(102, 102, 102, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d4e{width:0.892in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d4f{width:2.805in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(102, 102, 102, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d50{width:2.303in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(102, 102, 102, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d58{width:0.892in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d59{width:2.805in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(102, 102, 102, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d5a{width:2.303in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(102, 102, 102, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d62{width:0.892in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d63{width:2.805in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(102, 102, 102, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d6c{width:2.303in;background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(102, 102, 102, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d6d{width:0.892in;background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d6e{width:2.805in;background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(102, 102, 102, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d76{width:2.303in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d80{width:0.892in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6b409d81{width:2.805in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="table cl-6b445394"><thead><tr style="overflow-wrap:break-word;"><th class="cl-6b409d30"><p class="cl-6b407d64"><span class="cl-6b3daf12">Characteristic</span></p></th><th class="cl-6b409d3a"><p class="cl-6b407d6e"><span class="cl-6b3daf26">N</span></p></th><th class="cl-6b409d3b"><p class="cl-6b407d6e"><span class="cl-6b3daf12">N = 228</span><span class="cl-6b3daf27">1</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-6b409d44"><p class="cl-6b407d78"><span class="cl-6b3daf26">Institution code</span></p></td><td class="cl-6b409d4e"><p class="cl-6b407d79"><span class="cl-6b3daf26">227</span></p></td><td class="cl-6b409d4f"><p class="cl-6b407d79"><span class="cl-6b3daf26">11.0 (1.0, 33.0)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-6b409d50"><p class="cl-6b407d82"><span class="cl-6b3daf26">Missing</span></p></td><td class="cl-6b409d58"><p class="cl-6b407d79"><span class="cl-6b3daf26"></span></p></td><td class="cl-6b409d59"><p class="cl-6b407d79"><span class="cl-6b3daf26">1</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-6b409d44"><p class="cl-6b407d78"><span class="cl-6b3daf26">Time</span></p></td><td class="cl-6b409d4e"><p class="cl-6b407d79"><span class="cl-6b3daf26">228</span></p></td><td class="cl-6b409d4f"><p class="cl-6b407d79"><span class="cl-6b3daf26">255.5 (5.0, 1,022.0)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-6b409d5a"><p class="cl-6b407d78"><span class="cl-6b3daf26">Age</span></p></td><td class="cl-6b409d62"><p class="cl-6b407d79"><span class="cl-6b3daf26">228</span></p></td><td class="cl-6b409d63"><p class="cl-6b407d79"><span class="cl-6b3daf26">63.0 (39.0, 82.0)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-6b409d44"><p class="cl-6b407d78"><span class="cl-6b3daf26">ECOG score</span></p></td><td class="cl-6b409d4e"><p class="cl-6b407d79"><span class="cl-6b3daf26">227</span></p></td><td class="cl-6b409d4f"><p class="cl-6b407d79"><span class="cl-6b3daf26">1.0 (0.0, 3.0)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-6b409d6c"><p class="cl-6b407d82"><span class="cl-6b3daf26">Missing</span></p></td><td class="cl-6b409d6d"><p class="cl-6b407d79"><span class="cl-6b3daf26"></span></p></td><td class="cl-6b409d6e"><p class="cl-6b407d79"><span class="cl-6b3daf26">1</span></p></td></tr></tbody><tfoot><tr style="overflow-wrap:break-word;"><td colspan="3" class="cl-6b409d76"><p class="cl-6b407d83"><span class="cl-6b3daf27">1</span><span class="cl-6b3daf26">Median (Min, Max)</span></p></td></tr></tfoot></table></div></code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
