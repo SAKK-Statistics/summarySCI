@@ -2,19 +2,25 @@
 #'
 #' @param data A data frame or tibble containing the data to be summarized.
 #'
-#' @param vars Continuous variables to include in the summary table. Default to
+#' @param vars Continuous variables to include in the summary table.
+#' Need to be specified with quotes, e.g. `"age"` or `c("age", "response")`. Default to
 #' all variables present in the data except `group`.
 #'
 #' @param group A single column from `data`.
+#' Need to be specified with quotes, e.g. `"treatment"`.
 #' Summary statistics will be stratified according to this variable.
 #' Default to NULL. A maximum of 3 groups are currently supported.
 #'
-#' @param stat_cont	Summary statistic to display for continuous variables.
+#' @param labels A list containing the labels that should be used for the
+#' variables in the table. If NULL, labels are automatically taken from the
+#' dataset. If no label present, the variable name is taken.
+#'
+#' @param stat_cont Summary statistic to display for continuous variables.
 #' Options include "median_IQR", "median_range" (default), "mean_sd",
 #' "mean_se" and "geomMean_sd".
 #'
 #' @param visit Name of the stratum for which summary statistics are
-#' displayed by line. Typically, this would be "visit".
+#' displayed by line. Typically, this would be `"visit"`.
 #'
 #' @param order A numerical variable defining the visit order.
 #'
@@ -25,14 +31,14 @@
 #' @param digits_cont Digits for summary statistics and CI of continuous
 #' variables. Default to 1.
 #'
-#' @param add_n Logical. If a column with sample size (N) should be shown.
-#' Default is FALSE.
+#' @param add_n Logical. If TRUE, an additional column with the total
+#' number of non-missing observations for each variable is added.
 #'
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Ignored, if no groups are defined. Default to FALSE.
 #'
-#' @param as_flex_table Logical. If TRUE, the output is converted to a flex_table
-#' object. Default is TRUE.
+#' @param as_flex_table Logical. If TRUE (default) the gtsummary object is
+#' converted to a flextable object. Useful when rendering to Word.
 #'
 #' @param border Logical. If TRUE, a border will be drawn around the table. Only
 #' available if flex_table = TRUE. Default is TRUE.
@@ -72,6 +78,10 @@ summaryByVisit<- function(data,
   }
 
 
+  if(is.null(labels)){
+    labels <- get_labels(data = data, vars = vars)
+  }
+
   # ---------------------------------------------------- #
   # settle visit order
   if (!is.null(order)){
@@ -79,8 +89,7 @@ summaryByVisit<- function(data,
       dplyr::arrange(order)|>
       dplyr::mutate(visit = factor(visit, levels = unique(visit)))|>
       as.data.frame()
-  }
-  else{
+  } else{
     # order visit numbers not lexicographic
     data <- data|>
       dplyr::mutate(group_num = as.numeric(gsub("[^0-9]", "", visit)))|>
@@ -101,6 +110,12 @@ summaryByVisit<- function(data,
   if (is.null(vars)) {
     vars <- setdiff(names(data), group)
   }
+
+
+  if (!all(sapply(data[vars], is.numeric))) {
+    stop("'All vars must be numeric'")
+  }
+
 
 
   tbl<-NULL
@@ -227,8 +242,7 @@ summaryByVisit<- function(data,
     if (is.null(visitgroup)){
       tbl[["table_body"]][["tbl_indent_id1"]]<- ifelse(is.na(tbl[["table_body"]][["stat_0"]]), 1, 0)
     }
-  }
-  else {
+  }else {
     # if 3 groups
     if (length(unique(data[[group]]))==3){
       tbl$table_body <- tbl$table_body |>
@@ -246,9 +260,7 @@ summaryByVisit<- function(data,
                       stat_3= ifelse(tbl_indent_id1==indent, dplyr::lead(stat_3), stat_3)
         )|>
         dplyr::filter(tbl_indent_id1 !=0)
-    }
-    # if 2 groups
-    else{
+    } else{# if 2 groups
       tbl$table_body <- tbl$table_body |>
         dplyr::mutate(variable=ifelse(tbl_indent_id1==indent, dplyr::lead(variable), variable),
                       var_type= ifelse(tbl_indent_id1==indent, dplyr::lead(var_type), var_type),

@@ -1,8 +1,8 @@
 ---
-title: "Summary table"
+title: "summaryTable"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Summary table}
+  %\VignetteIndexEntry{summaryTable}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -253,11 +253,18 @@ summaryTable(data = colon2,
              vars = "extent", 
              test = TRUE,
              ci = TRUE,
-             missing_percent = FALSE, 
+             missing_percent = FALSE,
              labels = list(extent = "Extent")
              )
 
-
+summaryTable(data = colon2, 
+             group = "rx", 
+             vars = "extent", 
+             test = TRUE,
+             ci = TRUE,
+             missing_percent = TRUE,
+             labels = list(extent = "Extent")
+             )
 ```
 
 
@@ -270,6 +277,7 @@ summaryTable(data = colon2,
              group = "rx", 
              vars = "extent", 
              missing_percent = "both", 
+             test = TRUE,
               labels = list(extent = "Extent")
              )
 

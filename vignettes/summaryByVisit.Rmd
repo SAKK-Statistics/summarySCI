@@ -76,7 +76,8 @@ Now, we use `summarySCI::summaryLevels` to create a summary table for median and
 ```{r}
 summaryByVisit(data,
          vars = c("LDH", "Lymphocytes", "ANC"),
-         visit = "visit")
+         visit = "visit", 
+         add_n = TRUE)
 ```
 ## Add visit group
 We can the visit group to group visits accordingly. Visitgroup needs to be an ordered factor.

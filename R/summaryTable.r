@@ -6,18 +6,18 @@
 #' @param data A data frame or tibble containing the data to be summarized.
 #'
 #' @param vars Variables to include in the summary table.
-#' Need to be specified with quotes, e.g. `"age"` or `"c(age, response)`.
+#' Need to be specified with quotes, e.g. `"age"` or `c("age", "response")`.
 #' Default to
 #' all variables present in the data except `group`.
-#'
-#' @param labels A list containing the labels that should be used for the
-#' variables in the table. If NULL, labels are automatically taken from the
-#' dataset. If no label present, the variable name is taken.
 #'
 #' @param group A single column from `data`.
 #' Need to be specified with quotes, e.g. `"treatment"`.
 #' Summary statistics will be stratified according to this variable.
 #' Default to NULL.
+#'
+#' @param labels A list containing the labels that should be used for the
+#' variables in the table. If NULL, labels are automatically taken from the
+#' dataset. If no label present, the variable name is taken.
 #'
 #' @param stat_cont Summary statistic to display for continuous variables. Options
 #' include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
@@ -40,7 +40,7 @@
 #' If NULL, the function decides itself: "chisq.test.no.correct" for categorical
 #' variables with all expected
 #' cell counts >=5, and "fisher.test" for categorical variables with
-#' any expected cell count <5
+#' any expected cell count <5.
 #'
 #' @param continuous_as Type for the continuous variables. Can either
 #' be "continous" (default) or "categorical".
@@ -87,11 +87,14 @@
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Default to FALSE.
 #'
-#' @param add_n Logical. If TRUE, an additional column with the total
-#' number of non-missing observations for each variable.
+#' @param add_n Logical. If TRUE (default), an additional column with the total
+#' number of non-missing observations for each variable is added.
 #'
 #' @param as_flex_table Logical. If TRUE (default) the gtsummary object is
 #' converted to a flextable object. Useful when rendering to Word.
+#'
+#' @param border Logical. If TRUE, a border will be drawn around the table. Only
+#' available if flex_table = TRUE. Default is TRUE.
 #'
 #' @param word_output Logical. If TRUE, the table is also saved in a word document.
 #'
@@ -140,8 +143,9 @@ summaryTable <- function(data,
                          missing_percent = TRUE,
                          missing_text = "Missing",
                          overall = FALSE,
-                         add_n = FALSE,
+                         add_n = TRUE,
                          as_flex_table = TRUE,
+                         border = TRUE,
                          word_output = FALSE,
                          file_name = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
@@ -160,47 +164,6 @@ summaryTable <- function(data,
   }
 
 
-  # --------- A few required  functions ------------------------------------------
-
-
-  format_lookup <- list(
-    mean_sd = "{mean} ({sd})",
-    mean_se = "{mean} ({se})",
-    median_range = "{median} ({min}, {max})",
-    median_IQR = "{median} ({p25}, {p75})",
-    geomMean_sd = "{geom_mean} ({sd})"
-  )
-
-  format_lookup_cat <-
-    list(
-      n_percent = "{n} ({p}%)",
-      n = "{n}",
-      n_N = "{n}/{N}"
-    )
-
-
-  FitFlextableToPage <- function(ft, pgwidth = 6){
-    ft_out <- ft %>% flextable::autofit()
-    ft_out <- flextable::width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable::flextable_dim(ft_out)$widths))
-    return(ft_out)
-  }
-
-
-  add_by_n <- function(data, variable, by, ...) {
-    data |>
-      select(all_of(c(variable, by))) |>
-      dplyr::arrange(pick(all_of(c(by, variable)))) |>
-      dplyr::group_by(.data[[by]]) |>
-      dplyr::summarise_all(~sum(!is.na(.))) %>%
-      rlang::set_names(c("by", "variable")) %>%
-      dplyr::mutate(
-        by_col = paste0("add_n_stat_", dplyr::row_number()),
-        variable = style_number(variable)
-      ) %>%
-      select(-by) %>%
-      tidyr::pivot_wider(names_from = by_col,
-                         values_from = variable)
-  }
 
   #  -----------------------------------------------------------------------------
 
@@ -595,9 +558,6 @@ if(test == TRUE){
   if(add_n == TRUE & !is.null(group)){
 
 
-
-
-
   # Step 1: Extract group-specific n values from the reference table
 
   n_values <- tbl_for_add_n$table_body %>%
@@ -605,7 +565,7 @@ if(test == TRUE){
     select(variable, add_n_stat_1 = add_n_stat_1, add_n_stat_2 = add_n_stat_2)
 
 
-  # Step 2: Add n values to the stratified table
+  if(test == FALSE & missing_percent != "both" | missing_percent == FALSE | missing == FALSE){
   tbl <- tbl %>%
     modify_table_body(
       ~ .x %>%
@@ -623,10 +583,37 @@ if(test == TRUE){
     ) %>%
     modify_column_alignment(columns = c("add_n_stat_1", "add_n_stat_2"), align = "center") %>%
     modify_table_styling(columns = c("add_n_stat_1", "add_n_stat_2"), footnote = "N without missing values")
+
+  } else if (test == TRUE & missing_percent == TRUE) {
+  tbl <- tbl %>%
+    modify_table_body(
+      ~ .x %>%
+        left_join(n_values, by = "variable") %>%
+        mutate(
+          add_n_stat_1 = ifelse(row_type == "label", as.character(add_n_stat_1), NA),
+          add_n_stat_2 = ifelse(row_type == "label", as.character(add_n_stat_2), NA)
+        ) %>%
+        relocate(add_n_stat_1, .before = stat_1_1) %>%
+        relocate(add_n_stat_2, .before = stat_2_1)
+    ) %>%
+    modify_header(
+      add_n_stat_1 ~ "**N**",
+      add_n_stat_2 ~ "**N**"
+    ) %>%
+    modify_column_alignment(columns = c("add_n_stat_1", "add_n_stat_2"), align = "center") %>%
+    modify_table_styling(columns = c("add_n_stat_1", "add_n_stat_2"), footnote = "N without missing values")
+
   }
+}
 
 if(as_flex_table == TRUE | word_output == TRUE){
-  tbl_print <- FitFlextableToPage(gtsummary::as_flex_table(tbl))
+  if (border == TRUE){
+    tbl_print <- FitFlextableToPage(gtsummary::as_flex_table(tbl)|>
+                         flextable::border_outer(part = "header")|>
+                         flextable::border_outer(part = "body") )
+  } else {
+    tbl_print <- FitFlextableToPage(gtsummary::as_flex_table(tbl))
+  }
 } else {
   tbl_print <- tbl
   }

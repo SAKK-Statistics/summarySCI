@@ -4,19 +4,22 @@
 #'
 #' @param data A data frame or tibble containing the data to be summarized.
 #'
-#' @param vars Variables to include in the summary table. Default to
+#' @param vars Variables to include in the summary table.
+#' Need to be specified with quotes, e.g. `"score"` or `c("score", "age_cat")`.
+#' Default to
 #' all variables present in the data except `group`.
 #'
 #' @param group A single column from `data`.
+#' Need to be specified with quotes, e.g. `"treatment"`.
 #' Summary statistics will be stratified according to this variable.
 #' Default to NULL.
 #'
-#' @param label A list containing the labels that should be used for the
-#' variables in the table. If NULL, labels are automaticall taken from the
+#' @param labels A list containing the labels that should be used for the
+#' variables in the table. If NULL, labels are automatically taken from the
 #' dataset. If no label present, the variable name is taken.
 #'
 #' @param levels = A vector containing the values indicating presence of
-#' the factor level. Included by defaul are "1", "yes", "Yes".
+#' the factor level. Included by default are "1", "yes", "Yes".
 #'
 #' @param stat_cat Summary statistic to display for categorical variables.
 #' Options include "n_percent" (default) and "n", and "n_N".
@@ -26,7 +29,11 @@
 #'
 #' @param test_cat Test type used to calculated the p-value
 #' for categorical variables.  Only used if `test = TRUE`.
-#' Options include "chisq.test", "chisq.test.no.correct", "fisher.test" (default).
+#' Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".
+#' If NULL, the function decides itself: "chisq.test.no.correct" for categorical
+#' variables with all expected
+#' cell counts >=5, and "fisher.test" for categorical variables with
+#' any expected cell count <5.
 #'
 #' @param ci Logical. Indicates whether CI are displayed (TRUE) or
 #' not (FALSE). Default to FALSE.
@@ -36,13 +43,13 @@
 #' "wald", "wald.no.correct", "agresti.coull" and "jeffreys".
 #' If NULL, no CI will be displayed.
 #'
-#' @param conf_level Confidence level. Default to 0.95.
-#'
-#' @param overall Logical. If TRUE, an additional column with the total is
-#' added to the table. Default to FALSE.
+#' @param conf_level Numeric. Confidence level. Default to 0.95.
 #'
 #' @param as_flex_table Logical. If TRUE (default) the gtsummary object is
 #' converted to a flextable object. Useful when rendering to Word.
+#'
+#' @param overall Logical. If TRUE, an additional column with the total is
+#' added to the table. Default to FALSE.
 #'
 #' @import cardx dplyr gtsummary forcats
 #' @importFrom Hmisc label
@@ -53,7 +60,7 @@
 summaryLevels <- function(data,
                          vars = NULL,
                          group = NULL,
-                         label = NULL,
+                         labels = NULL,
                          levels = NULL,
                          stat_cat = "n_percent",
                          test = FALSE,
@@ -65,6 +72,9 @@ summaryLevels <- function(data,
                          as_flex_table = TRUE){
 
   # --------- Some checks --------------------------------------------------- #
+
+  label <- labels
+
 
   # Make sure that 'data' exists and that it is a data frame
   if (missing(data)) {
@@ -80,6 +90,8 @@ summaryLevels <- function(data,
   }
 
   data <- as.data.frame(data)
+
+
 
   if(!is.null(ci_cat)){
 

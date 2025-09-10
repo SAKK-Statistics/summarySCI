@@ -23,19 +23,25 @@ summaryByVisit(
 \arguments{
 \item{data}{A data frame or tibble containing the data to be summarized.}
 
-\item{vars}{Continuous variables to include in the summary table. Default to
+\item{vars}{Continuous variables to include in the summary table.
+Need to be specified with quotes, e.g. \code{"age"} or \code{c("age", "response")}. Default to
 all variables present in the data except \code{group}.}
 
 \item{group}{A single column from \code{data}.
+Need to be specified with quotes, e.g. \code{"treatment"}.
 Summary statistics will be stratified according to this variable.
 Default to NULL. A maximum of 3 groups are currently supported.}
+
+\item{labels}{A list containing the labels that should be used for the
+variables in the table. If NULL, labels are automatically taken from the
+dataset. If no label present, the variable name is taken.}
 
 \item{stat_cont}{Summary statistic to display for continuous variables.
 Options include "median_IQR", "median_range" (default), "mean_sd",
 "mean_se" and "geomMean_sd".}
 
 \item{visit}{Name of the stratum for which summary statistics are
-displayed by line. Typically, this would be "visit".}
+displayed by line. Typically, this would be \code{"visit"}.}
 
 \item{order}{A numerical variable defining the visit order.}
 
@@ -46,18 +52,17 @@ Typically, this would be a visit group such as e.g., baseline, follow-up etc.}
 \item{digits_cont}{Digits for summary statistics and CI of continuous
 variables. Default to 1.}
 
-\item{add_n}{Logical. If a column with sample size (N) should be shown.
-Default is FALSE.}
+\item{add_n}{Logical. If TRUE, an additional column with the total
+number of non-missing observations for each variable is added.}
 
 \item{overall}{Logical. If TRUE, an additional column with the total is
 added to the table. Ignored, if no groups are defined. Default to FALSE.}
 
-\item{as_flex_table}{Logical. If TRUE, the output is converted to a flex_table
-object. Default is TRUE.}
+\item{as_flex_table}{Logical. If TRUE (default) the gtsummary object is
+converted to a flextable object. Useful when rendering to Word.}
 
 \item{border}{Logical. If TRUE, a border will be drawn around the table. Only
 available if flex_table = TRUE. Default is TRUE.}
-
 }
 \description{
 Creates publication-ready summary tables for continuous data grouped, by visit

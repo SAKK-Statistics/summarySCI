@@ -27,8 +27,9 @@ summaryTable(
   missing_percent = TRUE,
   missing_text = "Missing",
   overall = FALSE,
-  add_n = FALSE,
+  add_n = TRUE,
   as_flex_table = TRUE,
+  border = TRUE,
   word_output = FALSE,
   file_name = paste0("SummaryTable_", format(Sys.Date(), "\%Y\%m\%d"), ".docx")
 )
@@ -37,7 +38,7 @@ summaryTable(
 \item{data}{A data frame or tibble containing the data to be summarized.}
 
 \item{vars}{Variables to include in the summary table.
-Need to be specified with quotes, e.g. \code{"age"} or \verb{"c(age, response)}.
+Need to be specified with quotes, e.g. \code{"age"} or \code{c("age", "response")}.
 Default to
 all variables present in the data except \code{group}.}
 
@@ -82,7 +83,7 @@ Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".
 If NULL, the function decides itself: "chisq.test.no.correct" for categorical
 variables with all expected
 cell counts >=5, and "fisher.test" for categorical variables with
-any expected cell count <5}
+any expected cell count <5.}
 
 \item{ci}{Logical. Indicates whether CI are displayed (TRUE) or
 not (FALSE). Default to FALSE.}
@@ -117,11 +118,14 @@ If "both", then both options are displayed next to each other.}
 \item{overall}{Logical. If TRUE, an additional column with the total is
 added to the table. Default to FALSE.}
 
-\item{add_n}{Logical. If TRUE, an additional column with the total
-number of non-missing observations for each variable.}
+\item{add_n}{Logical. If TRUE (default), an additional column with the total
+number of non-missing observations for each variable is added.}
 
 \item{as_flex_table}{Logical. If TRUE (default) the gtsummary object is
 converted to a flextable object. Useful when rendering to Word.}
+
+\item{border}{Logical. If TRUE, a border will be drawn around the table. Only
+available if flex_table = TRUE. Default is TRUE.}
 
 \item{word_output}{Logical. If TRUE, the table is also saved in a word document.}
 

@@ -8,7 +8,7 @@ summaryLevels(
   data,
   vars = NULL,
   group = NULL,
-  label = NULL,
+  labels = NULL,
   levels = NULL,
   stat_cat = "n_percent",
   test = FALSE,
@@ -23,19 +23,22 @@ summaryLevels(
 \arguments{
 \item{data}{A data frame or tibble containing the data to be summarized.}
 
-\item{vars}{Variables to include in the summary table. Default to
+\item{vars}{Variables to include in the summary table.
+Need to be specified with quotes, e.g. \code{"score"} or \code{c("score", "age_cat")}.
+Default to
 all variables present in the data except \code{group}.}
 
 \item{group}{A single column from \code{data}.
+Need to be specified with quotes, e.g. \code{"treatment"}.
 Summary statistics will be stratified according to this variable.
 Default to NULL.}
 
-\item{label}{A list containing the labels that should be used for the
-variables in the table. If NULL, labels are automaticall taken from the
+\item{labels}{A list containing the labels that should be used for the
+variables in the table. If NULL, labels are automatically taken from the
 dataset. If no label present, the variable name is taken.}
 
 \item{levels}{= A vector containing the values indicating presence of
-the factor level. Included by defaul are "1", "yes", "Yes".}
+the factor level. Included by default are "1", "yes", "Yes".}
 
 \item{stat_cat}{Summary statistic to display for categorical variables.
 Options include "n_percent" (default) and "n", and "n_N".}
@@ -45,7 +48,11 @@ or not (FALSE). Default to FALSE}
 
 \item{test_cat}{Test type used to calculated the p-value
 for categorical variables.  Only used if \code{test = TRUE}.
-Options include "chisq.test", "chisq.test.no.correct", "fisher.test" (default).}
+Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".
+If NULL, the function decides itself: "chisq.test.no.correct" for categorical
+variables with all expected
+cell counts >=5, and "fisher.test" for categorical variables with
+any expected cell count <5.}
 
 \item{ci}{Logical. Indicates whether CI are displayed (TRUE) or
 not (FALSE). Default to FALSE.}
@@ -55,7 +62,7 @@ Options include "wilson" (default), "wilson.no.correct", "clopper.pearson",
 "wald", "wald.no.correct", "agresti.coull" and "jeffreys".
 If NULL, no CI will be displayed.}
 
-\item{conf_level}{Confidence level. Default to 0.95.}
+\item{conf_level}{Numeric. Confidence level. Default to 0.95.}
 
 \item{overall}{Logical. If TRUE, an additional column with the total is
 added to the table. Default to FALSE.}
