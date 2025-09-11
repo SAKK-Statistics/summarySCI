@@ -56,8 +56,10 @@
 <span>  ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  ci_cat <span class="op">=</span> <span class="st">"wilson"</span>,</span>
 <span>  conf_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  digits_cat <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  overall <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  as_flex_table <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  as_flex_table <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  border <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -130,6 +132,11 @@ If NULL, no CI will be displayed.</p></dd>
 <dd><p>Numeric. Confidence level. Default to 0.95.</p></dd>
 
 
+<dt id="arg-digits-cat">digits_cat<a class="anchor" aria-label="anchor" href="#arg-digits-cat"></a></dt>
+<dd><p>Numeric. Digits for summary statistics and CI of categorical
+variables. Default to 0.</p></dd>
+
+
 <dt id="arg-overall">overall<a class="anchor" aria-label="anchor" href="#arg-overall"></a></dt>
 <dd><p>Logical. If TRUE, an additional column with the total is
 added to the table. Default to FALSE.</p></dd>
@@ -138,6 +145,11 @@ added to the table. Default to FALSE.</p></dd>
 <dt id="arg-as-flex-table">as_flex_table<a class="anchor" aria-label="anchor" href="#arg-as-flex-table"></a></dt>
 <dd><p>Logical. If TRUE (default) the gtsummary object is
 converted to a flextable object. Useful when rendering to Word.</p></dd>
+
+
+<dt id="arg-border">border<a class="anchor" aria-label="anchor" href="#arg-border"></a></dt>
+<dd><p>Logical. If TRUE, a border will be drawn around the table. Only
+available if flex_table = TRUE. Default is TRUE.</p></dd>
 
 </dl></div>
 
