@@ -45,11 +45,17 @@
 #'
 #' @param conf_level Numeric. Confidence level. Default to 0.95.
 #'
+#' @param digits_cat Numeric. Digits for summary statistics and CI of categorical
+#' variables. Default to 0.
+#'
 #' @param as_flex_table Logical. If TRUE (default) the gtsummary object is
 #' converted to a flextable object. Useful when rendering to Word.
 #'
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Default to FALSE.
+#'
+#' @param border Logical. If TRUE, a border will be drawn around the table. Only
+#' available if flex_table = TRUE. Default is TRUE.
 #'
 #' @import cardx dplyr gtsummary forcats
 #' @importFrom Hmisc label
@@ -68,8 +74,10 @@ summaryLevels <- function(data,
                          ci = FALSE,
                          ci_cat = "wilson",
                          conf_level = 0.95,
+                         digits_cat = 0,
                          overall = FALSE,
-                         as_flex_table = TRUE){
+                         as_flex_table = TRUE,
+                         border = TRUE){
 
   # --------- Some checks --------------------------------------------------- #
 
@@ -138,24 +146,28 @@ summaryLevels <- function(data,
         if (is.null(group)){
           assign(paste0("t", i), data|>
                    dplyr::select(vars[i])|>
-                   gtsummary::tbl_summary(missing="no"))
+                   gtsummary::tbl_summary(missing="no",
+                                          digits = list(all_categorical() ~ digits_cat)))
         }
         if (!is.null(group)){
           if (overall==FALSE & test==FALSE){
             assign(paste0("t", i), data|>
                  dplyr::select(vars[i], group)|>
-                 gtsummary::tbl_summary(by= paste0(group), missing="no"))
+                 gtsummary::tbl_summary(by= paste0(group), missing="no",
+                                        digits = list(all_categorical() ~ digits_cat)))
           }
           if (overall==TRUE & test==FALSE){
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
-                     gtsummary::tbl_summary(by= paste0(group), missing="no")|>
+                     gtsummary::tbl_summary(by= paste0(group), missing="no",
+                                            digits = list(all_categorical() ~ digits_cat))|>
                      gtsummary::add_overall())
           }
           if (overall==TRUE & test==TRUE){
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
-                     gtsummary::tbl_summary(by= paste0(group), missing="no")|>
+                     gtsummary::tbl_summary(by= paste0(group), missing="no",
+                                            digits = list(all_categorical() ~ digits_cat))|>
                      gtsummary::add_overall()|>
                      gtsummary::add_p(pvalue_fun = gtsummary::label_style_pvalue(digits = 2),
                            test = list((gtsummary::all_categorical() ~ test_cat))))
@@ -163,7 +175,8 @@ summaryLevels <- function(data,
           if (overall==FALSE & test==TRUE){
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
-                     gtsummary::tbl_summary(by= paste0(group), missing="no")|>
+                     gtsummary::tbl_summary(by= paste0(group), missing="no",
+                                            digits = list(all_categorical() ~ digits_cat))|>
                      gtsummary::add_p(pvalue_fun = gtsummary::label_style_pvalue(digits = 2),
                            test = list((gtsummary::all_categorical() ~ test_cat))))
           }

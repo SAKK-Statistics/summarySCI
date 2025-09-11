@@ -16,8 +16,10 @@ summaryLevels(
   ci = FALSE,
   ci_cat = "wilson",
   conf_level = 0.95,
+  digits_cat = 0,
   overall = FALSE,
-  as_flex_table = TRUE
+  as_flex_table = TRUE,
+  border = TRUE
 )
 }
 \arguments{
@@ -64,11 +66,17 @@ If NULL, no CI will be displayed.}
 
 \item{conf_level}{Numeric. Confidence level. Default to 0.95.}
 
+\item{digits_cat}{Numeric. Digits for summary statistics and CI of categorical
+variables. Default to 0.}
+
 \item{overall}{Logical. If TRUE, an additional column with the total is
 added to the table. Default to FALSE.}
 
 \item{as_flex_table}{Logical. If TRUE (default) the gtsummary object is
 converted to a flextable object. Useful when rendering to Word.}
+
+\item{border}{Logical. If TRUE, a border will be drawn around the table. Only
+available if flex_table = TRUE. Default is TRUE.}
 }
 \description{
 Collapses factor levels from multiple columns into one and creates summary table.
