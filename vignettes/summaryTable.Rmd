@@ -143,14 +143,15 @@ summaryTable(data = colon2,
 
 ## Adding number of observations 
 
-The number of observations **which are not missing values** can be added as a 
-column by setting the argument `add_n` to `TRUE`.
+The number of observations **which are not missing values** 
+are by default added in a new column. This can be disabled 
+by setting the argument `add_n` to `FALSE`.
 
 ```{r}
 summaryTable(data = colon2, 
              group = "rx",
             labels = list(rx = "Arm", age = "Age", extent = "Extent"), 
-             add_n = TRUE)
+             add_n = FALSE)
 ```
 
 

@@ -267,7 +267,7 @@ if (!is.null(test_cat)) {
       type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
     }
 
-  tbl_noMissing <- tbl_summary(data = data,
+  tbl_noMissing <- gtsummary::tbl_summary(data = data,
                                include = all_of(vars),
                                by = group,
                                type = type,
@@ -391,7 +391,7 @@ if(missing_percent != FALSE & missing != FALSE){
 
 
     tbl_missing <- data2|>
-      tbl_summary(by = group,
+      gtsummary::tbl_summary(by = group,
                   label = labels,
                   include = all_of(vars),
                   type = type,
@@ -405,7 +405,7 @@ if(missing_percent != FALSE & missing != FALSE){
     # need that for the add_n()
 
     tbl_for_add_n <- data|>
-      tbl_summary(by = group,
+      gtsummary::tbl_summary(by = group,
                   label = labels,
                   include = all_of(vars),
                   type = type,
@@ -418,7 +418,7 @@ if(missing_percent != FALSE & missing != FALSE){
 
       if(!is.null(group)){
         tbl_for_add_n <-  data|>
-          tbl_summary(by = group,
+          gtsummary::tbl_summary(by = group,
                       label = labels,
                       include = all_of(vars),
                       type = type,
@@ -455,7 +455,7 @@ if(missing_percent != FALSE & missing != FALSE){
       # tests displayed (!missings not counted in calculation!)
     # -> only take p-value from other table
     if (test == TRUE) {
-      tbl_noMissing_short <- tbl_summary(data = data,
+      tbl_noMissing_short <- gtsummary::tbl_summary(data = data,
                                          label = labels,
                                          include = all_of(vars),
                                          type = type,
@@ -500,7 +500,7 @@ tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
 
 
 if(missing_percent == "both" & missing != FALSE){
-  tbl_noMissing2 <- tbl_summary(data = data,
+  tbl_noMissing2 <- gtsummary::tbl_summary(data = data,
                                 include = all_of(vars),
                                label = labels,
                                by = group,

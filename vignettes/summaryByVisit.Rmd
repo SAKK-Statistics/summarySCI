@@ -3,7 +3,7 @@
 title: "summaryByVisit"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Summary table}
+  %\VignetteIndexEntry{summaryByVisit}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
