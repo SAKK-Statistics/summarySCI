@@ -54,13 +54,25 @@
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Default to FALSE.
 #'
+#' @param as_flex_table Logical. If TRUE (default) the gtsummary object is
+#' converted to a flextable object. Useful when rendering to Word.
+#'
 #' @param border Logical. If TRUE, a border will be drawn around the table. Only
 #' available if flex_table = TRUE. Default is TRUE.
 #'
+#' @param word_output Logical. If TRUE, the table is also saved in a word document.
+#'
+#' @param file_name Character string.
+#' Specify the name of the Word document containing the table.
+#' Only used when `word_output` is TRUE. Needs to end with ".docx".
+#'
 #' @import cardx dplyr gtsummary forcats
 #' @importFrom Hmisc label
-#' @importFrom stats sd t.test
+#' @importFrom stats sd t.test na.omit
+#' @importFrom flextable autofit width flextable_dim
+#' @importFrom officer read_docx
 #' @export
+
 
 
 summaryLevels <- function(data,
@@ -77,7 +89,9 @@ summaryLevels <- function(data,
                          digits_cat = 0,
                          overall = FALSE,
                          as_flex_table = TRUE,
-                         border = TRUE){
+                         border = TRUE,
+                         word_output = FALSE,
+                         file_name = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
   # --------- Some checks --------------------------------------------------- #
 
@@ -89,17 +103,11 @@ summaryLevels <- function(data,
     stop("'data' must be specified.")
   }
 
-  # Stop if vars are not categorical
-  is_not_categorical <- function(df) {
-    any(!sapply(df, function(x) is.factor(x) || is.character(x)))
-  }
-  if (is_not_categorical(data[vars])){
-    stop("'vars' must be categorical.")
-  }
-
+  # make sur data is a data frame
   data <- as.data.frame(data)
 
-
+  # NA should be ignored (treated as absent). Thus, replace any NA with 0
+  data[is.na(data)] <- 0
 
   if(!is.null(ci_cat)){
 
@@ -147,27 +155,27 @@ summaryLevels <- function(data,
           assign(paste0("t", i), data|>
                    dplyr::select(vars[i])|>
                    gtsummary::tbl_summary(missing="no",
-                                          digits = list(all_categorical() ~ digits_cat)))
+                                          digits = list(gtsummary::all_categorical() ~ digits_cat)))
         }
         if (!is.null(group)){
           if (overall==FALSE & test==FALSE){
             assign(paste0("t", i), data|>
                  dplyr::select(vars[i], group)|>
                  gtsummary::tbl_summary(by= paste0(group), missing="no",
-                                        digits = list(all_categorical() ~ digits_cat)))
+                                        digits = list(gtsummary::all_categorical() ~ digits_cat)))
           }
           if (overall==TRUE & test==FALSE){
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
-                                            digits = list(all_categorical() ~ digits_cat))|>
+                                            digits = list(gtsummary::all_categorical() ~ digits_cat))|>
                      gtsummary::add_overall())
           }
           if (overall==TRUE & test==TRUE){
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
-                                            digits = list(all_categorical() ~ digits_cat))|>
+                                            digits = list(gtsummary::all_categorical() ~ digits_cat))|>
                      gtsummary::add_overall()|>
                      gtsummary::add_p(pvalue_fun = gtsummary::label_style_pvalue(digits = 2),
                            test = list((gtsummary::all_categorical() ~ test_cat))))
@@ -176,7 +184,7 @@ summaryLevels <- function(data,
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
-                                            digits = list(all_categorical() ~ digits_cat))|>
+                                            digits = list(gtsummary::all_categorical() ~ digits_cat))|>
                      gtsummary::add_p(pvalue_fun = gtsummary::label_style_pvalue(digits = 2),
                            test = list((gtsummary::all_categorical() ~ test_cat))))
           }
@@ -221,9 +229,31 @@ summaryLevels <- function(data,
         footnote = "More than one entry possible"
       )
   }
-  if(as_flex_table==TRUE){
-    gtsummary::as_flex_table(tbl)
-  }else{
-    tbl
+  if(as_flex_table == TRUE | word_output == TRUE){
+    if (border == TRUE){
+      tbl_print <- FitFlextableToPage(gtsummary::as_flex_table(tbl)|>
+                                        flextable::border_outer(part = "header")|>
+                                        flextable::border_outer(part = "body") )
+    } else {
+      tbl_print <- FitFlextableToPage(gtsummary::as_flex_table(tbl))
+    }
+  } else {
+    tbl_print <- tbl
   }
+
+
+  if (word_output == TRUE) {
+
+    # Create Word document
+    doc <- officer::read_docx()
+    doc <- flextable::body_add_flextable(doc, value = tbl_print)
+
+    # Save to specified location
+    print(doc, target = file_name)
+
+    message("Table saved to: ", normalizePath(file_name))
+  }
+
+  tbl_print
+
 }

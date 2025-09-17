@@ -19,7 +19,9 @@ summaryLevels(
   digits_cat = 0,
   overall = FALSE,
   as_flex_table = TRUE,
-  border = TRUE
+  border = TRUE,
+  word_output = FALSE,
+  file_name = paste0("SummaryTable_", format(Sys.Date(), "\%Y\%m\%d"), ".docx")
 )
 }
 \arguments{
@@ -77,6 +79,12 @@ converted to a flextable object. Useful when rendering to Word.}
 
 \item{border}{Logical. If TRUE, a border will be drawn around the table. Only
 available if flex_table = TRUE. Default is TRUE.}
+
+\item{word_output}{Logical. If TRUE, the table is also saved in a word document.}
+
+\item{file_name}{Character string.
+Specify the name of the Word document containing the table.
+Only used when \code{word_output} is TRUE. Needs to end with ".docx".}
 }
 \description{
 Collapses factor levels from multiple columns into one and creates summary table.
