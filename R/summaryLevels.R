@@ -91,7 +91,7 @@ summaryLevels <- function(data,
                          as_flex_table = TRUE,
                          border = TRUE,
                          word_output = FALSE,
-                         file_name = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")){
+                         file_name = paste0("SummaryLevels_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
   # --------- Some checks --------------------------------------------------- #
 
