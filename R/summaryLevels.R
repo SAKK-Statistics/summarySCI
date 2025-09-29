@@ -78,7 +78,7 @@
 summaryLevels <- function(data,
                          vars = NULL,
                          group = NULL,
-                         labels = NULL,
+                         label = NULL,
                          levels = NULL,
                          stat_cat = "n_percent",
                          test = FALSE,
@@ -95,7 +95,7 @@ summaryLevels <- function(data,
 
   # --------- Some checks --------------------------------------------------- #
 
-  label <- labels
+    labels <- get_labels(data, vars)
 
 
   # Make sure that 'data' exists and that it is a data frame
@@ -155,6 +155,7 @@ summaryLevels <- function(data,
           assign(paste0("t", i), data|>
                    dplyr::select(vars[i])|>
                    gtsummary::tbl_summary(missing="no",
+                                          label = labels,
                                           digits = list(gtsummary::all_categorical() ~ digits_cat)))
         }
         if (!is.null(group)){
@@ -162,12 +163,14 @@ summaryLevels <- function(data,
             assign(paste0("t", i), data|>
                  dplyr::select(vars[i], group)|>
                  gtsummary::tbl_summary(by= paste0(group), missing="no",
+                                        label = labels,
                                         digits = list(gtsummary::all_categorical() ~ digits_cat)))
           }
           if (overall==TRUE & test==FALSE){
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
+                                            label = labels,
                                             digits = list(gtsummary::all_categorical() ~ digits_cat))|>
                      gtsummary::add_overall())
           }
@@ -175,6 +178,7 @@ summaryLevels <- function(data,
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
+                                            label = labels,
                                             digits = list(gtsummary::all_categorical() ~ digits_cat))|>
                      gtsummary::add_overall()|>
                      gtsummary::add_p(pvalue_fun = gtsummary::label_style_pvalue(digits = 2),
@@ -184,6 +188,7 @@ summaryLevels <- function(data,
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
+                                            label = labels,
                                             digits = list(gtsummary::all_categorical() ~ digits_cat))|>
                      gtsummary::add_p(pvalue_fun = gtsummary::label_style_pvalue(digits = 2),
                            test = list((gtsummary::all_categorical() ~ test_cat))))
@@ -213,6 +218,20 @@ summaryLevels <- function(data,
           }
         }
       }
+  # ---------------------------- Fix issues if only 0 ----------------------- #
+  if ("stat_0" %in% colnames(tbl$table_body)){
+    tbl$table_body$stat_0<-ifelse(is.na(tbl$table_body$stat_0), "0", tbl$table_body$stat_0)
+  }
+  if ("stat_1" %in% colnames(tbl$table_body)){
+    tbl$table_body$stat_1<-ifelse(is.na(tbl$table_body$stat_1), "0", tbl$table_body$stat_1)
+  }
+    if ("stat_2" %in% colnames(tbl$table_body)){
+    tbl$table_body$stat_2<-ifelse(is.na(tbl$table_body$stat_2), "0", tbl$table_body$stat_2)
+    }
+  if ("stat_3" %in% colnames(tbl$table_body)){
+    tbl$table_body$stat_3<-ifelse(is.na(tbl$table_body$stat_3), "0", tbl$table_body$stat_3)
+  }
+  tbl$table_body <- tbl$table_body[(tbl$table_body$row_type=="label"),]
   # ---------------------------- add label if any --------------------------- #
   if (!is.null(label)){
     tbl<-tbl|>
