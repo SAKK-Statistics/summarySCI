@@ -8,7 +8,7 @@ summaryLevels(
   data,
   vars = NULL,
   group = NULL,
-  labels = NULL,
+  label = NULL,
   levels = NULL,
   stat_cat = "n_percent",
   test = FALSE,
@@ -21,7 +21,7 @@ summaryLevels(
   as_flex_table = TRUE,
   border = TRUE,
   word_output = FALSE,
-  file_name = paste0("SummaryTable_", format(Sys.Date(), "\%Y\%m\%d"), ".docx")
+  file_name = paste0("SummaryLevels_", format(Sys.Date(), "\%Y\%m\%d"), ".docx")
 )
 }
 \arguments{
@@ -36,10 +36,6 @@ all variables present in the data except \code{group}.}
 Need to be specified with quotes, e.g. \code{"treatment"}.
 Summary statistics will be stratified according to this variable.
 Default to NULL.}
-
-\item{labels}{A list containing the labels that should be used for the
-variables in the table. If NULL, labels are automatically taken from the
-dataset. If no label present, the variable name is taken.}
 
 \item{levels}{= A vector containing the values indicating presence of
 the factor level. Included by default are "1", "yes", "Yes".}
@@ -85,6 +81,10 @@ available if flex_table = TRUE. Default is TRUE.}
 \item{file_name}{Character string.
 Specify the name of the Word document containing the table.
 Only used when \code{word_output} is TRUE. Needs to end with ".docx".}
+
+\item{labels}{A list containing the labels that should be used for the
+variables in the table. If NULL, labels are automatically taken from the
+dataset. If no label present, the variable name is taken.}
 }
 \description{
 Collapses factor levels from multiple columns into one and creates summary table.
