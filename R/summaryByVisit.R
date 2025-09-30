@@ -43,6 +43,8 @@
 #' @param border Logical. If TRUE, a border will be drawn around the table. Only
 #' available if flex_table = TRUE. Default is TRUE.
 #'
+#' @param word_output Logical. If TRUE, the table is also saved in a word document.
+#'
 #' @import cardx dplyr gtsummary forcats purrr
 #' @importFrom Hmisc label
 #' @importFrom stats sd t.test
@@ -61,7 +63,10 @@ summaryByVisit<- function(data,
                           add_n = FALSE,
                           overall = FALSE,
                           as_flex_table = TRUE,
-                          border = TRUE){
+                          border = TRUE,
+                          word_output = FALSE,
+                          file_name = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")){
+
 
   # --------- Some checks --------------------------------------------------- #
 
@@ -146,7 +151,7 @@ summaryByVisit<- function(data,
                    gtsummary::tbl_summary(missing="no",
                                           statistic = list(gtsummary::all_continuous() ~ stat_cont),
                                           type= vars[i] ~ "continuous",
-                                         digits = list(gtsummary::all_continuous() ~ digits_cont))|>
+                                          digits = list(gtsummary::all_continuous() ~ digits_cont))|>
                    gtsummary::add_n()|>
                    gtsummary::add_overall()|>
                    gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
@@ -165,7 +170,7 @@ summaryByVisit<- function(data,
                                             statistic = list(gtsummary::all_continuous() ~ stat_cont),
                                             by=group,
                                             type= vars[i] ~ "continuous",
-                                           digits = list(gtsummary::all_continuous() ~ digits_cont))|>
+                                            digits = list(gtsummary::all_continuous() ~ digits_cont))|>
                      gtsummary::add_n()|>
                      gtsummary::add_overall()|>
                      gtsummary::add_stat(
@@ -219,7 +224,7 @@ summaryByVisit<- function(data,
     else{
       tbl<-t1
       tbl$table_body<- rbind(c(i,1, vars[i], rep(NA, ncol(tbl$table_body)-3)), t1$table_body)
-      }
+    }
   }
 
   # Replace variable names with labels
@@ -296,23 +301,37 @@ summaryByVisit<- function(data,
       }
     }
   }
+
   # if overall column not desired
   if (overall==FALSE & !is.null(group)){
     tbl<-tbl|>
       gtsummary::modify_column_hide(columns = c("stat_0", "n"))
   }
   # if flex_table is needed
-  if(as_flex_table == TRUE){
+  if(as_flex_table == TRUE | word_output == TRUE){
     if (border == TRUE){
-      FitFlextableToPage(gtsummary::as_flex_table(tbl)|>
-                           flextable::border_outer(part = "header")|>
-                           flextable::border_outer(part = "body") )
+      tbl_print <- FitFlextableToPage(gtsummary::as_flex_table(tbl)|>
+                                        flextable::border_outer(part = "header")|>
+                                        flextable::border_outer(part = "body") )
+    } else {
+      tbl_print <- FitFlextableToPage(gtsummary::as_flex_table(tbl))
     }
-    else{
-      FitFlextableToPage(gtsummary::as_flex_table(tbl))
-    }
+  } else {
+    tbl_print <- tbl
   }
-  else{
-    tbl
+
+
+  if (word_output == TRUE) {
+
+    # Create Word document
+    doc <- officer::read_docx()
+    doc <- flextable::body_add_flextable(doc, value = tbl_print)
+
+    # Save to specified location
+    print(doc, target = file_name)
+
+    message("Table saved to: ", normalizePath(file_name))
   }
+
+  tbl_print
 }
