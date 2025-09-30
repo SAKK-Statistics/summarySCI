@@ -17,7 +17,9 @@ summaryByVisit(
   add_n = FALSE,
   overall = FALSE,
   as_flex_table = TRUE,
-  border = TRUE
+  border = TRUE,
+  word_output = FALSE,
+  file_name = paste0("SummaryByVisit_", format(Sys.Date(), "\%Y\%m\%d"), ".docx")
 )
 }
 \arguments{
@@ -63,6 +65,8 @@ converted to a flextable object. Useful when rendering to Word.}
 
 \item{border}{Logical. If TRUE, a border will be drawn around the table. Only
 available if flex_table = TRUE. Default is TRUE.}
+
+\item{word_output}{Logical. If TRUE, the table is also saved in a word document.}
 }
 \description{
 Creates publication-ready summary tables for continuous data grouped, by visit
