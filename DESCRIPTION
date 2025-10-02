@@ -1,5 +1,5 @@
 Package: summarySCI
-Title: Produces publication-ready summary tables
+Title: Produces Publication-Ready Summary Tables
 Version: 0.1.0
 Authors@R: 
     c(person("Sämi", "Schär", email = "Saemi.Schaer@swisscancerinstitute.ch", role = "aut"),
