@@ -85,6 +85,10 @@ available if flex_table = TRUE. Default is TRUE.}
 Specify the name of the Word document containing the table.
 Only used when \code{word_output} is TRUE. Needs to end with ".docx".}
 }
+\value{
+A table of class "\code{flextable}" or \code{c("tbl_stack", "gtsummary")}.
+Optionally returns a .docx file in the specified folder.
+}
 \description{
 Collapses factor levels from multiple columns into one and creates summary table.
 }

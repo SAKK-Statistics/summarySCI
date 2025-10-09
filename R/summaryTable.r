@@ -43,7 +43,7 @@
 #' any expected cell count <5.
 #'
 #' @param continuous_as Type for the continuous variables. Can either
-#' be "continous" (default) or "categorical".
+#' be "continuous" (default) or "categorical".
 #'
 #' @param dichotomous_as Type for the dichotomous variables. Can either be
 #' "categorical" (default, one row per level) or "dichotomous" (only
@@ -101,8 +101,9 @@
 #' @param file_name Character string.
 #' Specify the name of the Word document containing the table.
 #' Only used when `word_output` is TRUE. Needs to end with ".docx".
-
 #'
+#' @return A table of class "`flextable`" or `c("tbl_summary", "gtsummary")`.
+#' Optionally returns a .docx file in the specified folder.
 #'
 #' @examples
 #'

@@ -133,6 +133,10 @@ available if flex_table = TRUE. Default is TRUE.}
 Specify the name of the Word document containing the table.
 Only used when \code{word_output} is TRUE. Needs to end with ".docx".}
 }
+\value{
+A table of class "\code{flextable}" or \code{c("tbl_summary", "gtsummary")}.
+Optionally returns a .docx file in the specified folder.
+}
 \description{
 Creates publication-ready summary tables based on the gtsummary
 package.

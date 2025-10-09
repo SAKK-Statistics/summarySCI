@@ -44,10 +44,13 @@
 #' available if flex_table = TRUE. Default is TRUE.
 #'
 #' @param word_output Logical. If TRUE, the table is also saved in a word document.
-#'#'
+#'
 #' @param file_name Character string.
 #' Specify the name of the Word document containing the table.
 #' Only used when `word_output` is TRUE. Needs to end with ".docx".
+#'
+#' @return A table of class "`flextable`" or `c("tbl_strata_nested_stack", "tbl_stack", "gtsummary")`.
+#' Optionally returns a .docx file in the specified folder.
 #'
 #' @import cardx dplyr gtsummary forcats purrr
 #' @importFrom Hmisc label

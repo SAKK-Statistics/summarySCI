@@ -65,6 +65,9 @@
 #' Specify the name of the Word document containing the table.
 #' Only used when `word_output` is TRUE. Needs to end with ".docx".
 #'
+#' @return A table of class "`flextable`" or `c("tbl_stack", "gtsummary")`.
+#' Optionally returns a .docx file in the specified folder.
+#'
 #' @import cardx dplyr gtsummary forcats
 #' @importFrom Hmisc label
 #' @importFrom stats sd t.test na.omit

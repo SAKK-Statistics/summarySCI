@@ -66,12 +66,15 @@ converted to a flextable object. Useful when rendering to Word.}
 \item{border}{Logical. If TRUE, a border will be drawn around the table. Only
 available if flex_table = TRUE. Default is TRUE.}
 
-\item{word_output}{Logical. If TRUE, the table is also saved in a word document.
-#'}
+\item{word_output}{Logical. If TRUE, the table is also saved in a word document.}
 
 \item{file_name}{Character string.
 Specify the name of the Word document containing the table.
 Only used when \code{word_output} is TRUE. Needs to end with ".docx".}
+}
+\value{
+A table of class "\code{flextable}" or \code{c("tbl_strata_nested_stack", "tbl_stack", "gtsummary")}.
+Optionally returns a .docx file in the specified folder.
 }
 \description{
 Creates publication-ready summary tables for continuous data grouped, by visit
