@@ -129,12 +129,6 @@ summaryLevels <- function(data,
   }
 
   # --------- categorical formats ------------------------------------------- #
-  format_lookup_cat <-
-    list(
-      n_percent = "{n} ({p}%)",
-      n = "{n}",
-      n_N = "{n}/{N}"
-    )
   stat_cat <- format_lookup_cat[[stat_cat]]
 
   # if vars = NULL, take all the variables (except group if not NULL).
