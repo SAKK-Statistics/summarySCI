@@ -95,20 +95,24 @@ summaryByVisit<- function(data,
   }
 
   # ---------------------------------------------------- #
-  # settle visit order
+  # define visit order
+
   if (!is.null(order)){
     data <- data|>
       dplyr::arrange(order)|>
-      dplyr::mutate(visit = factor(visit, levels = unique(visit)))|>
+     # dplyr::mutate(visit = factor(visit, levels = unique(visit)))|>
       as.data.frame()
   } else{
     # order visit numbers not lexicographic
     data <- data|>
       dplyr::mutate(group_num = as.numeric(gsub("[^0-9]", "", visit)))|>
       dplyr::arrange(group_num)|>
-      dplyr::mutate(visit = factor(visit, levels = unique(visit)))|>
+    #  dplyr::mutate(visit = factor(visit, levels = unique(visit)))|>
       as.data.frame()
   }
+
+  #2026-01-19 SES
+  data[[visit]] <- factor(data[[visit]], levels = unique(data[[visit]]))
 
   # remove rows without visit
   data <- data[(!is.na(data[[visit]])),]
