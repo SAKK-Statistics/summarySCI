@@ -81,20 +81,21 @@ format_lookup_cat <-
 
 
 add_by_n <- function(data, variable, by, ...) {
-  data |>
+    data |>
     dplyr::select(all_of(c(variable, by))) |>
     dplyr::arrange(pick(all_of(c(by, variable)))) |>
     dplyr::group_by(.data[[by]]) |>
-    dplyr::summarise_all(~sum(!is.na(.))) |>
+    dplyr::summarise(across(everything(), ~sum(!is.na(.)))) |>
     rlang::set_names(c("by", "variable")) |>
     dplyr::mutate(
       by_col = paste0("add_n_stat_", dplyr::row_number()),
-      variable = style_number(variable)
+      variable = gtsummary::style_number(variable)
     ) %>%
     select(-by) %>%
     tidyr::pivot_wider(names_from = by_col,
                        values_from = variable)
 }
+
 
 FitFlextableToPage <- function(ft, pgwidth = 6){
   ft_out <- ft %>% flextable::autofit()
