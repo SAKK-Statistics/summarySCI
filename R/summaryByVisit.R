@@ -95,20 +95,21 @@ summaryByVisit<- function(data,
   }
 
   # ---------------------------------------------------- #
-  # settle visit order
+  # define visit order
+
   if (!is.null(order)){
     data <- data|>
       dplyr::arrange(order)|>
-      dplyr::mutate(visit = factor(visit, levels = unique(visit)))|>
       as.data.frame()
   } else{
     # order visit numbers not lexicographic
     data <- data|>
       dplyr::mutate(group_num = as.numeric(gsub("[^0-9]", "", visit)))|>
       dplyr::arrange(group_num)|>
-      dplyr::mutate(visit = factor(visit, levels = unique(visit)))|>
       as.data.frame()
   }
+
+  data[[visit]] <- factor(data[[visit]], levels = unique(data[[visit]]))
 
   # remove rows without visit
   data <- data[(!is.na(data[[visit]])),]
@@ -184,11 +185,11 @@ summaryByVisit<- function(data,
                        fns = dplyr::everything() ~ add_by_n
                      ) |>
                      gtsummary::modify_header(starts_with("add_n_stat") ~ "**N**") |>
-                     gtsummary::modify_table_body(
-                       ~ .x |>
-                         dplyr::relocate(n, .before = stat_0) |>
-                         dplyr::relocate(add_n_stat_1, .before = stat_1) |>
-                         dplyr::relocate(add_n_stat_2, .before = stat_2)
+                     gtsummary::modify_table_body(~ .x |>
+                                                    dplyr::ungroup() |>
+                                                    dplyr::relocate(dplyr::any_of("n"),            .before = dplyr::any_of("stat_0")) |>
+                                                    dplyr::relocate(dplyr::any_of("add_n_stat_1"), .before = dplyr::any_of("stat_1")) |>
+                                                    dplyr::relocate(dplyr::any_of("add_n_stat_2"), .before = dplyr::any_of("stat_2"))
                      )|>
                      gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
         )
