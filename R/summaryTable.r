@@ -353,7 +353,12 @@ if(overall == TRUE & !is.null(group) & add_n == FALSE){
 if(overall == TRUE & !is.null(group) & add_n == TRUE){
   tbl <- tbl %>%
     add_n(last = TRUE) %>%
-    add_overall(last = TRUE) # CMI 21.01.26 maybe here
+    add_overall(last = TRUE) %>%
+
+    modify_footnote_header(
+      columns  = n,
+      footnote = "N without missing values"
+    )
 }
 
 
@@ -534,7 +539,14 @@ if(missing_percent != FALSE & missing != FALSE){
       if(overall == TRUE & !is.null(group) & add_n == TRUE){
         tbl_noMissing_short <- tbl_noMissing_short %>%
           add_n(last = TRUE) %>%
-          add_overall(last = TRUE)
+          add_overall(last = TRUE) %>%
+
+
+          modify_footnote_header(
+            columns  = n,
+            footnote = "N without missing values"
+          )
+
 
       }
     }
@@ -557,7 +569,13 @@ tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
   if(overall == TRUE & !is.null(group) & add_n == TRUE){
     tbl_missingTRUE <- tbl_missingTRUE %>%
       add_n(last = TRUE) %>%
-      add_overall(last = TRUE)
+      add_overall(last = TRUE) %>%
+
+      modify_footnote_header(
+        columns  = n,
+        footnote = "N without missing values"
+      )
+
   }
 }
 
