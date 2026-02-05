@@ -345,10 +345,18 @@ if (!is.null(test_cat)) {
 # --------------------------  missing = FALSE -------------------------------- #
 tbl <- tbl_noMissing
 
-if(overall == TRUE & !is.null(group)){
+if(overall == TRUE & !is.null(group) & add_n == FALSE){
   tbl <- tbl %>%
     add_overall(last = TRUE)
 }
+
+if(overall == TRUE & !is.null(group) & add_n == TRUE){
+  tbl <- tbl %>%
+    add_n(last = TRUE) %>%
+    add_overall(last = TRUE) # CMI 21.01.26 maybe here
+}
+
+
 }
 # --------------------------  missing = TRUE --------------------------------- #
 
@@ -518,10 +526,17 @@ if(missing_percent != FALSE & missing != FALSE){
               test = test_list) |>
         modify_column_hide(c("stat_1", "stat_2"))
 
-      if(overall == TRUE & !is.null(group)){
+      if(overall == TRUE & !is.null(group) & add_n != TRUE){
           tbl_noMissing_short <- tbl_noMissing_short %>%
             add_overall(last = TRUE)
-        }
+      }
+
+      if(overall == TRUE & !is.null(group) & add_n == TRUE){
+        tbl_noMissing_short <- tbl_noMissing_short %>%
+          add_n(last = TRUE) %>%
+          add_overall(last = TRUE)
+
+      }
     }
 
 
@@ -533,8 +548,15 @@ tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
     } else {
   tbl_missingTRUE <- tbl_missing
 
-  if(overall == TRUE & !is.null(group)){
+  if(overall == TRUE & !is.null(group) & add_n == FALSE){
     tbl_missingTRUE <- tbl_missingTRUE %>%
+      add_overall(last = TRUE)
+
+  }
+
+  if(overall == TRUE & !is.null(group) & add_n == TRUE){
+    tbl_missingTRUE <- tbl_missingTRUE %>%
+      add_n(last = TRUE) %>%
       add_overall(last = TRUE)
   }
 }
@@ -749,5 +771,6 @@ if(as_flex_table == TRUE | word_output == TRUE){
   tbl_print
 
 }
+
 
 
