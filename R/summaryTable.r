@@ -173,6 +173,12 @@ summaryTable <- function(data,
     vars <- setdiff(names(data), group)
   }
 
+  if(!is.null(group)) data[[group]] <- as.factor(data[[group]])
+
+  if(!is.null(group) &  length(unique(data[, group])) > 3 ){
+    stop("Error: Function not developed for more than 3 groups")
+  }
+
 
   # Summary stat for continuous variables
   stat_cont <- format_lookup[[stat_cont]]
@@ -286,7 +292,8 @@ if (!is.null(test_cat)) {
 
   tbl_for_add_n <- tbl_noMissing %>% add_n()
 
-  if(!is.null(group)){
+  # When there are two groups
+  if(!is.null(group) & length(unique(data[, group])) == 2 ){
    tbl_for_add_n <-  tbl_noMissing %>%
       add_stat(
         fns = everything() ~ add_by_n
@@ -296,6 +303,21 @@ if (!is.null(test_cat)) {
         ~ .x %>%
           dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
           dplyr::relocate(add_n_stat_2, .before = stat_2)
+      )
+  }
+
+# When there are three groups
+  if(!is.null(group) & length(unique(data[, group])) == 3){
+    tbl_for_add_n <-  tbl_noMissing %>%
+      add_stat(
+        fns = everything() ~ add_by_n
+      ) %>%
+      modify_header(starts_with("add_n_stat") ~ "**N**") %>%
+      modify_table_body(
+        ~ .x %>%
+          dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
+          dplyr::relocate(add_n_stat_2, .before = stat_2) %>%
+          dplyr::relocate(add_n_stat_3, .before = stat_3)
       )
   }
 
@@ -323,10 +345,23 @@ if (!is.null(test_cat)) {
 # --------------------------  missing = FALSE -------------------------------- #
 tbl <- tbl_noMissing
 
-if(overall == TRUE & !is.null(group)){
+if(overall == TRUE & !is.null(group) & add_n == FALSE){
   tbl <- tbl %>%
     add_overall(last = TRUE)
 }
+
+if(overall == TRUE & !is.null(group) & add_n == TRUE){
+  tbl <- tbl %>%
+    add_n(last = TRUE) %>%
+    add_overall(last = TRUE) %>%
+
+    modify_footnote_header(
+      columns  = n,
+      footnote = "N without missing values"
+    )
+}
+
+
 }
 # --------------------------  missing = TRUE --------------------------------- #
 
@@ -417,7 +452,7 @@ if(missing_percent != FALSE & missing != FALSE){
                   digits = list(all_categorical() ~ digits_cat,
                                 all_continuous() ~ digits_cont)) %>% add_n()
 
-      if(!is.null(group)){
+      if(!is.null(group) & length(unique(data[, group])) == 2){
         tbl_for_add_n <-  data|>
           gtsummary::tbl_summary(by = group,
                       label = labels,
@@ -439,6 +474,31 @@ if(missing_percent != FALSE & missing != FALSE){
               dplyr::relocate(add_n_stat_2, .before = stat_2)
           )
       }
+
+
+    if(!is.null(group) & length(unique(data[, group])) == 3){
+      tbl_for_add_n <-  data|>
+        gtsummary::tbl_summary(by = group,
+                               label = labels,
+                               include = all_of(vars),
+                               type = type,
+                               value = value,
+                               statistic = list(all_continuous() ~ stat_cont,
+                                                all_categorical() ~ stat_cat),
+                               missing_text = missing_text,
+                               digits = list(all_categorical() ~ digits_cat,
+                                             all_continuous() ~ digits_cont)) %>%
+        add_stat(
+          fns = everything() ~ add_by_n
+        ) %>%
+        modify_header(starts_with("add_n_stat") ~ "**N**") %>%
+        modify_table_body(
+          ~ .x %>%
+            dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
+            dplyr::relocate(add_n_stat_2, .before = stat_2),
+          dplyr::relocate(add_n_stat_3, .before = stat_3)
+        )
+    }
 
 
 
@@ -471,10 +531,24 @@ if(missing_percent != FALSE & missing != FALSE){
               test = test_list) |>
         modify_column_hide(c("stat_1", "stat_2"))
 
-      if(overall == TRUE & !is.null(group)){
+      if(overall == TRUE & !is.null(group) & add_n != TRUE){
           tbl_noMissing_short <- tbl_noMissing_short %>%
             add_overall(last = TRUE)
-        }
+      }
+
+      if(overall == TRUE & !is.null(group) & add_n == TRUE){
+        tbl_noMissing_short <- tbl_noMissing_short %>%
+          add_n(last = TRUE) %>%
+          add_overall(last = TRUE) %>%
+
+
+          modify_footnote_header(
+            columns  = n,
+            footnote = "N without missing values"
+          )
+
+
+      }
     }
 
 
@@ -486,9 +560,22 @@ tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
     } else {
   tbl_missingTRUE <- tbl_missing
 
-  if(overall == TRUE & !is.null(group)){
+  if(overall == TRUE & !is.null(group) & add_n == FALSE){
     tbl_missingTRUE <- tbl_missingTRUE %>%
       add_overall(last = TRUE)
+
+  }
+
+  if(overall == TRUE & !is.null(group) & add_n == TRUE){
+    tbl_missingTRUE <- tbl_missingTRUE %>%
+      add_n(last = TRUE) %>%
+      add_overall(last = TRUE) %>%
+
+      modify_footnote_header(
+        columns  = n,
+        footnote = "N without missing values"
+      )
+
   }
 }
 
@@ -561,12 +648,27 @@ if(test == TRUE){
 
   # Step 1: Extract group-specific n values from the reference table
 
-  n_values <- tbl_for_add_n$table_body %>%
-    filter(row_type == "label") %>%
-    select(variable, add_n_stat_1 = add_n_stat_1, add_n_stat_2 = add_n_stat_2)
+
+    if (length(unique(data[, group])) == 2) {
+      n_values <- tbl_for_add_n$table_body %>%
+        dplyr::filter(row_type == "label") %>%
+        dplyr::select(variable,
+                      add_n_stat_1 = add_n_stat_1,
+                      add_n_stat_2 = add_n_stat_2)
+
+    } else if (length(unique(data[, group])) == 3) {
+      n_values <- tbl_for_add_n$table_body %>%
+        dplyr::filter(row_type == "label") %>%
+        dplyr::select(variable,
+                      add_n_stat_1 = add_n_stat_1,
+                      add_n_stat_2 = add_n_stat_2,
+                      add_n_stat_3 = add_n_stat_3)
+    }
+
 
 
   if(test == FALSE & missing_percent != "both" | missing_percent == FALSE | missing == FALSE){
+if (length(unique(data[, group])) == 2) {
   tbl <- tbl %>%
     modify_table_body(
       ~ .x %>%
@@ -585,7 +687,34 @@ if(test == TRUE){
     modify_column_alignment(columns = c("add_n_stat_1", "add_n_stat_2"), align = "center") %>%
     modify_table_styling(columns = c("add_n_stat_1", "add_n_stat_2"), footnote = "N without missing values")
 
+}
+    if (length(unique(data[, group])) == 3) {
+      tbl <- tbl %>%
+        modify_table_body(
+          ~ .x %>%
+            left_join(n_values, by = "variable") %>%
+            mutate(
+              add_n_stat_1 = ifelse(row_type == "label", as.character(add_n_stat_1), NA),
+              add_n_stat_2 = ifelse(row_type == "label", as.character(add_n_stat_2), NA),
+              add_n_stat_3 = ifelse(row_type == "label", as.character(add_n_stat_3), NA)
+            ) %>%
+            relocate(add_n_stat_1, .before = stat_1) %>%
+            relocate(add_n_stat_2, .before = stat_2) %>%
+            relocate(add_n_stat_3, .before = stat_3)
+        ) %>%
+        modify_header(
+          add_n_stat_1 ~ "**N**",
+          add_n_stat_2 ~ "**N**",
+          add_n_stat_3 ~ "**N**"
+        ) %>%
+        modify_column_alignment(columns = c("add_n_stat_1", "add_n_stat_2", "add_n_stat_3"), align = "center") %>%
+        modify_table_styling(columns = c("add_n_stat_1", "add_n_stat_2", "add_n_stat_3"), footnote = "N without missing values")
+
+    }
+
   } else if (test == TRUE & missing_percent == TRUE) {
+
+    if (length(unique(data[, group])) == 2) {
   tbl <- tbl %>%
     modify_table_body(
       ~ .x %>%
@@ -604,7 +733,32 @@ if(test == TRUE){
     modify_column_alignment(columns = c("add_n_stat_1", "add_n_stat_2"), align = "center") %>%
     modify_table_styling(columns = c("add_n_stat_1", "add_n_stat_2"), footnote = "N without missing values")
 
+    }
+    if (length(unique(data[, group])) == 3) {
+      tbl <- tbl %>%
+        modify_table_body(
+          ~ .x %>%
+            left_join(n_values, by = "variable") %>%
+            mutate(
+              add_n_stat_1 = ifelse(row_type == "label", as.character(add_n_stat_1), NA),
+              add_n_stat_2 = ifelse(row_type == "label", as.character(add_n_stat_2), NA),
+              add_n_stat_3 = ifelse(row_type == "label", as.character(add_n_stat_3), NA)
+            ) %>%
+            relocate(add_n_stat_1, .before = stat_1_1) %>%
+            relocate(add_n_stat_2, .before = stat_2_1) %>%
+            relocate(add_n_stat_3, .before = stat_3_1)
+        ) %>%
+        modify_header(
+          add_n_stat_1 ~ "**N**",
+          add_n_stat_2 ~ "**N**",
+          add_n_stat_3 ~ "**N**"
+        ) %>%
+        modify_column_alignment(columns = c("add_n_stat_1", "add_n_stat_2", "add_n_stat_3"), align = "center") %>%
+        modify_table_styling(columns = c("add_n_stat_1", "add_n_stat_2", "add_n_stat_3"), footnote = "N without missing values")
+
+    }
   }
+
 }
 
 if(as_flex_table == TRUE | word_output == TRUE){
@@ -635,4 +789,6 @@ if(as_flex_table == TRUE | word_output == TRUE){
   tbl_print
 
 }
+
+
 
