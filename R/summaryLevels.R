@@ -129,12 +129,6 @@ summaryLevels <- function(data,
   }
 
   # --------- categorical formats ------------------------------------------- #
-  format_lookup_cat <-
-    list(
-      n_percent = "{n} ({p}%)",
-      n = "{n}",
-      n_N = "{n}/{N}"
-    )
   stat_cat <- format_lookup_cat[[stat_cat]]
 
   # if vars = NULL, take all the variables (except group if not NULL).
@@ -157,6 +151,7 @@ summaryLevels <- function(data,
           assign(paste0("t", i), data|>
                    dplyr::select(vars[i])|>
                    gtsummary::tbl_summary(missing="no",
+                                          statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                           label = labels,
                                           digits = list(gtsummary::all_categorical() ~ digits_cat)))
         }
@@ -165,6 +160,7 @@ summaryLevels <- function(data,
             assign(paste0("t", i), data|>
                  dplyr::select(vars[i], group)|>
                  gtsummary::tbl_summary(by= paste0(group), missing="no",
+                                        statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                         label = labels,
                                         digits = list(gtsummary::all_categorical() ~ digits_cat)))
           }
@@ -172,6 +168,7 @@ summaryLevels <- function(data,
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
+                                            statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                             label = labels,
                                             digits = list(gtsummary::all_categorical() ~ digits_cat))|>
                      gtsummary::add_overall())
@@ -180,6 +177,7 @@ summaryLevels <- function(data,
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
+                                            statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                             label = labels,
                                             digits = list(gtsummary::all_categorical() ~ digits_cat))|>
                      gtsummary::add_overall()|>
@@ -190,6 +188,7 @@ summaryLevels <- function(data,
             assign(paste0("t", i), data|>
                      dplyr::select(vars[i], group)|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
+                                            statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                             label = labels,
                                             digits = list(gtsummary::all_categorical() ~ digits_cat))|>
                      gtsummary::add_p(pvalue_fun = gtsummary::label_style_pvalue(digits = 2),
