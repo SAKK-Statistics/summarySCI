@@ -59,6 +59,7 @@ expect_true(isMissing)
 
 
 test_that("N without missing add up to overall N without missing", {
+  trial <- gtsummary::trial
 tbl7 <- summaryTable(data = trial,
                      vars = "response",
                      group = "grade",
