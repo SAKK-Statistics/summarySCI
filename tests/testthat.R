@@ -8,5 +8,8 @@
 
 library(testthat)
 library(summarySCI)
+library(gtsummary)
+library(stringr)
+
 
 test_check("summarySCI")
