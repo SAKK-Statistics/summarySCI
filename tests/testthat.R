@@ -8,7 +8,6 @@
 
 library(testthat)
 library(summarySCI)
-library(testthat)
 library(gtsummary)
 library(stringr)
 
