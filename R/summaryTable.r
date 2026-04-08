@@ -150,9 +150,9 @@ summaryTable <- function(data,
                          word_output = FALSE,
                          file_name = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
-  # --------- Some checks --------------------------------------------------- #
+# Some checks ---------------------------------------------------
 
-  # Make sure that 'data' exists and that it is a data frame
+## Make sure that 'data' exists and that it is a data frame
   if (missing(data)) {
     stop("'data' must be specified.")
   }
@@ -165,8 +165,7 @@ summaryTable <- function(data,
   }
 
 
-
-  #  -----------------------------------------------------------------------------
+# Some settings -------
 
   # if vars = NULL, take all the variables (except group if not NULL).
   if (is.null(vars)) {
@@ -228,7 +227,7 @@ if (!is.null(test_cat)) {
 
 
 
-  # -------------- # table for missing = FALSE (default in gtsummary)----- #
+#  Table for missing or missing_percent is FALSE -----
   if(missing_percent == FALSE | missing == FALSE){
 
 
@@ -287,11 +286,10 @@ if (!is.null(test_cat)) {
                      digits = list(all_categorical() ~ digits_cat,
                                    all_continuous() ~ digits_cont))
 
-
-  # need that for the add_n()
+## Table for add_n() ------
 
   tbl_for_add_n <- tbl_noMissing %>% add_n()
-
+### 2 groups ----
   # When there are two groups
   if(!is.null(group) & length(unique(data[, group])) == 2 ){
    tbl_for_add_n <-  tbl_noMissing %>%
@@ -305,7 +303,7 @@ if (!is.null(test_cat)) {
           dplyr::relocate(add_n_stat_2, .before = stat_2)
       )
   }
-
+### 3 groups ----
 # When there are three groups
   if(!is.null(group) & length(unique(data[, group])) == 3){
     tbl_for_add_n <-  tbl_noMissing %>%
@@ -322,6 +320,7 @@ if (!is.null(test_cat)) {
   }
 
 
+## test == TRUE ----
   if(test == TRUE){
 
 
@@ -331,6 +330,7 @@ if (!is.null(test_cat)) {
 
 }
 
+## CI == TRUE -----
   if(ci == TRUE){
     tbl_noMissing <- tbl_noMissing |>
       add_ci(method = list(all_continuous() ~ ci_cont,
@@ -342,7 +342,7 @@ if (!is.null(test_cat)) {
 }
 
 
-# --------------------------  missing = FALSE -------------------------------- #
+## Overall, n. of groups and add_n ----
 tbl <- tbl_noMissing
 
 if(overall == TRUE & !is.null(group) & add_n == FALSE){
@@ -364,7 +364,7 @@ if(overall == TRUE & !is.null(group) & add_n == TRUE){
 
 }
 # --------------------------  missing = TRUE --------------------------------- #
-
+# Missing true & percent ----
 if(missing_percent != FALSE & missing != FALSE){
 
   data2 <- data
@@ -472,7 +472,9 @@ if(missing_percent != FALSE & missing != FALSE){
             ~ .x %>%
               dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
               dplyr::relocate(add_n_stat_2, .before = stat_2)
-          )
+           ) %>%
+          # add_n(last = TRUE) %>%
+          # add_overall(last = TRUE)
       }
 
 
@@ -497,11 +499,13 @@ if(missing_percent != FALSE & missing != FALSE){
             dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
             dplyr::relocate(add_n_stat_2, .before = stat_2),
           dplyr::relocate(add_n_stat_3, .before = stat_3)
-        )
+         ) %>%
+        # add_n(last = TRUE) %>%
+        # add_overall(last = TRUE)
     }
 
 
-
+### CI == TRUE ----
     if(ci == TRUE) {
       tbl_missing <- tbl_missing |>
         add_ci(method = list(all_continuous() ~ ci_cont,
@@ -512,7 +516,7 @@ if(missing_percent != FALSE & missing != FALSE){
     }
 
 
-
+### Test == TRUE -----
       # tests displayed (!missings not counted in calculation!)
     # -> only take p-value from other table
     if (test == TRUE) {
@@ -529,7 +533,8 @@ if(missing_percent != FALSE & missing != FALSE){
       ) |>
         add_p(pvalue_fun = label_style_pvalue(digits = 2),
               test = test_list) |>
-        modify_column_hide(c("stat_1", "stat_2"))
+        # modify_column_hide(c("stat_1", "stat_2")) # starts_with
+        modify_column_hide(starts_with("stat_"))
 
       if(overall == TRUE & !is.null(group) & add_n != TRUE){
           tbl_noMissing_short <- tbl_noMissing_short %>%
@@ -552,6 +557,7 @@ if(missing_percent != FALSE & missing != FALSE){
     }
 
 
+
 # merging table with missings and p-value
     if(test == TRUE){
 tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
@@ -560,6 +566,7 @@ tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
     } else {
   tbl_missingTRUE <- tbl_missing
 
+### OVERALL = TRUE -----
   if(overall == TRUE & !is.null(group) & add_n == FALSE){
     tbl_missingTRUE <- tbl_missingTRUE %>%
       add_overall(last = TRUE)
@@ -601,19 +608,56 @@ if(missing_percent == "both" & missing != FALSE){
                                digits = list(all_categorical() ~ digits_cat,
                                              all_continuous() ~ digits_cont))
 
+  if(overall == TRUE & test == FALSE){
+    tbl_noMissing2 <- tbl_noMissing2 %>%
+      add_overall(last = TRUE)
+  }
 
-if(test == TRUE){
+
+if(test == TRUE & length(unique(data[, group])) == 2){ # OK
   tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2, tbl_noMissing_short)) |>
     modify_spanning_header(c("stat_1_1", "stat_2_1") ~ "**With missing**",
                            c("stat_1_2", "stat_2_2") ~ "**Without missing**",
-                           c("p.value_3") ~ "")
+                           c("p.value_3") ~ "",
+                           starts_with("n_") ~ "",
+                           starts_with("stat_0_") ~ "")
 }
 
-  if(test == FALSE){
+
+  if(test == TRUE & length(unique(data[, group])) == 3){ # OK
+    tbl_both <- tbl_merge(tbls= list(tbl_missing, tbl_noMissing2, tbl_noMissing_short)) |>
+      modify_spanning_header(c("stat_1_1", "stat_2_1", "stat_3_1") ~ "**With missing**",
+                             c("stat_1_2", "stat_2_2","stat_3_2") ~ "**Without missing**",
+                             c("p.value_3") ~ "",
+                             starts_with("n_") ~ "",
+                             starts_with("stat_0_") ~ "")
+  }
+
+  if(test == FALSE & is.null(group)){ # OK
+
+    tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2))|>
+      modify_spanning_header(c("stat_0_1") ~ "**With missing**",
+                             c("stat_0_2") ~ "**Without missing**")
+  }
+
+  if(test == FALSE & length(unique(data[, group])) == 2){ # OK
+
     tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2))|>
       modify_spanning_header(c("stat_1_1", "stat_2_1" ) ~ "**With missing**",
-                             c("stat_1_2", "stat_2_2") ~ "**Without missing**")
+                             c("stat_1_2", "stat_2_2") ~ "**Without missing**",
+                             starts_with("n_") ~ "",
+                             starts_with("stat_0_") ~ "")
   }
+
+  if(test == FALSE & length(unique(data[, group])) == 3){ # OK
+
+    tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2))|>
+      modify_spanning_header(c("stat_1_1", "stat_2_1", "stat_3_1" ) ~ "**With missing**",
+                             c("stat_1_2", "stat_2_2", "stat_3_2") ~ "**Without missing**",
+                             starts_with("n_") ~ "",
+                             starts_with("stat_0_") ~ "")
+  }
+
   tbl <- tbl_both
 }
 
@@ -773,7 +817,7 @@ if(as_flex_table == TRUE | word_output == TRUE){
   tbl_print <- tbl
   }
 
-
+# Word output -----
   if (word_output == TRUE) {
 
     # Create Word document
