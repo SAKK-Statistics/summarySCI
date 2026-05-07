@@ -167,6 +167,17 @@ summaryTable_new <- function(data,
     stop("Error: 'group' needs to be given for a test to be calculated.")
   }
 
+### missing
+  if(missing == FALSE & missing_percent == "both"){
+    missing == TRUE
+  }
+
+  if( missing_percent == "both"){
+   dichotomous_as = "categorical"
+  }
+
+  var_missing <- ifelse(missing == FALSE, "no", "ifany")
+
 
   ## If vars = NULL, take all the variables -----
   if (is.null(vars)) {
@@ -228,11 +239,22 @@ summaryTable_new <- function(data,
   }
 
 
+  # If group=FALSE - add a "fake" group -----
+  if(is.null(group) == TRUE){
+    data$fakegroup = "Overall"
+    group <- "fakegroup"
+  }
+
 # Full table for more than 1 group -----
 
-  if(length(unique(data[, group])) > 1){
+  # if(length(unique(data[, group])) > 1){
+
+
+
+
 
       data2 <- data
+
       colnames(data2) <-  colnames(data)
 
       for (i in colnames(data2|>
@@ -257,7 +279,10 @@ summaryTable_new <- function(data,
       # two unique values and treat them as continuous (and not factors)
 
       # Identify numeric variables
-      numeric_vars <- intersect(vars, names(data2)[sapply(data2, is.numeric)])
+      # numeric_vars <- intersect(vars, names(data2)[sapply(data2, is.numeric)])
+      numeric_vars <- intersect(vars, names(data)[sapply(data, is.numeric)])
+
+
 
       if (length(numeric_vars) == 0) {
         dichotomous_vars <- character(0)
@@ -265,7 +290,7 @@ summaryTable_new <- function(data,
       } else {
         # Find dichotomous (binary) numeric variables
         dichotomous_vars <- numeric_vars[
-          sapply(data2[numeric_vars], function(x) {
+          sapply(data[numeric_vars], function(x) {
             values <- sort(unique(na.omit(x)))
             length(values) == 2 && all(values == c(0, 1))
           })
@@ -287,13 +312,62 @@ summaryTable_new <- function(data,
         type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
       }
 
+# missing should always be no in missing table when merged
+   var_missing <- ifelse(missing_percent == "both",
+                         "no",
+                         var_missing)
+
+## Table without missing -----
+      tbl_noMissing2 <- gtsummary::tbl_summary(data = data,
+                                           include = all_of(vars),
+                                           label = labels,
+                                           by = group,
+                                           type = type,
+                                           value = value,
+                                           statistic = list(all_continuous() ~ stat_cont,
+                                                            all_categorical() ~ stat_cat),
+                                           missing = var_missing,
+                                           missing_text = missing_text,
+                                           digits = list(all_categorical() ~ digits_cat,
+                                                         all_continuous() ~ digits_cont)) |>
+
+        add_ci(method = list(all_continuous() ~ ci_cont,
+                             all_categorical() ~ ci_cat_gt),
+               conf.level = conf_level,
+               statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
+                                (all_categorical() ~ "[{conf.low}%, {conf.high}%]")))|>
+    add_stat(
+      fns = everything() ~ add_by_n
+    ) %>%
+    modify_header(starts_with("add_n_stat") ~ "**N**") %>%
+    modify_table_body(
+      ~ reduce(
+        .x = seq_len(length(unique(data[, group]))),
+        .init = .x,
+        .f = ~ relocate(
+          .x,
+          !!paste0("add_n_stat_", .y),
+          .before = !!paste0("stat_", .y)
+        )
+      )
+    ) %>%
+        modify_table_styling(columns = c(starts_with("add_n_stat_")), footnote = "N without missing values")
+
+      # add foot note
+
+  # Step 1: Extract n values from the reference table
+
+  n_values <- tbl_noMissing2$table_body %>%
+    filter(row_type == "label") %>%
+    select(variable, starts_with("add_n_stat_"))
+
 
 
       tbl_missing <- data2|>
         gtsummary::tbl_summary(by = group,
                                label = labels,
                                include = all_of(vars),
-                               type = type,
+                                type = type,
                                value = value,
                                statistic = list(all_continuous() ~ stat_cont,
                                                 all_categorical() ~ stat_cat),
@@ -304,48 +378,32 @@ summaryTable_new <- function(data,
                              all_categorical() ~ ci_cat_gt),
                conf.level = conf_level,
                statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
-                                (all_categorical() ~ "[{conf.low}%, {conf.high}%]")))
-
-      # need that for the add_n()
-
-
-  tbl_for_add_n <- data |>
-          gtsummary::tbl_summary(
-            by = group,
-            label = labels,
-            include = all_of(vars),
-            type = type,
-            value = value,
-            statistic = list(
-              all_continuous() ~ stat_cont,
-              all_categorical() ~ stat_cat
-            ),
-            missing_text = missing_text,
-            digits = list(
-              all_categorical() ~ digits_cat,
-              all_continuous() ~ digits_cont
-            )
-          ) %>%
-          add_stat(
-            fns = everything() ~ add_by_n
-          ) %>%
-          modify_header(starts_with("add_n_stat") ~ "**N**") %>%
-          modify_table_body(
-            ~ reduce(
-              .x = seq_len(length(unique(data[, group]))),
-              .init = .x,
-              .f = ~ relocate(
-                .x,
-                !!paste0("add_n_stat_", .y),
-                .before = !!paste0("stat_", .y)
+                                (all_categorical() ~ "[{conf.low}%, {conf.high}%]")))  %>%
+        modify_table_body(
+          ~ .x %>%
+            left_join(n_values, by = "variable") %>%
+            mutate(
+              across(
+                starts_with("add_n_stat_"),
+                ~ ifelse(row_type == "label", as.character(.x), NA_character_)
               )
+            ) ) %>%
+
+        modify_column_alignment(columns = c(starts_with("add_n_stat_")), align = "center") %>%
+        modify_table_styling(columns = c(starts_with("add_n_stat_")), footnote = "N without missing values") %>%
+        modify_header(starts_with("add_n_stat") ~ "**N**") %>%
+
+        modify_table_body(
+          ~ reduce(
+            .x = seq_len(length(unique(data[, group]))),
+            .init = .x,
+            .f = ~ relocate(
+              .x,
+              !!paste0("add_n_stat_", .y),
+              .before = !!paste0("stat_", .y)
             )
-          ) |>
-    add_ci(method = list(all_continuous() ~ ci_cont,
-                         all_categorical() ~ ci_cat_gt),
-           conf.level = conf_level,
-           statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
-                            (all_categorical() ~ "[{conf.low}%, {conf.high}%]")))
+          )
+        )
 
 
 
@@ -355,6 +413,8 @@ summaryTable_new <- function(data,
       ### Test == TRUE -----
       # tests displayed (!missings not counted in calculation!)
       # -> only take p-value from other table
+
+      if(group != "fakegroup"){
 
         tbl_noMissing_short <- gtsummary::tbl_summary(data = data,
                                                       label = labels,
@@ -377,23 +437,10 @@ summaryTable_new <- function(data,
       footnote = "N without missing values"
     )
 
-
-  tbl_noMissing2 <- gtsummary::tbl_summary(data = data,
-                                           include = all_of(vars),
-                                           label = labels,
-                                           by = group,
-                                           type = type,
-                                           value = value,
-                                           statistic = list(all_continuous() ~ stat_cont,
-                                                            all_categorical() ~ stat_cat),
-                                           missing = "no",
-                                           missing_text = missing_text,
-                                           digits = list(all_categorical() ~ digits_cat,
-                                                         all_continuous() ~ digits_cont))
+}
 
 
-
-  ## add add_n to tbl_noMissing2
+      if(group != "fakegroup"){
 
   tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2, tbl_noMissing_short)) |>
     modify_spanning_header(c(starts_with("stat_") & ends_with("_1")) ~ "**With missing**",
@@ -402,30 +449,29 @@ summaryTable_new <- function(data,
                            c("p.value_3") ~ "",
                            starts_with("n_") ~ "",
                            starts_with("stat_0_") ~ "")
+      } else {
+        tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2)) |>
+          modify_spanning_header(c(starts_with("stat_") & ends_with("_1")) ~ "**With missing**",
+                                 c(starts_with("stat_") & ends_with("_2")) ~ "**Without missing**")
+      }
+
+# returned table -----
+
+if(missing_percent == "both"){
+  return_tbl <- tbl_both
+}
+
+if(missing == FALSE | missing_percent == FALSE){
+  return_tbl <- tbl_noMissing2
+}
+
+if(missing_percent == TRUE){
+  return_tbl <- tbl_missing
+}
 
 
-
-## merging table with missings and p-value -----
-  ### what to do with this?!
-# tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
-#           modify_spanning_header(everything()~NA_character_)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## end of group > 1
-  }
-
+return(return_tbl)
 
 }
+
+
