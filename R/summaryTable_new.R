@@ -49,11 +49,11 @@
 #'
 #' @param dichotomous_as Type for the dichotomous variables. Can either be
 #' "categorical" (default, one row per level) or "dichotomous" (only
-#' one row with reference level (see argument `value`), only works if `missing = "FALSE"` or
+#' one row with reference level (see argument `ref_level`), only works if `missing = "FALSE"` or
 #' `missing_percent = FALSE`.
 #'
-#' @param value Specifies the reference level of a variable to display on a single row.
-#' Default is NULL. The syntax is as follows: `value = list(varname ~ "level to show")`.
+#' @param ref_level Specifies the reference level of a variable to display on a single row.
+#' Default is the first appearing level. The syntax is as follows: `ref_level = list(varname ~ "level to show")`.
 #'
 #' @param ci Logical. Indicates whether CI are displayed (TRUE) or
 #' not (FALSE). Default to FALSE.
@@ -132,7 +132,7 @@ summaryTable_new <- function(data,
                          stat_cat = "n_percent",
                          continuous_as = "continuous",
                          dichotomous_as = "dichotomous",
-                         value = NULL,
+                         ref_level = NULL,
                          test = FALSE,
                          test_cont = NULL,
                          test_cat = "fisher.test",
@@ -220,7 +220,7 @@ summaryTable_new <- function(data,
 
 ## Trick for fisher.test as default and if NULL, take the default. -----
 
-  if(test == TRUE){
+
     if(length(unique(data[, group])) == 2 & is.null(test_cont)){
       test_cont = "wilcox.test"
     }
@@ -236,7 +236,7 @@ summaryTable_new <- function(data,
       test_list <- c(test_list, all_categorical() ~ test_cat)
     }
 
-  }
+
 
 
   # If group=FALSE - add a "fake" group -----
@@ -275,6 +275,11 @@ summaryTable_new <- function(data,
 
       data2 <- droplevels(data2)
 
+
+
+
+      #### - !!!! ##
+
       # We want to identify continuous variables with more than
       # two unique values and treat them as continuous (and not factors)
 
@@ -283,7 +288,8 @@ summaryTable_new <- function(data,
       numeric_vars <- intersect(vars, names(data)[sapply(data, is.numeric)])
 
 
-
+# 2X zu haben
+      # 1x für data und 1x für data2
       if (length(numeric_vars) == 0) {
         dichotomous_vars <- character(0)
         continuous_vars <- character(0)
@@ -312,6 +318,43 @@ summaryTable_new <- function(data,
         type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
       }
 
+
+
+#####- !!!!! ###
+      numeric_vars_2 <- intersect(vars, names(data2)[sapply(data2, is.numeric)])
+      # 1x für data und 1x für data2
+      if (length(numeric_vars_2) == 0) {
+        dichotomous_vars_2 <- character(0)
+        continuous_vars_2 <- character(0)
+      } else {
+        # Find dichotomous (binary) numeric variables
+        dichotomous_vars_2 <- numeric_vars_2[
+          sapply(data2[numeric_vars_2], function(x) {
+            values <- sort(unique(na.omit(x)))
+            length(values) == 2 && all(values == c(0, 1))
+          })
+        ]
+
+        # Continuous variables = numeric minus binary
+        continuous_vars_2 <- setdiff(numeric_vars_2, dichotomous_vars_2)
+      }
+
+      type_2 <- list()
+
+      # Append continuous variable types if any
+      if (length(continuous_vars_2) > 0) {
+        type_2 <- append(type_2, list(all_of(continuous_vars_2) ~ continuous_as))
+      }
+
+      # Append dichotomous variable types if any
+      if (length(dichotomous_vars_2) > 0) {
+        type_2 <- append(type_2, list(all_of(dichotomous_vars_2) ~ dichotomous_as))
+      }
+
+# !!!!!!!!
+
+
+
 # missing should always be no in missing table when merged
    var_missing <- ifelse(missing_percent == "both",
                          "no",
@@ -323,7 +366,7 @@ summaryTable_new <- function(data,
                                            label = labels,
                                            by = group,
                                            type = type,
-                                           value = value,
+                                           value = ref_level,
                                            statistic = list(all_continuous() ~ stat_cont,
                                                             all_categorical() ~ stat_cat),
                                            missing = var_missing,
@@ -367,8 +410,8 @@ summaryTable_new <- function(data,
         gtsummary::tbl_summary(by = group,
                                label = labels,
                                include = all_of(vars),
-                                type = type,
-                               value = value,
+                                type = type_2,
+                               value = ref_level,
                                statistic = list(all_continuous() ~ stat_cont,
                                                 all_categorical() ~ stat_cat),
                                missing_text = missing_text,
@@ -420,7 +463,7 @@ summaryTable_new <- function(data,
                                                       label = labels,
                                                       include = all_of(vars),
                                                       type = type,
-                                                      value = value,
+                                                      value = ref_level,
                                                       missing = "no",
                                                       missing_text = missing_text,
                                                       by = group,

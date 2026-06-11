@@ -473,8 +473,8 @@ if(missing_percent != FALSE & missing != FALSE){
               dplyr::relocate(add_n_stat_1, .before = stat_1) %>%
               dplyr::relocate(add_n_stat_2, .before = stat_2)
            ) %>%
-          # add_n(last = TRUE) %>%
-          # add_overall(last = TRUE)
+           add_n(last = TRUE) %>%
+          add_overall(last = TRUE)
       }
 
 
@@ -500,8 +500,8 @@ if(missing_percent != FALSE & missing != FALSE){
             dplyr::relocate(add_n_stat_2, .before = stat_2),
           dplyr::relocate(add_n_stat_3, .before = stat_3)
          ) %>%
-        # add_n(last = TRUE) %>%
-        # add_overall(last = TRUE)
+         add_n(last = TRUE) %>%
+         add_overall(last = TRUE)
     }
 
 
