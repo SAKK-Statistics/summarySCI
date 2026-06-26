@@ -152,10 +152,11 @@ summaryTable_new <- function(data,
                          word_output = FALSE,
                          file_name = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
+################################################################################
+# Settings and input checks ----------------------------------------------------
+################################################################################
 
-# Settings -----
-
-  ## Data exists and is df -----
+  ## data exists and is df -----
   if (missing(data)) {
     stop("'data' must be specified.")
   }
@@ -167,33 +168,35 @@ summaryTable_new <- function(data,
     stop("Error: 'group' needs to be given for a test to be calculated.")
   }
 
-### missing
+  ## if missing_percent is both, missing is TRUE -----
   if(missing == FALSE & missing_percent == "both"){
     missing == TRUE
   }
 
+  ## if missing percent is both, dichotomous_as is categorical -----
   if( missing_percent == "both"){
    dichotomous_as = "categorical"
   }
 
+  ## if missing is FALSE, var_missing is no -----
   var_missing <- ifelse(missing == FALSE, "no", "ifany")
 
 
-  ## If vars = NULL, take all the variables -----
+  ## if vars = NULL, take all the variables -----
   if (is.null(vars)) {
     vars <- setdiff(names(data), group)
   }
 
-  ## Group as factor -----
+  ## group as factor -----
   if(!is.null(group)) data[[group]] <- as.factor(data[[group]])
 
 
-  ## Summary stat for continuous variables -----
+  ## summary stat for continuous and categorical variables -----
   stat_cont <- format_lookup[[stat_cont]]
   stat_cat <- format_lookup_cat[[stat_cat]]
 
 
-  ### TO DO:  Maybe move outside of function
+  ## type of CI for cat variables -----
   if(!is.null(ci_cat)){
 
     if(ci_cat == "clopper-pearson"){
@@ -212,14 +215,12 @@ summaryTable_new <- function(data,
   }
 
 
-## Labels -----
+  ## labels -----
   if(is.null(labels)){
     labels <- get_labels(data, vars)
   }
 
-
-## Trick for fisher.test as default and if NULL, take the default. -----
-
+  ## test for continuous variables ----
 
     if(length(unique(data[, group])) == 2 & is.null(test_cont)){
       test_cont = "wilcox.test"
@@ -230,50 +231,84 @@ summaryTable_new <- function(data,
     }
 
     test_list <- list(all_continuous() ~ test_cont)
- ## TO DO : Fisher is now default -> how to solve the issue when it does not work?
-    ## maybe increase the memory with workspace = xxx.
+
+  ## test for categorical variables -----
+
     if (!is.null(test_cat)) {
       test_list <- c(test_list, all_categorical() ~ test_cat)
     }
 
 
-
-
-  # If group=FALSE - add a "fake" group -----
+  ## if no group, add a dummy group
   if(is.null(group) == TRUE){
-    data$fakegroup = "Overall"
-    group <- "fakegroup"
+    data$dummygroup = "Overall"
+    group <- "dummygroup"
   }
 
-# Full table for more than 1 group -----
+################################################################################
+# data_missing_as_level ----------------------------------------------------
+################################################################################
 
-  # if(length(unique(data[, group])) > 1){
+## dataset where missing values are considered a level
+# (for missing_percent = "both")
 
+data_missing_as_level <- data
 
+colnames(data_missing_as_level) <-  colnames(data)
 
+## make missing a level -----
 
-
-      data2 <- data
-
-      colnames(data2) <-  colnames(data)
-
-      for (i in colnames(data2|>
+      for (i in colnames(data_missing_as_level|>
                          dplyr::select(all_of(c(vars, group))))) {
 
-        if (is.factor(data2[[i]]) == TRUE | is.character(data2[[i]])) {
-          data2[[i]] <- forcats::fct_na_value_to_level(as.factor(data2[[i]]), level = missing_text)
+        if (is.factor(data_missing_as_level[[i]]) == TRUE | is.character(data_missing_as_level[[i]])) {
+          data_missing_as_level[[i]] <- forcats::fct_na_value_to_level(as.factor(data_missing_as_level[[i]]), level = missing_text)
           if (!is.null(attr(data[[i]], "label"))) {
-            Hmisc::label(data2[[i]]) <- attr(data[[i]], "label")
+            Hmisc::label(data_missing_as_level[[i]]) <- attr(data[[i]], "label")
           }
-        } else if (all(data2[[i]] %in% c(0, 1, NA))) {
-          data2[[i]] <- forcats::fct_na_value_to_level(factor(data2[[i]]), level = missing_text)
+        } else if (all(data_missing_as_level[[i]] %in% c(0, 1, NA))) {
+          data_missing_as_level[[i]] <- forcats::fct_na_value_to_level(factor(data_missing_as_level[[i]]), level = missing_text)
           if (!is.null(attr(data[[i]], "label"))) {
-            Hmisc::label(data2[[i]]) <- attr(data[[i]], "label")
+            Hmisc::label(data_missing_as_level[[i]]) <- attr(data[[i]], "label")
           }
         }
       }
 
-      data2 <- droplevels(data2)
+data_missing_as_level <- droplevels(data_missing_as_level)
+
+## identify numeric variables -----
+numeric_vars_2 <- intersect(vars, names(data_missing_as_level)[sapply(data_missing_as_level, is.numeric)])
+
+## identify dichotomous and continuous variables -----
+if (length(numeric_vars_2) == 0) {
+  dichotomous_vars_2 <- character(0)
+  continuous_vars_2 <- character(0)
+} else {
+  # Find dichotomous (binary) numeric variables
+  dichotomous_vars_2 <- numeric_vars_2[
+    sapply(data_missing_as_level[numeric_vars_2], function(x) {
+      values <- sort(unique(na.omit(x)))
+      length(values) == 2 && all(values == c(0, 1))
+    })
+  ]
+
+  ### Continuous variables = numeric minus binary
+  continuous_vars_2 <- setdiff(numeric_vars_2, dichotomous_vars_2)
+}
+
+
+## set the type of variable for data_missing_as_level
+type_missing_as_level <- list()
+
+### Append continuous variable types if any
+if (length(continuous_vars_2) > 0) {
+  type_missing_as_level <- append(type_missing_as_level, list(all_of(continuous_vars_2) ~ continuous_as))
+}
+
+### Append dichotomous variable types if any
+if (length(dichotomous_vars_2) > 0) {
+  type_missing_as_level <- append(type_missing_as_level, list(all_of(dichotomous_vars_2) ~ dichotomous_as))
+}
 
 
 
@@ -284,12 +319,12 @@ summaryTable_new <- function(data,
       # two unique values and treat them as continuous (and not factors)
 
       # Identify numeric variables
-      # numeric_vars <- intersect(vars, names(data2)[sapply(data2, is.numeric)])
+      # numeric_vars <- intersect(vars, names(data_missing_as_level)[sapply(data_missing_as_level, is.numeric)])
       numeric_vars <- intersect(vars, names(data)[sapply(data, is.numeric)])
 
 
 # 2X zu haben
-      # 1x für data und 1x für data2
+      # 1x für data und 1x für data_missing_as_level
       if (length(numeric_vars) == 0) {
         dichotomous_vars <- character(0)
         continuous_vars <- character(0)
@@ -320,39 +355,6 @@ summaryTable_new <- function(data,
 
 
 
-#####- !!!!! ###
-      numeric_vars_2 <- intersect(vars, names(data2)[sapply(data2, is.numeric)])
-      # 1x für data und 1x für data2
-      if (length(numeric_vars_2) == 0) {
-        dichotomous_vars_2 <- character(0)
-        continuous_vars_2 <- character(0)
-      } else {
-        # Find dichotomous (binary) numeric variables
-        dichotomous_vars_2 <- numeric_vars_2[
-          sapply(data2[numeric_vars_2], function(x) {
-            values <- sort(unique(na.omit(x)))
-            length(values) == 2 && all(values == c(0, 1))
-          })
-        ]
-
-        # Continuous variables = numeric minus binary
-        continuous_vars_2 <- setdiff(numeric_vars_2, dichotomous_vars_2)
-      }
-
-      type_2 <- list()
-
-      # Append continuous variable types if any
-      if (length(continuous_vars_2) > 0) {
-        type_2 <- append(type_2, list(all_of(continuous_vars_2) ~ continuous_as))
-      }
-
-      # Append dichotomous variable types if any
-      if (length(dichotomous_vars_2) > 0) {
-        type_2 <- append(type_2, list(all_of(dichotomous_vars_2) ~ dichotomous_as))
-      }
-
-# !!!!!!!!
-
 
 
 # missing should always be no in missing table when merged
@@ -360,8 +362,8 @@ summaryTable_new <- function(data,
                          "no",
                          var_missing)
 
-## Table without missing -----
-      tbl_noMissing2 <- gtsummary::tbl_summary(data = data,
+## Table without missing or with missing but without percent -----
+      tbl_noMissing_default <- gtsummary::tbl_summary(data = data,
                                            include = all_of(vars),
                                            label = labels,
                                            by = group,
@@ -385,7 +387,7 @@ summaryTable_new <- function(data,
     modify_header(starts_with("add_n_stat") ~ "**N**") %>%
     modify_table_body(
       ~ reduce(
-        .x = seq_len(length(unique(data[, group]))),
+        .x = seq_len(length(unique(na.omit(data[, group])))),
         .init = .x,
         .f = ~ relocate(
           .x,
@@ -400,17 +402,17 @@ summaryTable_new <- function(data,
 
   # Step 1: Extract n values from the reference table
 
-  n_values <- tbl_noMissing2$table_body %>%
+  n_values <- tbl_noMissing_default$table_body %>%
     filter(row_type == "label") %>%
     select(variable, starts_with("add_n_stat_"))
 
 
 
-      tbl_missing <- data2|>
+      tbl_missing_percent <- data_missing_as_level|>
         gtsummary::tbl_summary(by = group,
                                label = labels,
                                include = all_of(vars),
-                                type = type_2,
+                                type = type_missing_as_level,
                                value = ref_level,
                                statistic = list(all_continuous() ~ stat_cont,
                                                 all_categorical() ~ stat_cat),
@@ -438,7 +440,7 @@ summaryTable_new <- function(data,
 
         modify_table_body(
           ~ reduce(
-            .x = seq_len(length(unique(data[, group]))),
+            .x = seq_len(length(unique(na.omit(data[, group])))),
             .init = .x,
             .f = ~ relocate(
               .x,
@@ -457,14 +459,15 @@ summaryTable_new <- function(data,
       # tests displayed (!missings not counted in calculation!)
       # -> only take p-value from other table
 
-      if(group != "fakegroup"){
+      if(group != "dummygroup"){
 
         tbl_noMissing_short <- gtsummary::tbl_summary(data = data,
                                                       label = labels,
                                                       include = all_of(vars),
                                                       type = type,
                                                       value = ref_level,
-                                                      missing = "no",
+                                                      # missing = "no",
+                                                      missing = var_missing,
                                                       missing_text = missing_text,
                                                       by = group,
                                                       statistic = list(all_categorical() ~ stat_cat),
@@ -474,7 +477,7 @@ summaryTable_new <- function(data,
                 test = test_list) |>
           modify_column_hide(starts_with("stat_") )%>%
     add_n(last = TRUE) %>%
-    add_overall(last = TRUE) %>%
+    # add_overall(last = TRUE) %>%
     modify_footnote_header(
       columns  = n,
       footnote = "N without missing values"
@@ -482,39 +485,61 @@ summaryTable_new <- function(data,
 
 }
 
-
-      if(group != "fakegroup"){
-
-  tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2, tbl_noMissing_short)) |>
-    modify_spanning_header(c(starts_with("stat_") & ends_with("_1")) ~ "**With missing**",
-                           c(starts_with("stat_") & ends_with("_2")) ~ "**Without missing**",
-                           ## TO DO: fix header with missing
-                           c("p.value_3") ~ "",
-                           starts_with("n_") ~ "",
-                           starts_with("stat_0_") ~ "")
-      } else {
-        tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2)) |>
-          modify_spanning_header(c(starts_with("stat_") & ends_with("_1")) ~ "**With missing**",
-                                 c(starts_with("stat_") & ends_with("_2")) ~ "**Without missing**")
-      }
+  #
+  #     if(group != "dummygroup"){
+  #
+  # tbl_both <- tbl_merge(tbls = list(tbl_missing_percent, tbl_noMissing_default, tbl_noMissing_short)) |>
+  #   modify_spanning_header(c(starts_with("stat_") & ends_with("_1")) ~ "**With missing**",
+  #                          c(starts_with("stat_") & ends_with("_2")) ~ "**Without missing**",
+  #                          ## TO DO: fix header with missing
+  #                          c("p.value_3") ~ "",
+  #                          starts_with("n_") ~ "",
+  #                          starts_with("stat_0_") ~ "")
+  #     } else {
+  #       tbl_both <- tbl_merge(tbls = list(tbl_missing_percent, tbl_noMissing_default)) |>
+  #         modify_spanning_header(c(starts_with("stat_") & ends_with("_1")) ~ "**With missing**",
+  #                                c(starts_with("stat_") & ends_with("_2")) ~ "**Without missing**")
+  #     }
 
 # returned table -----
 
-if(missing_percent == "both"){
-  return_tbl <- tbl_both
-}
 
-if(missing == FALSE | missing_percent == FALSE){
-  return_tbl <- tbl_noMissing2
-}
+#######################################################################3
 
-if(missing_percent == TRUE){
-  return_tbl <- tbl_missing
-}
+      # 1.
+    if(missing_percent == "both"){
+     tbl_return <-  tbl_merge(tbls = list(tbl_missing_percent, tbl_noMissing_default)) |>
+            modify_spanning_header(c(starts_with("stat_") & ends_with("_1")) ~ "**With missing**",
+                             c(starts_with("stat_") & ends_with("_2")) ~ "**Without missing**")
+    }
+
+      #2.
+      	if(missing_percent == FALSE | missing == FALSE){
+      	  tbl_return <- tbl_noMissing_default
+      	}
+
+      # 3.
+      if(missing_percent == TRUE){
+        tbl_return <- tbl_missing_percent
+      }
 
 
-return(return_tbl)
+      # 4.
+      if(test == TRUE){
+        tbl_return <- merge(tbl_return, tbl_noMissing_short)
+      }
 
+      #5.
+
+      if(add_n == FALSE){
+        #tbl_return <- tbl_return – add_n
+        # to be googled: column_hide oder so und start_with end with etc
+      }
+
+      #6.
+      if(CI == FALSE){
+        # tbl_return <- tbl_return – ci
+      }
 }
 
 
