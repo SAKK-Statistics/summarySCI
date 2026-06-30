@@ -27,7 +27,7 @@
 #' statistics are displayed by line. Must be an ordered factor.
 #' Typically, this would be a visit group such as e.g., baseline, follow-up etc.
 #'
-#' @param digits_cat Digits for summary statistics and CI of categorical
+#' @param digits_cat Digits for summary statistics of categorical
 #' variables. Default to 1.
 #'
 #' @param add_n Logical. If TRUE, an additional column with the total
@@ -412,6 +412,13 @@ summaryByVisitCategorical<- function(data,
       gtsummary::modify_column_hide(columns = c("stat_0", "n"))
   }
 
+
+  # post-process removal of empty "missing" rows
+  tbl<-tbl|>
+    modify_table_body(
+      ~ .x |> dplyr::filter(!(label == "Missing" & stat_0 %in% c("0 (0%)", "0 (NA%)", "0.0 (0.0%)", "0.0 (NA%)", "0.00 (0.00%)", "0.00 (NA%)", "0.000 (0.000%)", "0.000 (NA%)", "0.0000 (0.0000%)", "0.0000 (NA%)", "0.00000 (0.00000%)", "0.00000 (NA%)")))
+    )
+
   # if flex_table is needed
   if(as_flex_table == TRUE | word_output == TRUE){
     if (border == TRUE){
@@ -424,12 +431,6 @@ summaryByVisitCategorical<- function(data,
   } else {
     tbl_print <- tbl
   }
-
-  # post-process removal of empty "missing" rows
-  tbl_print<-tbl_print|>
-    modify_table_body(
-      ~ .x |> dplyr::filter(!(label == "Missing" & stat_0 %in% c("0 (0%)", "0 (NA%)", "0.0 (0.0%)", "0.0 (NA%)", "0.00 (0.00%)", "0.00 (NA%)", "0.000 (0.000%)", "0.000 (NA%)", "0.0000 (0.0000%)", "0.0000 (NA%)", "0.00000 (0.00000%)", "0.00000 (NA%)")))
-    )
 
 
 
