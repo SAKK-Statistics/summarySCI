@@ -3,6 +3,7 @@
 export(summaryByVisit)
 export(summaryLevels)
 export(summaryTable)
+export(summaryTable_new)
 import(cardx)
 import(dplyr)
 import(forcats)

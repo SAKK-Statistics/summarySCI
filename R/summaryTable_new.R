@@ -259,7 +259,7 @@ colnames(data_missing_as_level) <-  colnames(data)
 ## make missing a level -----
 
       for (i in colnames(data_missing_as_level|>
-                         dplyr::select(all_of(c(vars, group))))) {
+                         dplyr::select(all_of(c(vars))))) {
 
         if (is.factor(data_missing_as_level[[i]]) == TRUE | is.character(data_missing_as_level[[i]])) {
           data_missing_as_level[[i]] <- forcats::fct_na_value_to_level(as.factor(data_missing_as_level[[i]]), level = missing_text)
@@ -378,6 +378,14 @@ if (length(dichotomous_vars_2) > 0) {
 
         add_ci(method = list(all_continuous() ~ ci_cont,
                              all_categorical() ~ ci_cat_gt),
+
+
+               style_fun = list(
+                 all_continuous() ~ purrr::partial(style_number, digits = digits_cont),
+                 all_categorical() ~ purrr::partial(style_percent, digits = digits_cat)
+               ),
+
+
                conf.level = conf_level,
                statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
                                 (all_categorical() ~ "[{conf.low}%, {conf.high}%]")))|>
@@ -421,6 +429,11 @@ if (length(dichotomous_vars_2) > 0) {
                                              all_continuous() ~ digits_cont)) |>
         add_ci(method = list(all_continuous() ~ ci_cont,
                              all_categorical() ~ ci_cat_gt),
+
+               style_fun = list(
+                 all_continuous() ~ purrr::partial(style_number, digits = digits_cont),
+                 all_categorical() ~ purrr::partial(style_percent, digits = digits_cat)
+               ),
                conf.level = conf_level,
                statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
                                 (all_categorical() ~ "[{conf.low}%, {conf.high}%]")))  %>%
@@ -466,8 +479,8 @@ if (length(dichotomous_vars_2) > 0) {
                                                       include = all_of(vars),
                                                       type = type,
                                                       value = ref_level,
-                                                      # missing = "no",
-                                                      missing = var_missing,
+                                                      missing = "no",
+                                                      # missing = var_missing,
                                                       missing_text = missing_text,
                                                       by = group,
                                                       statistic = list(all_categorical() ~ stat_cat),
@@ -475,13 +488,14 @@ if (length(dichotomous_vars_2) > 0) {
         ) |>
           add_p(pvalue_fun = label_style_pvalue(digits = 2),
                 test = test_list) |>
-          modify_column_hide(starts_with("stat_") )%>%
-    add_n(last = TRUE) %>%
+          modify_column_hide(starts_with("stat_"))
+        # %>%
+    # add_n(last = TRUE) %>%
     # add_overall(last = TRUE) %>%
-    modify_footnote_header(
-      columns  = n,
-      footnote = "N without missing values"
-    )
+    # modify_footnote_header(
+    #   columns  = n,
+    #   footnote = "N without missing values"
+    # )
 
 }
 
@@ -508,38 +522,85 @@ if (length(dichotomous_vars_2) > 0) {
 
       # 1.
     if(missing_percent == "both"){
-     tbl_return <-  tbl_merge(tbls = list(tbl_missing_percent, tbl_noMissing_default)) |>
-            modify_spanning_header(c(starts_with("stat_") & ends_with("_1")) ~ "**With missing**",
-                             c(starts_with("stat_") & ends_with("_2")) ~ "**Without missing**")
+
+      if(overall == TRUE){
+
+        tbl_return <-  tbl_merge(tbls = list(tbl_missing_percent, tbl_noMissing_default %>%
+                                               add_n(last = TRUE) %>%
+                                             add_overall(last = TRUE)))
+
+      } else{
+     tbl_return <-  tbl_merge(tbls = list(tbl_missing_percent, tbl_noMissing_default))
+      }
     }
 
       #2.
       	if(missing_percent == FALSE | missing == FALSE){
-      	  tbl_return <- tbl_noMissing_default
+
+      	  if(overall == TRUE){
+      	  tbl_return <- tbl_noMissing_default %>%
+      	    add_n(last = TRUE) %>%
+      	    add_overall(last = TRUE) %>%
+      	    modify_table_styling(columns = c(starts_with("n_")), footnote = "N without missing values")
+
+      	  } else {
+      	    tbl_return <- tbl_noMissing_default
+      	  }
       	}
 
       # 3.
       if(missing_percent == TRUE){
+
+        if(overall == TRUE){
+          tbl_return <- tbl_missing_percent %>%
+            add_n(last = TRUE) %>%
+            add_overall(last = TRUE) %>%
+            modify_table_styling(columns = c(starts_with("n_")), footnote = "N without missing values")
+        } else{
+
+
         tbl_return <- tbl_missing_percent
+        }
       }
 
 
       # 4.
       if(test == TRUE){
-        tbl_return <- merge(tbl_return, tbl_noMissing_short)
+
+
+        tbl_return <- tbl_merge(list(tbl_return, tbl_noMissing_short))
+        # %>%
+          # remove_spanning_header()
       }
 
       #5.
+        if(ci == FALSE){
+           tbl_return <- tbl_return%>%
+             modify_column_hide(starts_with("ci_"))
+        }
 
-      if(add_n == FALSE){
-        #tbl_return <- tbl_return – add_n
-        # to be googled: column_hide oder so und start_with end with etc
-      }
 
-      #6.
-      if(CI == FALSE){
-        # tbl_return <- tbl_return – ci
-      }
+
+
+        #7
+        if(add_n == FALSE){
+          tbl_return <- tbl_return%>%
+            modify_column_hide(starts_with("n") | starts_with("add_n"))
+        }
+
+      tbl_return <- tbl_return %>%
+        remove_spanning_header()
+
+      if(missing_percent == "both")
+        tbl_return <- tbl_return %>%
+        modify_spanning_header(c(#starts_with("stat_") &
+          ends_with("_1")) ~ "**With missing**",
+          c(#starts_with("stat_") &
+            ends_with("_2") | ends_with("_2_1")) ~ "**Without missing**") %>%
+        modify_table_styling(columns = c(starts_with("n_")), footnote = "N without missing values")
+
+
+      return(tbl_return)
+
 }
-
 
