@@ -152,51 +152,57 @@ summaryTable_new <- function(data,
                          word_output = FALSE,
                          file_name = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
-################################################################################
+#
 # Settings and input checks ----------------------------------------------------
-################################################################################
+#
 
-  ## data exists and is df -----
+  ## Data exists and is df -----
   if (missing(data)) {
     stop("'data' must be specified.")
   }
   data <- as.data.frame(data)
 
 
-  ## test is TRUE only if group is given -----
+  ## Test is TRUE only if group is given -----
   if(is.null(group) & test == TRUE){
     stop("Error: 'group' needs to be given for a test to be calculated.")
   }
 
-  ## if missing_percent is both, missing is TRUE -----
+  ## If missing_percent is both, missing is TRUE -----
   if(missing == FALSE & missing_percent == "both"){
     missing == TRUE
   }
 
-  ## if missing percent is both, dichotomous_as is categorical -----
+  ## If missing percent is both, dichotomous_as is categorical -----
   if( missing_percent == "both"){
    dichotomous_as = "categorical"
   }
 
-  ## if missing is FALSE, var_missing is no -----
+  ## var_missing -----
+  ## If missing is FALSE, var_missing is no
   var_missing <- ifelse(missing == FALSE, "no", "ifany")
 
+  # If missing is "both", var_missing is both
+  var_missing <- ifelse(missing_percent == "both",
+                        "no",
+                        var_missing)
 
-  ## if vars = NULL, take all the variables -----
+
+  ## If vars = NULL, take all the variables -----
   if (is.null(vars)) {
     vars <- setdiff(names(data), group)
   }
 
-  ## group as factor -----
+  ## Group as factor -----
   if(!is.null(group)) data[[group]] <- as.factor(data[[group]])
 
 
-  ## summary stat for continuous and categorical variables -----
+  ## Summary stat for continuous and categorical variables -----
   stat_cont <- format_lookup[[stat_cont]]
   stat_cat <- format_lookup_cat[[stat_cat]]
 
 
-  ## type of CI for cat variables -----
+  ## Type of CI for cat variables -----
   if(!is.null(ci_cat)){
 
     if(ci_cat == "clopper-pearson"){
@@ -215,12 +221,12 @@ summaryTable_new <- function(data,
   }
 
 
-  ## labels -----
+  ## Labels -----
   if(is.null(labels)){
     labels <- get_labels(data, vars)
   }
 
-  ## test for continuous variables ----
+  ## Test for continuous variables ----
 
     if(length(unique(data[, group])) == 2 & is.null(test_cont)){
       test_cont = "wilcox.test"
@@ -232,25 +238,24 @@ summaryTable_new <- function(data,
 
     test_list <- list(all_continuous() ~ test_cont)
 
-  ## test for categorical variables -----
+  ## Test for categorical variables -----
 
     if (!is.null(test_cat)) {
       test_list <- c(test_list, all_categorical() ~ test_cat)
     }
 
 
-  ## if no group, add a dummy group
+  ## If no group, add a dummy group
   if(is.null(group) == TRUE){
     data$dummygroup = "Overall"
     group <- "dummygroup"
   }
 
-################################################################################
+#
 # data_missing_as_level ----------------------------------------------------
-################################################################################
+#
 
 ## dataset where missing values are considered a level
-# (for missing_percent = "both")
 
 data_missing_as_level <- data
 
@@ -276,15 +281,15 @@ colnames(data_missing_as_level) <-  colnames(data)
 
 data_missing_as_level <- droplevels(data_missing_as_level)
 
-## identify numeric variables -----
+## Identify numeric variables -----
 numeric_vars_2 <- intersect(vars, names(data_missing_as_level)[sapply(data_missing_as_level, is.numeric)])
 
-## identify dichotomous and continuous variables -----
+## Identify dichotomous and continuous variables -----
 if (length(numeric_vars_2) == 0) {
   dichotomous_vars_2 <- character(0)
   continuous_vars_2 <- character(0)
 } else {
-  # Find dichotomous (binary) numeric variables
+  ### Find dichotomous (binary) numeric variables -----
   dichotomous_vars_2 <- numeric_vars_2[
     sapply(data_missing_as_level[numeric_vars_2], function(x) {
       values <- sort(unique(na.omit(x)))
@@ -292,7 +297,7 @@ if (length(numeric_vars_2) == 0) {
     })
   ]
 
-  ### Continuous variables = numeric minus binary
+  ### Continuous variables = numeric minus binary -----
   continuous_vars_2 <- setdiff(numeric_vars_2, dichotomous_vars_2)
 }
 
@@ -312,57 +317,39 @@ if (length(dichotomous_vars_2) > 0) {
 
 
 
+## Set the variable type for missing not as level -----
+numeric_vars <- intersect(vars, names(data)[sapply(data, is.numeric)])
 
-      #### - !!!! ##
-
-      # We want to identify continuous variables with more than
-      # two unique values and treat them as continuous (and not factors)
-
-      # Identify numeric variables
-      # numeric_vars <- intersect(vars, names(data_missing_as_level)[sapply(data_missing_as_level, is.numeric)])
-      numeric_vars <- intersect(vars, names(data)[sapply(data, is.numeric)])
-
-
-# 2X zu haben
-      # 1x für data und 1x für data_missing_as_level
-      if (length(numeric_vars) == 0) {
-        dichotomous_vars <- character(0)
-        continuous_vars <- character(0)
-      } else {
-        # Find dichotomous (binary) numeric variables
-        dichotomous_vars <- numeric_vars[
-          sapply(data[numeric_vars], function(x) {
-            values <- sort(unique(na.omit(x)))
-            length(values) == 2 && all(values == c(0, 1))
-          })
-        ]
+if (length(numeric_vars) == 0) {
+  dichotomous_vars <- character(0)
+  continuous_vars <- character(0)
+  } else {
+    # Find dichotomous (binary) numeric variables
+    dichotomous_vars <- numeric_vars[
+      sapply(data[numeric_vars], function(x) {
+        values <- sort(unique(na.omit(x)))
+        length(values) == 2 && all(values == c(0, 1))
+        })
+      ]
 
         # Continuous variables = numeric minus binary
-        continuous_vars <- setdiff(numeric_vars, dichotomous_vars)
-      }
+continuous_vars <- setdiff(numeric_vars, dichotomous_vars)
+}
 
-      type <- list()
+type <- list()
 
-      # Append continuous variable types if any
-      if (length(continuous_vars) > 0) {
-        type <- append(type, list(all_of(continuous_vars) ~ continuous_as))
-      }
+# Append continuous variable types if any
+if (length(continuous_vars) > 0) {
+  type <- append(type, list(all_of(continuous_vars) ~ continuous_as))
+  }
 
-      # Append dichotomous variable types if any
-      if (length(dichotomous_vars) > 0) {
-        type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
-      }
-
-
+# Append dichotomous variable types if any
+if (length(dichotomous_vars) > 0) {
+  type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
+  }
 
 
-
-# missing should always be no in missing table when merged
-   var_missing <- ifelse(missing_percent == "both",
-                         "no",
-                         var_missing)
-
-## Table without missing or with missing but without percent -----
+# Table without missing or with missing but without percent -----
       tbl_noMissing_default <- gtsummary::tbl_summary(data = data,
                                            include = all_of(vars),
                                            label = labels,
@@ -406,36 +393,34 @@ if (length(dichotomous_vars_2) > 0) {
     ) %>%
         modify_table_styling(columns = c(starts_with("add_n_stat_")), footnote = "N without missing values")
 
-      # add foot note
 
-  # Step 1: Extract n values from the reference table
+
+## Extract n values from the reference table -----
 
   n_values <- tbl_noMissing_default$table_body %>%
     filter(row_type == "label") %>%
     select(variable, starts_with("add_n_stat_"))
 
 
-
-      tbl_missing_percent <- data_missing_as_level|>
-        gtsummary::tbl_summary(by = group,
-                               label = labels,
-                               include = all_of(vars),
-                                type = type_missing_as_level,
-                               value = ref_level,
-                               statistic = list(all_continuous() ~ stat_cont,
-                                                all_categorical() ~ stat_cat),
-                               missing_text = missing_text,
-                               digits = list(all_categorical() ~ digits_cat,
-                                             all_continuous() ~ digits_cont)) |>
-        add_ci(method = list(all_continuous() ~ ci_cont,
-                             all_categorical() ~ ci_cat_gt),
-
-               style_fun = list(
-                 all_continuous() ~ purrr::partial(style_number, digits = digits_cont),
-                 all_categorical() ~ purrr::partial(style_percent, digits = digits_cat)
-               ),
-               conf.level = conf_level,
-               statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
+# Table with missing ------
+tbl_missing_percent <- data_missing_as_level|>
+  gtsummary::tbl_summary(by = group,
+                         label = labels,
+                         include = all_of(vars),
+                         type = type_missing_as_level,
+                         value = ref_level,
+                         statistic = list(all_continuous() ~ stat_cont,
+                                          all_categorical() ~ stat_cat),
+                         missing_text = missing_text,
+                         digits = list(all_categorical() ~ digits_cat,
+                                       all_continuous() ~ digits_cont)) |>
+  add_ci(method = list(all_continuous() ~ ci_cont,
+                       all_categorical() ~ ci_cat_gt),
+         style_fun = list(
+           all_continuous() ~ purrr::partial(style_number, digits = digits_cont),
+           all_categorical() ~ purrr::partial(style_percent, digits = digits_cat)),
+         conf.level = conf_level,
+         statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
                                 (all_categorical() ~ "[{conf.low}%, {conf.high}%]")))  %>%
         modify_table_body(
           ~ .x %>%
@@ -468,13 +453,10 @@ if (length(dichotomous_vars_2) > 0) {
 
 
 
-      ### Test == TRUE -----
-      # tests displayed (!missings not counted in calculation!)
-      # -> only take p-value from other table
+# Table with (only) tests
 
-      if(group != "dummygroup"){
-
-        tbl_noMissing_short <- gtsummary::tbl_summary(data = data,
+if(group != "dummygroup"){
+  tbl_noMissing_short <- gtsummary::tbl_summary(data = data,
                                                       label = labels,
                                                       include = all_of(vars),
                                                       type = type,
@@ -489,38 +471,13 @@ if (length(dichotomous_vars_2) > 0) {
           add_p(pvalue_fun = label_style_pvalue(digits = 2),
                 test = test_list) |>
           modify_column_hide(starts_with("stat_"))
-        # %>%
-    # add_n(last = TRUE) %>%
-    # add_overall(last = TRUE) %>%
-    # modify_footnote_header(
-    #   columns  = n,
-    #   footnote = "N without missing values"
-    # )
 
 }
 
-  #
-  #     if(group != "dummygroup"){
-  #
-  # tbl_both <- tbl_merge(tbls = list(tbl_missing_percent, tbl_noMissing_default, tbl_noMissing_short)) |>
-  #   modify_spanning_header(c(starts_with("stat_") & ends_with("_1")) ~ "**With missing**",
-  #                          c(starts_with("stat_") & ends_with("_2")) ~ "**Without missing**",
-  #                          ## TO DO: fix header with missing
-  #                          c("p.value_3") ~ "",
-  #                          starts_with("n_") ~ "",
-  #                          starts_with("stat_0_") ~ "")
-  #     } else {
-  #       tbl_both <- tbl_merge(tbls = list(tbl_missing_percent, tbl_noMissing_default)) |>
-  #         modify_spanning_header(c(starts_with("stat_") & ends_with("_1")) ~ "**With missing**",
-  #                                c(starts_with("stat_") & ends_with("_2")) ~ "**Without missing**")
-  #     }
+#######################################################################
 
-# returned table -----
-
-
-#######################################################################3
-
-      # 1.
+# Loops -----
+ ## 1. missing_percent "both" -----
     if(missing_percent == "both"){
 
       if(overall == TRUE){
@@ -534,7 +491,7 @@ if (length(dichotomous_vars_2) > 0) {
       }
     }
 
-      #2.
+## 2. missing percent FALSE or missing FALSE ----
       	if(missing_percent == FALSE | missing == FALSE){
 
       	  if(overall == TRUE){
@@ -548,8 +505,8 @@ if (length(dichotomous_vars_2) > 0) {
       	  }
       	}
 
-      # 3.
-      if(missing_percent == TRUE){
+## 3. missing_percent TRUE -----
+    if(missing_percent == TRUE){
 
         if(overall == TRUE){
           tbl_return <- tbl_missing_percent %>%
@@ -564,42 +521,40 @@ if (length(dichotomous_vars_2) > 0) {
       }
 
 
-      # 4.
+## 4. test TRUE -----
       if(test == TRUE){
 
-
         tbl_return <- tbl_merge(list(tbl_return, tbl_noMissing_short))
-        # %>%
-          # remove_spanning_header()
       }
 
-      #5.
+## 5. CI  FALSE -----
         if(ci == FALSE){
            tbl_return <- tbl_return%>%
              modify_column_hide(starts_with("ci_"))
         }
 
-
-
-
-        #7
+## 6. add_n FALSE -----
         if(add_n == FALSE){
           tbl_return <- tbl_return%>%
             modify_column_hide(starts_with("n") | starts_with("add_n"))
         }
 
+
+## remove the spanning headers -----
       tbl_return <- tbl_return %>%
         remove_spanning_header()
 
-      if(missing_percent == "both")
-        tbl_return <- tbl_return %>%
-        modify_spanning_header(c(#starts_with("stat_") &
-          ends_with("_1")) ~ "**With missing**",
-          c(#starts_with("stat_") &
-            ends_with("_2") | ends_with("_2_1")) ~ "**Without missing**") %>%
-        modify_table_styling(columns = c(starts_with("n_")), footnote = "N without missing values")
+## add spanning_headers if missing percent "both"
+if(missing_percent == "both")
+  tbl_return <- tbl_return %>%
+  modify_spanning_header(c(#starts_with("stat_") &
+    ends_with("_1")) ~ "**With missing**",
+    c(#starts_with("stat_") &
+      ends_with("_2") | ends_with("_2_1")) ~ "**Without missing**") %>%
+  modify_table_styling(columns = c(starts_with("n_")), footnote = "N without missing values")
 
 
+# return table
       return(tbl_return)
 
 }
