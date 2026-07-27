@@ -554,8 +554,35 @@ if(missing_percent == "both")
   modify_table_styling(columns = c(starts_with("n_")), footnote = "N without missing values")
 
 
+# flex_table and word output ----
+
+if(as_flex_table == TRUE | word_output == TRUE){
+  if (border == TRUE){
+    tbl_print <- FitFlextableToPage(gtsummary::as_flex_table(tbl_return)|>
+                                      flextable::border_outer(part = "header")|>
+                                      flextable::border_outer(part = "body") )
+  } else {
+    tbl_print <- FitFlextableToPage(gtsummary::as_flex_table(tbl_return))
+  }
+} else {
+  tbl_print <- tbl_return
+}
+
+# Word output -----
+if (word_output == TRUE) {
+
+  # Create Word document
+  doc <- officer::read_docx()
+  doc <- flextable::body_add_flextable(doc, value = tbl_print)
+
+  # Save to specified location
+  print(doc, target = file_name)
+
+  message("Table saved to: ", normalizePath(file_name))
+}
+
 # return table
-      return(tbl_return)
+      return(tbl_print)
 
 }
 
