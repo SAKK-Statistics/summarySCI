@@ -19,6 +19,7 @@ For each site of progression, presence or absence is decoded in a
 separate column. In addition, we have a grouping variable called ‘arm’.
 
 ``` r
+
 data<- as.data.frame(cbind(c(1:10), c("A","A","A","A","A","B","B","B","B","B"),
                             c("absent","present","absent","present","absent","absent","present","absent","present","absent"),
                             c("absent","absent","present","absent","absent","absent","absent","absent","absent","absent"),
@@ -37,6 +38,7 @@ decoded as ‘present’. We need to define the columns containing the
 factor levels using the `vars` argument.
 
 ``` r
+
 summarySCI::summaryLevels(data=data,
                       vars = c("liver", "lung", "brain"),
                       label = "Site of progression",
@@ -62,6 +64,7 @@ overall column can still be shown if desired, using the `overall = TRUE`
 argument.
 
 ``` r
+
 summarySCI::summaryLevels(data=data,
                       vars = c("liver", "lung", "brain"),
                       group = "arm",
@@ -72,6 +75,7 @@ summarySCI::summaryLevels(data=data,
 [TABLE]
 
 ``` r
+
 summarySCI::summaryLevels(data=data,
                       vars = c("liver", "lung", "brain"),
                       group = "arm",
@@ -90,6 +94,7 @@ the `test_cat` argument. Options include `chisq.test`,
 `chisq.test.no.correct`, `fisher.test` (default)
 
 ``` r
+
 summarySCI::summaryLevels(data=data,
                       vars = c("liver", "lung", "brain"),
                       group = "arm",
@@ -101,6 +106,7 @@ summarySCI::summaryLevels(data=data,
 [TABLE]
 
 ``` r
+
 summarySCI::summaryLevels(data=data,
                       vars = c("liver", "lung", "brain"),
                       group = "arm",
@@ -128,6 +134,7 @@ A confidence interval can be added, if requested using the statement
 type of confidence interval can be chosen using the command `ci_cat`.
 
 ``` r
+
 summarySCI::summaryLevels(data=data,
                       vars = c("liver", "lung", "brain"),
                       group = "arm",

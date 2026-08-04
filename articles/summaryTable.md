@@ -20,6 +20,7 @@ the dataset
 [`survival::colon`](https://rdrr.io/pkg/survival/man/colon.html).
 
 ``` r
+
 library(survival)
 data(cancer, package="survival")
 
@@ -44,6 +45,7 @@ and four variable:
 We also add a few missing values for the variable `extent`.
 
 ``` r
+
 set.seed(123)
 colon2 <- colon1 %>%
   select(rx, sex, age, extent) %>%
@@ -55,6 +57,7 @@ colon2 <- colon1 %>%
 ```
 
 ``` r
+
 head(colon2)
 #> # A tibble: 6 × 4
 #>   rx       Male   age extent
@@ -73,6 +76,7 @@ By default, the function produces a table with all variables present in
 the dataset.
 
 ``` r
+
 summaryTable(data = colon2)
 ```
 
@@ -98,6 +102,7 @@ in the argument `vars`. The argument `group` allows the summary
 statistics to be stratified by this variable.
 
 ``` r
+
 summaryTable(data = colon2, 
              vars = c("Male", "age", "extent"), 
              group = "rx")
@@ -119,6 +124,7 @@ used. Please note that the labels need to be entered as a list, as shown
 below:
 
 ``` r
+
 summaryTable(data = colon2, 
              group = "rx",
              labels = list(age = "Age", extent = "Extent"))
@@ -133,6 +139,7 @@ default added in a new column. This can be disabled by setting the
 argument `add_n` to `FALSE`.
 
 ``` r
+
 summaryTable(data = colon2, 
              group = "rx",
             labels = list(rx = "Arm", age = "Age", extent = "Extent"), 
@@ -147,6 +154,7 @@ An “overall” column can be added by setting the argument `overall` to
 `TRUE`.
 
 ``` r
+
 summaryTable(data = colon2, 
              group = "rx",
              overall = TRUE, 
@@ -174,6 +182,7 @@ reference level is specified using the argument
 `value = list(variable ~ "level to show")`.
 
 ``` r
+
 summaryTable(data = colon2,
              group = "rx",
              vars = "Male",
@@ -197,6 +206,7 @@ The statistics to be displayed can be chosen using the argument
 `"n_percent"` (default) `"n"` and `"n_N"`).
 
 ``` r
+
 summaryTable(data = colon2, group = "rx", 
              stat_cont = "median_IQR", 
              stat_cat = "n_N",
@@ -219,6 +229,7 @@ The default CI type for continuous variables is `wilcox.test` and
 `ci_cat`, respectively.
 
 ``` r
+
 summaryTable(data = colon2, 
              group = "rx", 
              vars = c("age", "extent"), 
@@ -245,6 +256,7 @@ missing number. This can be disabled by setting the argument
 `missing_percentage` to `FALSE`.
 
 ``` r
+
 summaryTable(data = colon2, 
              group = "rx", 
              vars = "extent", 
@@ -258,6 +270,7 @@ summaryTable(data = colon2,
 [TABLE]
 
 ``` r
+
 
 summaryTable(data = colon2, 
              group = "rx", 
@@ -279,6 +292,7 @@ The tables with and without missing values can also be put next to each
 other by setting `missing` to `"both"`.
 
 ``` r
+
 summaryTable(data = colon2, 
              group = "rx", 
              vars = "extent", 
