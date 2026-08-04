@@ -10,13 +10,18 @@ summaryByVisit(
   group = NULL,
   labels = NULL,
   stat_cont = "median_range",
+  stat_cat = "n_percent",
   visit = "visit",
   order = NULL,
   visitgroup = NULL,
   digits_cont = 1,
+  digits_cat = 1,
+  missing_percent = TRUE,
+  missing = TRUE,
+  missing_text = "Missing",
   add_n = FALSE,
   overall = FALSE,
-  as_flex_table = TRUE,
+  as_flex_table = FALSE,
   border = TRUE,
   word_output = FALSE,
   file_name = paste0("SummaryByVisit_", format(Sys.Date(), "\%Y\%m\%d"), ".docx")
@@ -42,6 +47,9 @@ dataset. If no label present, the variable name is taken.}
 Options include "median_IQR", "median_range" (default), "mean_sd",
 "mean_se" and "geomMean_sd".}
 
+\item{stat_cat}{Summary statistic to display for categorical variables.
+Options include "n", "n_N" and "n_percent" (default).}
+
 \item{visit}{Name of the stratum for which summary statistics are
 displayed by line. Typically, this would be \code{"visit"}.}
 
@@ -53,6 +61,19 @@ Typically, this would be a visit group such as e.g., baseline, follow-up etc.}
 
 \item{digits_cont}{Digits for summary statistics and CI of continuous
 variables. Default to 1.}
+
+\item{digits_cat}{Digits for summary statistics and CI of categorical
+variables. Default to 1.}
+
+\item{missing_percent}{Indicates whether percentages for missings are shown
+(TRUE, default)
+or not (FALSE) for categorical variables.
+If "both", then both options are displayed next to each other.}
+
+\item{missing}{Logical. If TRUE (default), the missing values are shown.}
+
+\item{missing_text}{String indicating text shown on missing row. Default to
+"Missing".}
 
 \item{add_n}{Logical. If TRUE, an additional column with the total
 number of non-missing observations for each variable is added.}

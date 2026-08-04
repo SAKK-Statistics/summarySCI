@@ -54,7 +54,6 @@
 #' @import cardx dplyr gtsummary forcats purrr
 #' @importFrom Hmisc label
 #' @importFrom stats sd t.test
-#' @export
 
 
 summaryByVisitCategorical<- function(data,
@@ -154,9 +153,9 @@ summaryByVisitCategorical<- function(data,
     missing<-"ifany"
   }
 
-  # if (!all(sapply(data[vars], is.numeric))) {
-  #   stop("'All vars must be numeric'")
-  # }
+  if (any(sapply(data[vars], is.numeric))) {
+    stop("'All vars must be categorical'")
+  }
 
   tbl<-NULL
 

@@ -59,7 +59,7 @@ include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
 Options include "n_percent" (default) and "n", and "n_N".}
 
 \item{continuous_as}{Type for the continuous variables. Can either
-be "continous" (default) or "categorical".}
+be "continuous" (default) or "categorical".}
 
 \item{dichotomous_as}{Type for the dichotomous variables. Can either be
 "categorical" (default, one row per level) or "dichotomous" (only
