@@ -19,7 +19,7 @@ summaryTable_new(
   test_cat = "fisher.test",
   ci = FALSE,
   ci_cont = "wilcox.test",
-  ci_cat = "wilson",
+  ci_cat = "clopper.pearson",
   conf_level = 0.95,
   digits_cont = 1,
   digits_cat = 0,
@@ -95,7 +95,7 @@ Only used if \code{ci = TRUE}.
 Options include "t.test" and "wilcox.test" (default).}
 
 \item{ci_cat}{Confidence interval method for categorical variables.
-Options include "wilson" (default), "wilson.no.correct", "clopper.pearson",
+Options include "clopper.pearson" (default) "wilson", "wilson.no.correct",
 "wald", "wald.no.correct", "agresti.coull" and "jeffreys".
 If NULL, no CI will be displayed.}
 

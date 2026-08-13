@@ -63,7 +63,7 @@
 #' Options include "t.test" and "wilcox.test" (default).
 #'
 #' @param ci_cat Confidence interval method for categorical variables.
-#' Options include "wilson" (default), "wilson.no.correct", "clopper.pearson",
+#' Options include "clopper.pearson" (default) "wilson", "wilson.no.correct",
 #' "wald", "wald.no.correct", "agresti.coull" and "jeffreys".
 #' If NULL, no CI will be displayed.
 #'
@@ -138,7 +138,7 @@ summaryTable_new <- function(data,
                          test_cat = "fisher.test",
                          ci = FALSE,
                          ci_cont = "wilcox.test",
-                         ci_cat = "wilson",
+                         ci_cat = "clopper.pearson",
                          conf_level = 0.95,
                          digits_cont = 1,
                          digits_cat = 0,
@@ -170,7 +170,7 @@ summaryTable_new <- function(data,
 
   ## If missing_percent is both, missing is TRUE -----
   if(missing == FALSE & missing_percent == "both"){
-    missing == TRUE
+    missing <- TRUE
   }
 
   ## If missing percent is both, dichotomous_as is categorical -----
@@ -203,13 +203,12 @@ summaryTable_new <- function(data,
 
 
   ## Type of CI for cat variables -----
-  if(!is.null(ci_cat)){
+  # if(!is.null(ci_cat)){
 
-    if(ci_cat == "clopper-pearson"){
+    if(ci_cat == "clopper.pearson"){
       ci_cat_gt <- "exact"
     } else if(ci_cat == "wilson" |
               ci_cat == "wilson.no.correct"|
-              ci_cat == "clopper.pearson" |
               ci_cat == "wald"|
               ci_cat == "wald.no.correct" |
               ci_cat == "agresti.coull"|
@@ -218,7 +217,7 @@ summaryTable_new <- function(data,
     }else{
       stop(paste0("The chosen CI method '", ci_cat, "' does not exist or is not yet implemented."))
     }
-  }
+  # }
 
 
   ## Labels -----
@@ -530,7 +529,8 @@ if(group != "dummygroup"){
 ## 5. CI  FALSE -----
         if(ci == FALSE){
            tbl_return <- tbl_return%>%
-             modify_column_hide(starts_with("ci_"))
+             modify_column_hide(starts_with("ci_")) %>%
+             remove_abbreviation("CI = Confidence Interval")
         }
 
 ## 6. add_n FALSE -----
