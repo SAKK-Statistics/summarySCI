@@ -193,6 +193,16 @@ summaryTable_new <- function(data,
     vars <- setdiff(names(data), group)
   }
 
+  # NEW
+  ## Drop variables that are entirely NA -----
+  all_na <- vapply(data[vars], function(x) all(is.na(x)), logical(1))
+  if (any(all_na)) {
+    for (v in vars[all_na]) {
+      message(sprintf("Column %s was not considered because it only contains NA", v))
+    }
+    vars <- vars[!all_na]
+  }
+
   ## Group as factor -----
   if(!is.null(group)) data[[group]] <- as.factor(data[[group]])
 
