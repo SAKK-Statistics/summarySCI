@@ -16,7 +16,8 @@ Suggests:
     tidyverse,
     survival,
     testthat (>= 3.0.0),
-    rmarkdown
+    rmarkdown,
+    stringr
 VignetteBuilder: knitr
 URL: https://github.com/SAKK-Statistics/summarySCI/
 BugReports: https://github.com/SAKK-Statistics/summarySCI/issues
