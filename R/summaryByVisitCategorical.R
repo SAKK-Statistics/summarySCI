@@ -1,4 +1,4 @@
-#' Creates publication-ready summary tables for continuous data grouped, by visit
+#' Creates publication-ready summary tables for categorical data grouped, by visit
 #'
 #' @param data A data frame or tibble containing the data to be summarized.
 #'
@@ -29,6 +29,16 @@
 #'
 #' @param digits_cat Digits for summary statistics of categorical
 #' variables. Default to 1.
+#'
+#' @param missing Logical. If TRUE (default), the missing values are shown.
+#'
+#' @param missing_percent Indicates whether percentages for missings are shown
+#' (TRUE, default)
+#' or not (FALSE) for categorical variables.
+#'  If "both", then both options are displayed next to each other.
+#'
+#' @param missing_text String indicating text shown on missing row. Default to
+#' "Missing".
 #'
 #' @param add_n Logical. If TRUE, an additional column with the total
 #' number of non-missing observations for each variable is added.

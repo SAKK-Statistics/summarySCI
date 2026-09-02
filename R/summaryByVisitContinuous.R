@@ -19,9 +19,6 @@
 #' Options include "median_IQR", "median_range" (default), "mean_sd",
 #' "mean_se" and "geomMean_sd".
 #'
-#' @param stat_cat Summary statistic to display for categorical variables.
-#' Options include "n", "n_N" and "n_percent" (default).
-#'
 #' @param visit Name of the stratum for which summary statistics are
 #' displayed by line. Typically, this would be `"visit"`.
 #'
