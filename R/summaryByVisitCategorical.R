@@ -211,7 +211,7 @@ summaryByVisitCategorical<- function(data,
                    gtsummary::modify_table_body(
                      ~ .x |>
                        dplyr::relocate(n, .before = stat_0))|>
-                   gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)%>%
+                   gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)%>%
         modify_table_body(
           ~ .x %>%
             dplyr::mutate(
@@ -263,7 +263,7 @@ summaryByVisitCategorical<- function(data,
                          dplyr::relocate(add_n_stat_1, .before = stat_1) |>
                          dplyr::relocate(add_n_stat_2, .before = stat_2)
                      )|>
-                     gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)%>%
+                     gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)%>%
                  modify_table_body(
                    ~ .x %>%
                      dplyr::mutate(
@@ -325,7 +325,7 @@ summaryByVisitCategorical<- function(data,
                          dplyr::relocate(add_n_stat_2, .before = stat_2)|>
                          dplyr::relocate(add_n_stat_3, .before = stat_3)
                      )|>
-                     gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)%>%
+                     gtsummary::modify_header(list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)%>%
                  modify_table_body(
                    ~ .x %>%
                      dplyr::mutate(

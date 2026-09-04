@@ -236,7 +236,7 @@ summaryLevels <- function(data,
   # ---------------------------- add label if any --------------------------- #
   if (!is.null(label)){
     tbl<-tbl|>
-      gtsummary::modify_header(update = list(label ~ paste0("**", label, "**")))|>
+      gtsummary::modify_header(!!!list(label ~ paste0("**", label, "**")))|>
       gtsummary::modify_table_styling(
         columns = label,
         footnote = "More than one entry possible"
