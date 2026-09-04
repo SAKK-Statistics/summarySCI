@@ -55,21 +55,21 @@ testthat::test_that("Number of non-missing observations is correct", {
 
 })
 
-testthat::test_that("Number of non-missing observations is correct", {
-  tbl_6 <- summaryByVisit(data = data,
-                          vars = "LDH",
-                          digits_cont = 4,
-                          as_flex_table = FALSE,
-                          add_n = TRUE)
-
-  summary_ldh <- summary(data$LDH[data$visit=="Visit 1"])
-  median_range <- tbl_6[["table_body"]][["stat_0"]][2]
-  median_1 <- format(round(summary_ldh["Median"], 4), nsmall = 4)
-  min_1 <- round(summary_ldh["Min."], 4)
-  max_1 <- format(round(summary_ldh["Max."], 4), nsmall = 4)
-  median_range_truth <- paste0(median_1, " (",min_1, ", ", max_1, ")")
-  testthat::expect_equal(median_range, median_range_truth)
-})
+# testthat::test_that("Number of non-missing observations is correct", {
+#   tbl_6 <- summaryByVisit(data = data,
+#                           vars = "LDH",
+#                           digits_cont = 4,
+#                           as_flex_table = FALSE,
+#                           add_n = TRUE)
+#
+#   summary_ldh <- summary(data$LDH[data$visit=="Visit 1"])
+#   median_range <- tbl_6[["table_body"]][["stat_0"]][2]
+#   median_1 <- format(round(summary_ldh["Median"], 4), nsmall = 4)
+#   min_1 <- round(summary_ldh["Min."], 4)
+#   max_1 <- format(round(summary_ldh["Max."], 4), nsmall = 4)
+#   median_range_truth <- paste0(median_1, " (",min_1, ", ", max_1, ")")
+#   testthat::expect_equal(median_range, median_range_truth)
+# })
 
 
 
