@@ -2,7 +2,7 @@
 % Please edit documentation in R/summaryByVisitCategorical.R
 \name{summaryByVisitCategorical}
 \alias{summaryByVisitCategorical}
-\title{Creates publication-ready summary tables for continuous data grouped, by visit}
+\title{Creates publication-ready summary tables for categorical data grouped, by visit}
 \usage{
 summaryByVisitCategorical(
   data,
@@ -56,6 +56,16 @@ Typically, this would be a visit group such as e.g., baseline, follow-up etc.}
 \item{digits_cat}{Digits for summary statistics of categorical
 variables. Default to 1.}
 
+\item{missing_percent}{Indicates whether percentages for missings are shown
+(TRUE, default)
+or not (FALSE) for categorical variables.
+If "both", then both options are displayed next to each other.}
+
+\item{missing}{Logical. If TRUE (default), the missing values are shown.}
+
+\item{missing_text}{String indicating text shown on missing row. Default to
+"Missing".}
+
 \item{add_n}{Logical. If TRUE, an additional column with the total
 number of non-missing observations for each variable is added.}
 
@@ -79,5 +89,5 @@ A table of class "\code{flextable}" or \code{c("tbl_strata_nested_stack", "tbl_s
 Optionally returns a .docx file in the specified folder.
 }
 \description{
-Creates publication-ready summary tables for continuous data grouped, by visit
+Creates publication-ready summary tables for categorical data grouped, by visit
 }

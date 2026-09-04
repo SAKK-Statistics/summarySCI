@@ -12,4 +12,4 @@ library(gtsummary)
 library(stringr)
 
 
-test_check("summarySCI")
+testthat::test_check("summarySCI")

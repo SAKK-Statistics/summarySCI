@@ -19,13 +19,13 @@ data$arm<- c(rep("Arm A", 70), rep("Arm B", 80))
 data$arm<- c(rep("Arm A", 50), rep("Arm B", 50), rep("Arm C", 50))
 
 
-test_that("Error when no data given", {
-  expect_error(summaryByVisit(data = NULL))
+testthat::test_that("Error when no data given", {
+  testthat::expect_error(summaryByVisit(data = NULL))
 })
 
 
 
-test_that("median and range are correct", {
+testthat::test_that("median and range are correct", {
   tbl <- summaryByVisit(data = data,
                       vars = "LDH",
                       as_flex_table = FALSE,
@@ -37,12 +37,12 @@ test_that("median and range are correct", {
   max_1 <- round(summary_ldh["Max."], 0)
   median_range_fct <- tbl[["table_body"]][["stat_0"]][[2]]
   median_range_truth <- paste0(median_1, " (",min_1, ", ", max_1, ")")
-  expect_equal(median_range_fct,median_range_truth )
+  testthat::expect_equal(median_range_fct,median_range_truth )
 
 })
 
 
-test_that("Number of non-missing observations is correct", {
+testthat::test_that("Number of non-missing observations is correct", {
   tbl_5 <- summaryByVisit(data = data,
                         vars = "LDH",
                         visit="visit",
@@ -51,11 +51,11 @@ test_that("Number of non-missing observations is correct", {
 
   n_noMissing_fct <- as.numeric(tbl_5[["table_body"]][["n"]][7])
   n_noMissing_truth <- sum(!is.na(data$LDH[visit=="Visit 6"]))
-  expect_equal(n_noMissing_fct, n_noMissing_truth)
+  testthat::expect_equal(n_noMissing_fct, n_noMissing_truth)
 
 })
 
-test_that("Number of non-missing observations is correct", {
+testthat::test_that("Number of non-missing observations is correct", {
   tbl_6 <- summaryByVisit(data = data,
                           vars = "LDH",
                           digits_cont = 4,
@@ -64,11 +64,11 @@ test_that("Number of non-missing observations is correct", {
 
   summary_ldh <- summary(data$LDH[data$visit=="Visit 1"])
   median_range <- tbl_6[["table_body"]][["stat_0"]][2]
-  median_1 <- round(summary_ldh["Median"], 4)
+  median_1 <- format(round(summary_ldh["Median"], 4), nsmall = 4)
   min_1 <- round(summary_ldh["Min."], 4)
   max_1 <- format(round(summary_ldh["Max."], 4), nsmall = 4)
   median_range_truth <- paste0(median_1, " (",min_1, ", ", max_1, ")")
-  expect_equal(median_range, median_range_truth)
+  testthat::expect_equal(median_range, median_range_truth)
 })
 
 

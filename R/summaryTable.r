@@ -276,7 +276,7 @@ if (!is.null(test_cat)) {
 
   tbl_noMissing <- gtsummary::tbl_summary(data = data,
                                include = all_of(vars),
-                               by = group,
+                               by = any_of(group),
                                type = type,
                                value = value,
                      label = labels,
@@ -427,7 +427,7 @@ if(missing_percent != FALSE & missing != FALSE){
 
 
     tbl_missing <- data2|>
-      gtsummary::tbl_summary(by = group,
+      gtsummary::tbl_summary(by = any_of(group),
                   label = labels,
                   include = all_of(vars),
                   type = type,
@@ -441,7 +441,7 @@ if(missing_percent != FALSE & missing != FALSE){
     # need that for the add_n()
 
     tbl_for_add_n <- data|>
-      gtsummary::tbl_summary(by = group,
+      gtsummary::tbl_summary(by = any_of(group),
                   label = labels,
                   include = all_of(vars),
                   type = type,
@@ -478,7 +478,7 @@ if(missing_percent != FALSE & missing != FALSE){
 
     if(!is.null(group) & length(unique(data[, group])) == 3){
       tbl_for_add_n <-  data|>
-        gtsummary::tbl_summary(by = group,
+        gtsummary::tbl_summary(by = any_of(group),
                                label = labels,
                                include = all_of(vars),
                                type = type,

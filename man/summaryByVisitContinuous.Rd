@@ -71,9 +71,6 @@ available if flex_table = TRUE. Default is TRUE.}
 \item{file_name}{Character string.
 Specify the name of the Word document containing the table.
 Only used when \code{word_output} is TRUE. Needs to end with ".docx".}
-
-\item{stat_cat}{Summary statistic to display for categorical variables.
-Options include "n", "n_N" and "n_percent" (default).}
 }
 \value{
 A table of class "\code{flextable}" or \code{c("tbl_strata_nested_stack", "tbl_stack", "gtsummary")}.
