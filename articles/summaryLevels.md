@@ -1,7 +1,7 @@
 # summaryLevels
 
 The function
-[`summaryLevels()`](https://sakk-statistics.github.io/summarySAKK/reference/summaryLevels.md)
+[`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
 produces a table with descriptive statistics for levels of a categorical
 variable, when those are saved as binary variables in different columns.
 It is largely based on the function
@@ -31,7 +31,7 @@ names(data)<-c("upn", "arm", "liver", "lung", "brain")
 ### Basic table
 
 Now, we use
-[`summarySCI::summaryLevels`](https://sakk-statistics.github.io/summarySAKK/reference/summaryLevels.md)
+[`summarySCI::summaryLevels`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
 to collapse the columns ‘liver’, ‘lung’ and ‘brain’ into a single factor
 named ‘Site of progression’. The presence of each site of progression is
 decoded as ‘present’. We need to define the columns containing the

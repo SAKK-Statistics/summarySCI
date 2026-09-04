@@ -1,7 +1,7 @@
 # summaryTable
 
 The function
-[`summaryTable()`](https://sakk-statistics.github.io/summarySAKK/reference/summaryTable.md)
+[`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md)
 produces a table with descriptive statistics for continuous, categorical
 and dichotomous variables. It is based on the function
 [`gtsummary::tbl_summary()`](https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html),

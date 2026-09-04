@@ -1,18 +1,22 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/404.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/articles/index.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/articles/summaryByVisit.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/articles/summaryLevels.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/articles/summaryTable.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/authors.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/index.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/news/index.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/reference/geom_mean.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/reference/get_labels.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/reference/index.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/reference/se.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/reference/summaryByVisit.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/reference/summaryLevels.html</loc></url>
-<url><loc>https://sakk-statistics.github.io/summarySAKK/reference/summaryTable.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/404.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/articles/index.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/articles/summaryByVisit.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/articles/summaryLevels.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/articles/summaryTable.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/authors.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/index.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/news/index.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/boxplotSCI.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/geom_mean.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/get_labels.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/hemoglobin_data.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/index.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/se.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/summaryByVisitCategorical.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/summaryByVisitContinuous.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/summaryTable.html</loc></url>
 </urlset>
 

@@ -1,7 +1,7 @@
 # summaryByVisit
 
 The function
-[`summaryByVisit()`](https://sakk-statistics.github.io/summarySAKK/reference/summaryByVisit.md)
+[`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
 produces a table with descriptive statistics for continues and
 categorical variables at different time points (visits). It is largely
 based on the function
@@ -45,7 +45,7 @@ data$arm<- c(rep("Arm A", 70), rep("Arm B", 80))
 ### Basic table
 
 Now, we use
-[`summarySCI::summaryLevels`](https://sakk-statistics.github.io/summarySAKK/reference/summaryLevels.md)
+[`summarySCI::summaryLevels`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
 to create a summary table for median and range of each lab-value by
 visit.
 

@@ -15,6 +15,6 @@ You can install the package using
 
 Currently, the package contains three functions:
 
-- [`summaryTable()`](https://sakk-statistics.github.io/summarySAKK/reference/summaryTable.md)
-- [`summaryLevels()`](https://sakk-statistics.github.io/summarySAKK/reference/summaryLevels.md)
-- [`summaryByVisit()`](https://sakk-statistics.github.io/summarySAKK/reference/summaryByVisit.md)
+- [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md)
+- [`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
+- [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
