@@ -90,10 +90,10 @@ summaryByVisit<- function(data,
                           missing_text = "Missing",
                           add_n = FALSE,
                           overall = FALSE,
-                          as_flex_table = FALSE,
+                          as_flex_table = TRUE,
                           border = TRUE,
                           word_output = FALSE,
-                          file_name = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")){
+                          file_name = file_name){
   tbl_out <- NULL
   for (v in 1:length(vars)){
   if (is.numeric(data[[vars[[v]]]])==TRUE){
@@ -109,9 +109,9 @@ summaryByVisit<- function(data,
                    add_n = add_n,
                    overall = overall,
                    as_flex_table = FALSE,
-                   border = border,
-                   word_output = word_output,
-                   file_name = file_name)
+                   border = FALSE,
+                   word_output = FALSE,
+                   file_name = NULL)
   }
   else{
     tbl0 <- summaryByVisitCategorical(data,
@@ -129,9 +129,9 @@ summaryByVisit<- function(data,
                                          add_n = add_n,
                                          overall = overall,
                                          as_flex_table = FALSE,
-                                         border = border,
-                                         word_output = word_output,
-                                         file_name = file_name)
+                                         border = FALSE,
+                                         word_output = FALSE,
+                                         file_name = NULL)
 
   }
     tbl0$table_body$tbl_indent_id1 <-as.numeric(tbl0$table_body$tbl_indent_id1)
