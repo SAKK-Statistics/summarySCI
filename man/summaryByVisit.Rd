@@ -2,7 +2,7 @@
 % Please edit documentation in R/summaryByVisit.R
 \name{summaryByVisit}
 \alias{summaryByVisit}
-\title{Creates publication-ready summary tables for continuous data grouped, by visit}
+\title{Creates publication-ready summary tables for data grouped, by visit}
 \usage{
 summaryByVisit(
   data,
@@ -21,16 +21,16 @@ summaryByVisit(
   missing_text = "Missing",
   add_n = FALSE,
   overall = FALSE,
-  as_flex_table = FALSE,
+  as_flex_table = TRUE,
   border = TRUE,
   word_output = FALSE,
-  file_name = paste0("SummaryByVisit_", format(Sys.Date(), "\%Y\%m\%d"), ".docx")
+  file_path = file_path
 )
 }
 \arguments{
 \item{data}{A data frame or tibble containing the data to be summarized.}
 
-\item{vars}{Continuous variables to include in the summary table.
+\item{vars}{Variables to include in the summary table.
 Need to be specified with quotes, e.g. \code{"age"} or \code{c("age", "response")}. Default to
 all variables present in the data except \code{group}.}
 
@@ -89,8 +89,8 @@ available if flex_table = TRUE. Default is TRUE.}
 
 \item{word_output}{Logical. If TRUE, the table is also saved in a word document.}
 
-\item{file_name}{Character string.
-Specify the name of the Word document containing the table.
+\item{file_path}{Character string.
+Specify the path of the Word document containing the table.
 Only used when \code{word_output} is TRUE. Needs to end with ".docx".}
 }
 \value{
@@ -98,5 +98,5 @@ A table of class "\code{flextable}" or \code{c("tbl_strata_nested_stack", "tbl_s
 Optionally returns a .docx file in the specified folder.
 }
 \description{
-Creates publication-ready summary tables for continuous data grouped, by visit
+Creates publication-ready summary tables for data grouped, by visit
 }
