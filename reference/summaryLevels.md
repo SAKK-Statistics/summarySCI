@@ -23,7 +23,7 @@ summaryLevels(
   as_flex_table = TRUE,
   border = TRUE,
   word_output = FALSE,
-  file_name = paste0("SummaryLevels_", format(Sys.Date(), "%Y%m%d"), ".docx")
+  file_path = paste0("SummaryLevels_", format(Sys.Date(), "%Y%m%d"), ".docx")
 )
 ```
 
@@ -114,9 +114,9 @@ summaryLevels(
 
   Logical. If TRUE, the table is also saved in a word document.
 
-- file_name:
+- file_path:
 
-  Character string. Specify the name of the Word document containing the
+  Character string. Specify the path of the Word document containing the
   table. Only used when `word_output` is TRUE. Needs to end with
   ".docx".
 

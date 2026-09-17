@@ -238,10 +238,6 @@ summaryTable(data = colon2,
              ci = TRUE,
              labels = list(age = "Age", extent = "Extent")
              )
-#> The number rows in the tables to be merged do not match, which may result in
-#> rows appearing out of order.
-#> ℹ See `tbl_merge()` (`?gtsummary::tbl_merge()`) help file for details. Use
-#>   `quiet=TRUE` to silence message.
 ```
 
 [TABLE]
@@ -280,10 +276,6 @@ summaryTable(data = colon2,
              missing_percent = TRUE,
              labels = list(extent = "Extent")
              )
-#> The number rows in the tables to be merged do not match, which may result in
-#> rows appearing out of order.
-#> ℹ See `tbl_merge()` (`?gtsummary::tbl_merge()`) help file for details. Use
-#>   `quiet=TRUE` to silence message.
 ```
 
 [TABLE]
@@ -300,14 +292,6 @@ summaryTable(data = colon2,
              test = TRUE,
               labels = list(extent = "Extent")
              )
-#> The number rows in the tables to be merged do not match, which may result in
-#> rows appearing out of order.
-#> ℹ See `tbl_merge()` (`?gtsummary::tbl_merge()`) help file for details. Use
-#>   `quiet=TRUE` to silence message.
-#> The number rows in the tables to be merged do not match, which may result in
-#> rows appearing out of order.
-#> ℹ See `tbl_merge()` (`?gtsummary::tbl_merge()`) help file for details. Use
-#>   `quiet=TRUE` to silence message.
 ```
 
 [TABLE]
