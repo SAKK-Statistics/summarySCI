@@ -236,8 +236,8 @@ summaryByVisitCategorical<- function(data,
         }
         else{
           d_noMiss <-data_noMissing[(is.na(data_noMissing[group])==FALSE & is.na(data_noMissing[vars[i]])==FALSE),]
-          n_values<- as.vector(table(data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),]$visit))
-          n_values_gr<- table(cbind( data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][group], data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),]$visit))
+          n_values<- as.vector(table(data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][[visit]]))
+          n_values_gr<- table(cbind( data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][group], data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][[visit]]))
         }
 
         assign(paste0("t", i), data|>
@@ -296,8 +296,8 @@ summaryByVisitCategorical<- function(data,
       }
       else{
         d_noMiss <-data_noMissing[(is.na(data_noMissing[group])==FALSE & is.na(data_noMissing[vars[i]])==FALSE),]
-        n_values<- as.vector(table(data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),]$visit))
-        n_values_gr<- table(cbind( data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][group], data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),]$visit))
+        n_values<- as.vector(table(data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][[visit]]))
+        n_values_gr<- table(cbind( data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][group], data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][[visit]]))
       }
 
       if (length(unique(data[[group]]))==3){
