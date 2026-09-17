@@ -61,8 +61,8 @@
 #'
 #' @param word_output Logical. If TRUE, the table is also saved in a word document.
 #'
-#' @param file_name Character string.
-#' Specify the name of the Word document containing the table.
+#' @param file_path Character string.
+#' Specify the path of the Word document containing the table.
 #' Only used when `word_output` is TRUE. Needs to end with ".docx".
 #'
 #' @return A table of class "`flextable`" or `c("tbl_stack", "gtsummary")`.
@@ -93,7 +93,7 @@ summaryLevels <- function(data,
                          as_flex_table = TRUE,
                          border = TRUE,
                          word_output = FALSE,
-                         file_name = paste0("SummaryLevels_", format(Sys.Date(), "%Y%m%d"), ".docx")){
+                         file_path = paste0("SummaryLevels_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
   # --------- Some checks --------------------------------------------------- #
 
@@ -269,9 +269,9 @@ summaryLevels <- function(data,
     doc <- flextable::body_add_flextable(doc, value = tbl_print)
 
     # Save to specified location
-    print(doc, target = file_name)
+    print(doc, target = file_path)
 
-    message("Table saved to: ", normalizePath(file_name))
+    message("Table saved to: ", normalizePath(file_path))
   }
 
   tbl_print

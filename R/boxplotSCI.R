@@ -70,6 +70,8 @@
 #' legacy use, where, for a single timepoint, multiple groups were used as "timepoint" variable.
 #' If set to `TRUE`, it treats timepoints as individual categories,applying sequential coloring
 #' and rendering a matching tracking legend. Default is `FALSE`.
+#' @importFrom graphics par boxplot axis mtext title legend abline
+#' @importFrom grDevices colorRampPalette
 #'
 #' @examples
 #' library(summarySCI)

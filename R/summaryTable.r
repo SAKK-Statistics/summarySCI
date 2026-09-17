@@ -98,8 +98,8 @@
 #'
 #' @param word_output Logical. If TRUE, the table is also saved in a word document.
 #'
-#' @param file_name Character string.
-#' Specify the name of the Word document containing the table.
+#' @param file_path Character string.
+#' Specify the path of the Word document containing the table.
 #' Only used when `word_output` is TRUE. Needs to end with ".docx".
 #'
 #' @return A table of class "`flextable`" or `c("tbl_summary", "gtsummary")`.
@@ -148,7 +148,7 @@ summaryTable <- function(data,
                          as_flex_table = TRUE,
                          border = TRUE,
                          word_output = FALSE,
-                         file_name = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")){
+                         file_path = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
   # --------- Some checks --------------------------------------------------- #
 
@@ -554,7 +554,8 @@ if(missing_percent != FALSE & missing != FALSE){
 
 # merging table with missings and p-value
     if(test == TRUE){
-tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short)) |>
+tbl_missingTRUE <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing_short),
+                             quiet = TRUE) |>
         modify_spanning_header(everything()~NA_character_)
 
     } else {
@@ -603,14 +604,16 @@ if(missing_percent == "both" & missing != FALSE){
 
 
 if(test == TRUE){
-  tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2, tbl_noMissing_short)) |>
+  tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2, tbl_noMissing_short),
+                        quiet = TRUE) |>
     modify_spanning_header(c("stat_1_1", "stat_2_1") ~ "**With missing**",
                            c("stat_1_2", "stat_2_2") ~ "**Without missing**",
                            c("p.value_3") ~ "")
 }
 
   if(test == FALSE){
-    tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2))|>
+    tbl_both <- tbl_merge(tbls = list(tbl_missing, tbl_noMissing2),
+                          quiet = TRUE)|>
       modify_spanning_header(c("stat_1_1", "stat_2_1" ) ~ "**With missing**",
                              c("stat_1_2", "stat_2_2") ~ "**Without missing**")
   }
@@ -781,9 +784,9 @@ if(as_flex_table == TRUE | word_output == TRUE){
     doc <- flextable::body_add_flextable(doc, value = tbl_print)
 
     # Save to specified location
-    print(doc, target = file_name)
+    print(doc, target = file_path)
 
-    message("Table saved to: ", normalizePath(file_name))
+    message("Table saved to: ", normalizePath(file_path))
   }
 
   tbl_print
