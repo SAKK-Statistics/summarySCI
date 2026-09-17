@@ -8,3 +8,4 @@
 ^\.github$
 ^summarySCI\.Rproj$
 ^cran-comments\.md$
+^CRAN-SUBMISSION$
