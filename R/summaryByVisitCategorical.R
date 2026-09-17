@@ -54,8 +54,8 @@
 #'
 #' @param word_output Logical. If TRUE, the table is also saved in a word document.
 #'
-#' @param file_name Character string.
-#' Specify the name of the Word document containing the table.
+#' @param file_path Character string.
+#' Specify the path of the Word document containing the table.
 #' Only used when `word_output` is TRUE. Needs to end with ".docx".
 #'
 #' @return A table of class "`flextable`" or `c("tbl_strata_nested_stack", "tbl_stack", "gtsummary")`.
@@ -80,10 +80,10 @@ summaryByVisitCategorical<- function(data,
                           missing_text = "Missing",
                           add_n = FALSE,
                           overall = FALSE,
-                          as_flex_table = TRUE,
+                          as_flex_table = FALSE,
                           border = TRUE,
                           word_output = FALSE,
-                          file_name = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")){
+                          file_path = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
 
   # --------- Some checks --------------------------------------------------- #
@@ -197,7 +197,7 @@ summaryByVisitCategorical<- function(data,
       }
 
       assign(paste0("t", i), data|>
-               dplyr::select(select_vars)|>
+               dplyr::select(any_of(c(select_vars)))|>
                gtsummary::tbl_strata_nested_stack(
                  .x ,
                  strata = strata0,
@@ -211,9 +211,9 @@ summaryByVisitCategorical<- function(data,
                    gtsummary::modify_table_body(
                      ~ .x |>
                        dplyr::relocate(n, .before = stat_0))|>
-                   gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)%>%
+                   gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)|>
         modify_table_body(
-          ~ .x %>%
+          ~ .x |>
             dplyr::mutate(
               n = {
                 tmp <- n
@@ -241,7 +241,7 @@ summaryByVisitCategorical<- function(data,
         }
 
         assign(paste0("t", i), data|>
-                 dplyr::select(select_vars, group)|>
+                 dplyr::select(any_of(c(select_vars, group)))|>
                  gtsummary::tbl_strata_nested_stack(
                    .x ,
                    strata = strata0,
@@ -263,9 +263,9 @@ summaryByVisitCategorical<- function(data,
                          dplyr::relocate(add_n_stat_1, .before = stat_1) |>
                          dplyr::relocate(add_n_stat_2, .before = stat_2)
                      )|>
-                     gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)%>%
+                     gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)|>
                  modify_table_body(
-                   ~ .x %>%
+                   ~ .x |>
                      dplyr::mutate(
                        n = {
                          tmp <- n
@@ -302,7 +302,7 @@ summaryByVisitCategorical<- function(data,
 
       if (length(unique(data[[group]]))==3){
         assign(paste0("t", i), data|>
-                 dplyr::select(select_vars, group)|>
+                 dplyr::select(any_of(c(select_vars, group)))|>
                  gtsummary::tbl_strata_nested_stack(
                    .x ,
                    strata = strata0,
@@ -325,9 +325,9 @@ summaryByVisitCategorical<- function(data,
                          dplyr::relocate(add_n_stat_2, .before = stat_2)|>
                          dplyr::relocate(add_n_stat_3, .before = stat_3)
                      )|>
-                     gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)%>%
+                     gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)|>
                  modify_table_body(
-                   ~ .x %>%
+                   ~ .x |>
                      dplyr::mutate(
                        n = {
                          tmp <- n
@@ -450,9 +450,9 @@ summaryByVisitCategorical<- function(data,
     doc <- flextable::body_add_flextable(doc, value = tbl_print)
 
     # Save to specified location
-    print(doc, target = file_name)
+    print(doc, target = file_path)
 
-    message("Table saved to: ", normalizePath(file_name))
+    message("Table saved to: ", normalizePath(file_path))
   }
 
   tbl_print

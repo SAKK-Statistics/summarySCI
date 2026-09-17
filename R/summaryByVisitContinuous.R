@@ -45,8 +45,8 @@
 #'
 #' @param word_output Logical. If TRUE, the table is also saved in a word document.
 #'
-#' @param file_name Character string.
-#' Specify the name of the Word document containing the table.
+#' @param file_path Character string.
+#' Specify the path of the Word document containing the table.
 #' Only used when `word_output` is TRUE. Needs to end with ".docx".
 #'
 #' @return A table of class "`flextable`" or `c("tbl_strata_nested_stack", "tbl_stack", "gtsummary")`.
@@ -68,10 +68,10 @@ summaryByVisitContinuous<- function(data,
                           digits_cont=1,
                           add_n = FALSE,
                           overall = FALSE,
-                          as_flex_table = TRUE,
+                          as_flex_table = FALSE,
                           border = TRUE,
                           word_output = FALSE,
-                          file_name = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")){
+                          file_path = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
 
   # --------- Some checks --------------------------------------------------- #
@@ -150,7 +150,7 @@ summaryByVisitContinuous<- function(data,
     # Without groups
     if (is.null(group)){
       assign(paste0("t", i), data|>
-               dplyr::select(select_vars)|>
+               dplyr::select(any_of(c(select_vars)))|>
                gtsummary::tbl_strata_nested_stack(
                  .x ,
                  strata = strata0,
@@ -161,14 +161,14 @@ summaryByVisitContinuous<- function(data,
                                           digits = list(gtsummary::all_continuous() ~ digits_cont))|>
                    gtsummary::add_n(last=TRUE)|>
                    gtsummary::add_overall(last=TRUE)|>
-                   gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
+                   gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
       )
     }
     # for 2 groups
     else {
       if (length(unique(data[[group]]))==2){
         assign(paste0("t", i), data|>
-                 dplyr::select(select_vars, group)|>
+                 dplyr::select(any_of(c(select_vars, group)))|>
                  gtsummary::tbl_strata_nested_stack(
                    .x ,
                    strata = strata0,
@@ -190,13 +190,13 @@ summaryByVisitContinuous<- function(data,
                                                     dplyr::relocate(dplyr::any_of("add_n_stat_1"), .before = dplyr::any_of("stat_1")) |>
                                                     dplyr::relocate(dplyr::any_of("add_n_stat_2"), .before = dplyr::any_of("stat_2"))
                      )|>
-                     gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
+                     gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
         )
       }
       # for 3 groups
       if (length(unique(data[[group]]))==3){
         assign(paste0("t", i), data|>
-                 dplyr::select(select_vars, group)|>
+                 dplyr::select(any_of(c(select_vars, group)))|>
                  gtsummary::tbl_strata_nested_stack(
                    .x ,
                    strata = strata0,
@@ -219,7 +219,7 @@ summaryByVisitContinuous<- function(data,
                          dplyr::relocate(add_n_stat_2, .before = stat_2)|>
                          dplyr::relocate(add_n_stat_3, .before = stat_3)
                      )|>
-                     gtsummary::modify_header(update = list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
+                     gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
         )
       }
     }
@@ -344,9 +344,9 @@ summaryByVisitContinuous<- function(data,
     doc <- flextable::body_add_flextable(doc, value = tbl_print)
 
     # Save to specified location
-    print(doc, target = file_name)
+    print(doc, target = file_path)
 
-    message("Table saved to: ", normalizePath(file_name))
+    message("Table saved to: ", normalizePath(file_path))
   }
 
   tbl_print
