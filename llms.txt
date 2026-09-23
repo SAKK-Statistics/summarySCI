@@ -12,8 +12,12 @@ You can install the package from the main branch using
     )
 
 You can install the package from another branch using
-devtools::install_github(   repo = “SAKK-Statistics/summarySCI”,  
-dependencies = TRUE, ref = “branchname” )
+
+    devtools::install_github(
+      repo = "SAKK-Statistics/summarySCI",
+      dependencies = TRUE,
+      ref = "branchname"
+    )
 
 ## Functions
 
