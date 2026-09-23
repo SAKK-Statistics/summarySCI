@@ -655,17 +655,17 @@ if(test == TRUE){
     if (length(unique(data[, group])) == 2) {
       n_values <- tbl_for_add_n$table_body %>%
         dplyr::filter(row_type == "label") %>%
-        dplyr::select(any_of(c(variable,
+        dplyr::select(variable,
                       add_n_stat_1 = add_n_stat_1,
-                      add_n_stat_2 = add_n_stat_2)))
+                      add_n_stat_2 = add_n_stat_2)
 
     } else if (length(unique(data[, group])) == 3) {
       n_values <- tbl_for_add_n$table_body %>%
         dplyr::filter(row_type == "label") %>%
-        dplyr::select(any_of(c(variable,
+        dplyr::select(variable,
                       add_n_stat_1 = add_n_stat_1,
                       add_n_stat_2 = add_n_stat_2,
-                      add_n_stat_3 = add_n_stat_3)))
+                      add_n_stat_3 = add_n_stat_3)
     }
 
 

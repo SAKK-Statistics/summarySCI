@@ -106,6 +106,8 @@ summaryByVisitCategorical<- function(data,
         stop("'Group cannot be in vars'")
       }
     }
+    # group must be a factor
+    data[[group]] <- factor(data[[group]])
   }
 
   # stop if there is no visit
@@ -117,8 +119,6 @@ summaryByVisitCategorical<- function(data,
     labels <- get_labels(data = data, vars = vars)
   }
 
-  # group must be a factor
-  data[[group]] <- factor(data[[group]])
 
   # ---------------------------------------------------- #
   # define visit order
@@ -215,8 +215,8 @@ summaryByVisitCategorical<- function(data,
       # N without missings
       if (!is.null(visitgroup) & !is.null(order)){
         data_noMissing<- data_noMissing[order(data_noMissing[[visitgroup]], data_noMissing[[order]]),]
-        data_noMissing[[order2]] <- match(data_noMissing[[order]], unique(data_noMissing[[order]]))
-        n_values<- as.vector(table(data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][[order2]]))
+        data_noMissing$order2 <- match(data_noMissing[[order]], unique(data_noMissing[[order]]))
+        n_values<- as.vector(table(data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),]$order2))
       }
       else{
         n_values<- as.vector(table(data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][[visit]]))

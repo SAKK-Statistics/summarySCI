@@ -94,6 +94,8 @@ summaryByVisitContinuous<- function(data,
         stop("'Group cannot be in vars'")
       }
     }
+    # group must be a factor
+    data[[group]] <- factor(data[[group]])
   }
 
   if(is.null(labels)){
