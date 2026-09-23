@@ -98,8 +98,8 @@
 #'
 #' @param word_output Logical. If TRUE, the table is also saved in a word document.
 #'
-#' @param file_name Character string.
-#' Specify the name of the Word document containing the table.
+#' @param file_path Character string.
+#' Specify the path of the Word document containing the table.
 #' Only used when `word_output` is TRUE. Needs to end with ".docx".
 #'
 #' @return A table of class "`flextable`" or `c("tbl_summary", "gtsummary")`.
@@ -148,7 +148,7 @@ summaryTable <- function(data,
                          as_flex_table = TRUE,
                          border = TRUE,
                          word_output = FALSE,
-                         file_name = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")){
+                         file_path = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
   # --------- Some checks --------------------------------------------------- #
 
@@ -652,17 +652,17 @@ if(test == TRUE){
     if (length(unique(data[, group])) == 2) {
       n_values <- tbl_for_add_n$table_body %>%
         dplyr::filter(row_type == "label") %>%
-        dplyr::select(variable,
+        dplyr::select(any_of(c(variable,
                       add_n_stat_1 = add_n_stat_1,
-                      add_n_stat_2 = add_n_stat_2)
+                      add_n_stat_2 = add_n_stat_2)))
 
     } else if (length(unique(data[, group])) == 3) {
       n_values <- tbl_for_add_n$table_body %>%
         dplyr::filter(row_type == "label") %>%
-        dplyr::select(variable,
+        dplyr::select(any_of(c(variable,
                       add_n_stat_1 = add_n_stat_1,
                       add_n_stat_2 = add_n_stat_2,
-                      add_n_stat_3 = add_n_stat_3)
+                      add_n_stat_3 = add_n_stat_3)))
     }
 
 
@@ -781,9 +781,9 @@ if(as_flex_table == TRUE | word_output == TRUE){
     doc <- flextable::body_add_flextable(doc, value = tbl_print)
 
     # Save to specified location
-    print(doc, target = file_name)
+    print(doc, target = file_path)
 
-    message("Table saved to: ", normalizePath(file_name))
+    message("Table saved to: ", normalizePath(file_path))
   }
 
   tbl_print

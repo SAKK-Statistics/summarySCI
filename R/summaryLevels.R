@@ -61,8 +61,8 @@
 #'
 #' @param word_output Logical. If TRUE, the table is also saved in a word document.
 #'
-#' @param file_name Character string.
-#' Specify the name of the Word document containing the table.
+#' @param file_path Character string.
+#' Specify the path of the Word document containing the table.
 #' Only used when `word_output` is TRUE. Needs to end with ".docx".
 #'
 #' @return A table of class "`flextable`" or `c("tbl_stack", "gtsummary")`.
@@ -93,7 +93,7 @@ summaryLevels <- function(data,
                          as_flex_table = TRUE,
                          border = TRUE,
                          word_output = FALSE,
-                         file_name = paste0("SummaryLevels_", format(Sys.Date(), "%Y%m%d"), ".docx")){
+                         file_path = paste0("SummaryLevels_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
   # --------- Some checks --------------------------------------------------- #
 
@@ -149,7 +149,7 @@ summaryLevels <- function(data,
       for (i in 1:length(vars)){
         if (is.null(group)){
           assign(paste0("t", i), data|>
-                   dplyr::select(vars[i])|>
+                   dplyr::select(any_of(c(vars[i])))|>
                    gtsummary::tbl_summary(missing="no",
                                           statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                           label = labels,
@@ -158,7 +158,7 @@ summaryLevels <- function(data,
         if (!is.null(group)){
           if (overall==FALSE & test==FALSE){
             assign(paste0("t", i), data|>
-                 dplyr::select(vars[i], group)|>
+                 dplyr::select(any_of(c(vars[i], group)))|>
                  gtsummary::tbl_summary(by= paste0(group), missing="no",
                                         statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                         label = labels,
@@ -166,7 +166,7 @@ summaryLevels <- function(data,
           }
           if (overall==TRUE & test==FALSE){
             assign(paste0("t", i), data|>
-                     dplyr::select(vars[i], group)|>
+                     dplyr::select(any_of(c(vars[i], group)))|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
                                             statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                             label = labels,
@@ -175,7 +175,7 @@ summaryLevels <- function(data,
           }
           if (overall==TRUE & test==TRUE){
             assign(paste0("t", i), data|>
-                     dplyr::select(vars[i], group)|>
+                     dplyr::select(any_of(c(vars[i], group)))|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
                                             statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                             label = labels,
@@ -186,7 +186,7 @@ summaryLevels <- function(data,
           }
           if (overall==FALSE & test==TRUE){
             assign(paste0("t", i), data|>
-                     dplyr::select(vars[i], group)|>
+                     dplyr::select(any_of(c(vars[i], group)))|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
                                             statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                             label = labels,
@@ -236,7 +236,7 @@ summaryLevels <- function(data,
   # ---------------------------- add label if any --------------------------- #
   if (!is.null(label)){
     tbl<-tbl|>
-      gtsummary::modify_header(update = list(label ~ paste0("**", label, "**")))|>
+      gtsummary::modify_header(!!! list(label ~ paste0("**", label, "**")))|>
       gtsummary::modify_table_styling(
         columns = label,
         footnote = "More than one entry possible"
@@ -269,9 +269,9 @@ summaryLevels <- function(data,
     doc <- flextable::body_add_flextable(doc, value = tbl_print)
 
     # Save to specified location
-    print(doc, target = file_name)
+    print(doc, target = file_path)
 
-    message("Table saved to: ", normalizePath(file_name))
+    message("Table saved to: ", normalizePath(file_path))
   }
 
   tbl_print

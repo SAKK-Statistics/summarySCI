@@ -67,23 +67,23 @@
 
 
 summaryByVisitCategorical<- function(data,
-                          vars = NULL,
-                          group = NULL,
-                          labels = NULL,
-                          stat_cat = "n_percent",
-                          visit = "visit",
-                          order = NULL,
-                          visitgroup = NULL,
-                          digits_cat=1,
-                          missing_percent=TRUE,
-                          missing=TRUE,
-                          missing_text = "Missing",
-                          add_n = FALSE,
-                          overall = FALSE,
-                          as_flex_table = FALSE,
-                          border = TRUE,
-                          word_output = FALSE,
-                          file_path = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")){
+                                     vars = NULL,
+                                     group = NULL,
+                                     labels = NULL,
+                                     stat_cat = "n_percent",
+                                     visit = "visit",
+                                     order = NULL,
+                                     visitgroup = NULL,
+                                     digits_cat=1,
+                                     missing_percent=TRUE,
+                                     missing=TRUE,
+                                     missing_text = "Missing",
+                                     add_n = FALSE,
+                                     overall = FALSE,
+                                     as_flex_table = FALSE,
+                                     border = TRUE,
+                                     word_output = FALSE,
+                                     file_path = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
 
   # --------- Some checks --------------------------------------------------- #
@@ -93,24 +93,39 @@ summaryByVisitCategorical<- function(data,
     stop("'data' must be specified.")
   }
 
-  # stop if more than 3 groups are requested
+  # stop if more than 3 groups are requested or group is in vars
   if (!is.null(group)){
+    # group must be a factor
+    data[[group]] <- factor(data[[group]])
     if (length(unique(data[[group]]))>3){
       stop("'A maximum of 3 groups are currently supported'")
     }
+    # stop if groups and vars are same
+    for (i in vars){
+      if (group==i){
+        stop("'Group cannot be in vars'")
+      }
+    }
   }
 
+  # stop if there is no visit
+  if (is.null(visit) & is.null(data[[visit]])){
+    stop("'visit is not defined'")
+  }
 
   if(is.null(labels)){
     labels <- get_labels(data = data, vars = vars)
   }
+
+  # group must be a factor
+  data[[group]] <- factor(data[[group]])
 
   # ---------------------------------------------------- #
   # define visit order
 
   if (!is.null(order)){
     data <- data|>
-      dplyr::arrange(order)|>
+      dplyr::arrange(.data[[order]])|>
       as.data.frame()
   } else{
     # order visit numbers not lexicographic
@@ -154,7 +169,7 @@ summaryByVisitCategorical<- function(data,
         }
       }
     }
-    }
+  }
 
   if (missing==FALSE){
     missing<-"no"
@@ -165,6 +180,17 @@ summaryByVisitCategorical<- function(data,
 
   if (any(sapply(data[vars], is.numeric))) {
     stop("'All vars must be categorical'")
+  }
+
+  # ---- CHANGE 1: length-safe N assignment ---------------------------------
+  # replaces  tmp[!is.na(tmp)] <- vals , which warns and RECYCLES when the
+  # number of strata does not match the number of values from table()
+  assign_n <- function(tmp, vals) {
+    idx  <- which(!is.na(tmp))
+    vals <- as.vector(vals)
+    length(vals) <- length(idx)      # pads with NA / truncates -- never recycles
+    tmp[idx] <- vals
+    tmp
   }
 
   tbl<-NULL
@@ -189,18 +215,19 @@ summaryByVisitCategorical<- function(data,
       # N without missings
       if (!is.null(visitgroup) & !is.null(order)){
         data_noMissing<- data_noMissing[order(data_noMissing[[visitgroup]], data_noMissing[[order]]),]
-        data_noMissing$order2 <- match(data_noMissing[[order]], unique(data_noMissing[[order]]))
-        n_values<- as.vector(table(data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),]$order2))
+        data_noMissing[[order2]] <- match(data_noMissing[[order]], unique(data_noMissing[[order]]))
+        n_values<- as.vector(table(data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][[order2]]))
       }
       else{
-        n_values<- as.vector(table(data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),]$visit))
+        n_values<- as.vector(table(data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][[visit]]))
       }
+
 
       assign(paste0("t", i), data|>
                dplyr::select(any_of(c(select_vars)))|>
                gtsummary::tbl_strata_nested_stack(
                  .x ,
-                 strata = strata0,
+                 strata = any_of(strata0),
                  .tbl_fun = ~ .x |>
                    gtsummary::tbl_summary(missing=missing,
                                           statistic = list(gtsummary::all_categorical() ~ stat_cat),
@@ -212,16 +239,9 @@ summaryByVisitCategorical<- function(data,
                      ~ .x |>
                        dplyr::relocate(n, .before = stat_0))|>
                    gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)|>
-        modify_table_body(
-          ~ .x |>
-            dplyr::mutate(
-              n = {
-                tmp <- n
-                tmp[!is.na(tmp)] <- n_values
-                tmp
-              }
-            )
-        )
+               modify_table_body(function(x) dplyr::mutate(x,
+                                                           n = assign_n(n, n_values)
+               ))
       )
     }
     # for 2 groups
@@ -244,7 +264,7 @@ summaryByVisitCategorical<- function(data,
                  dplyr::select(any_of(c(select_vars, group)))|>
                  gtsummary::tbl_strata_nested_stack(
                    .x ,
-                   strata = strata0,
+                   strata = any_of(strata0),
                    .tbl_fun = ~ .x |>
                      gtsummary::tbl_summary(missing=missing,
                                             statistic = list(gtsummary::all_categorical() ~ stat_cat),
@@ -254,36 +274,28 @@ summaryByVisitCategorical<- function(data,
                      gtsummary::add_n(last=TRUE)|>
                      gtsummary::add_overall(last=TRUE)|>
                      gtsummary::add_stat(
-                       fns = dplyr::everything() ~ add_by_n
+                       fns = dplyr::everything() ~ add_by_n_by_visit
                      ) |>
-                     gtsummary::modify_header(starts_with("add_n_stat") ~ "**N**")  |>
+                     gtsummary::modify_header(starts_with("add_n_stat") ~ "**N**")|>
                      gtsummary::modify_table_body(
-                       ~ .x |>
-                         dplyr::relocate(n, .before = stat_0) |>
-                         dplyr::relocate(add_n_stat_1, .before = stat_1) |>
-                         dplyr::relocate(add_n_stat_2, .before = stat_2)
+                       ~{
+                         x <- .x
+                         x <- dplyr::relocate(x, n, .before = stat_0)
+                         if (all(c("add_n_stat_1", "stat_1") %in% names(x))) {
+                           x <- dplyr::relocate(x, add_n_stat_1, .before = stat_1)
+                         }
+                         if (all(c("add_n_stat_2", "stat_2") %in% names(x))) {
+                           x <- dplyr::relocate(x, add_n_stat_2, .before = stat_2)
+                         }
+                         x
+                       }
                      )|>
                      gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)|>
-                 modify_table_body(
-                   ~ .x |>
-                     dplyr::mutate(
-                       n = {
-                         tmp <- n
-                         tmp[!is.na(tmp)] <- n_values
-                         tmp
-                       },
-                       add_n_stat_1 = {
-                         tmp <- add_n_stat_1
-                         tmp[!is.na(tmp)] <- n_values_gr[1,]
-                         tmp
-                       },
-                       add_n_stat_2 = {
-                         tmp <- add_n_stat_2
-                         tmp[!is.na(tmp)] <- n_values_gr[2,]
-                         tmp
-                       }
-                     )
-                 )
+                 modify_table_body(function(x) dplyr::mutate(x,
+                                                             n            = assign_n(n,            n_values),
+                                                             add_n_stat_1 = assign_n(add_n_stat_1, n_values_gr[1, ]),
+                                                             add_n_stat_2 = assign_n(add_n_stat_2, n_values_gr[2, ])
+                 ))
         )
       }
       # for 3 groups
@@ -305,7 +317,7 @@ summaryByVisitCategorical<- function(data,
                  dplyr::select(any_of(c(select_vars, group)))|>
                  gtsummary::tbl_strata_nested_stack(
                    .x ,
-                   strata = strata0,
+                   strata = any_of(strata0),
                    .tbl_fun = ~ .x |>
                      gtsummary::tbl_summary(missing=missing,
                                             statistic = list(gtsummary::all_categorical() ~ stat_cat),
@@ -315,42 +327,32 @@ summaryByVisitCategorical<- function(data,
                      gtsummary::add_n(last=TRUE)|>
                      gtsummary::add_overall(last=TRUE)|>
                      gtsummary::add_stat(
-                       fns = dplyr::everything() ~ add_by_n
+                       fns = dplyr::everything() ~ add_by_n_by_visit
                      ) |>
                      gtsummary::modify_header(starts_with("add_n_stat") ~ "**N**")  |>
                      gtsummary::modify_table_body(
-                       ~ .x |>
-                         dplyr::relocate(n, .before = stat_0) |>
-                         dplyr::relocate(add_n_stat_1, .before = stat_1) |>
-                         dplyr::relocate(add_n_stat_2, .before = stat_2)|>
-                         dplyr::relocate(add_n_stat_3, .before = stat_3)
+                       ~{
+                         x <- .x
+                         x <- dplyr::relocate(x, n, .before = stat_0)
+                         if (all(c("add_n_stat_1", "stat_1") %in% names(x))) {
+                           x <- dplyr::relocate(x, add_n_stat_1, .before = stat_1)
+                         }
+                         if (all(c("add_n_stat_2", "stat_2") %in% names(x))) {
+                           x <- dplyr::relocate(x, add_n_stat_2, .before = stat_2)
+                         }
+                         if (all(c("add_n_stat_3", "stat_3") %in% names(x))) {
+                           x <- dplyr::relocate(x, add_n_stat_3, .before = stat_3)
+                         }
+                         x
+                       }
                      )|>
                      gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)|>
-                 modify_table_body(
-                   ~ .x |>
-                     dplyr::mutate(
-                       n = {
-                         tmp <- n
-                         tmp[!is.na(tmp)] <- n_values
-                         tmp
-                       },
-                       add_n_stat_1 = {
-                         tmp <- add_n_stat_1
-                         tmp[!is.na(tmp)] <- n_values_gr[1,]
-                         tmp
-                       },
-                       add_n_stat_2 = {
-                         tmp <- add_n_stat_2
-                         tmp[!is.na(tmp)] <- n_values_gr[2,]
-                         tmp
-                       },
-                       add_n_stat_3 = {
-                         tmp <- add_n_stat_3
-                         tmp[!is.na(tmp)] <- n_values_gr[3,]
-                         tmp
-                       }
-                     )
-                 )
+                 modify_table_body(function(x) dplyr::mutate(x,
+                                                             n            = assign_n(n,            n_values),
+                                                             add_n_stat_1 = assign_n(add_n_stat_1, n_values_gr[1, ]),
+                                                             add_n_stat_2 = assign_n(add_n_stat_2, n_values_gr[2, ]),
+                                                             add_n_stat_3 = assign_n(add_n_stat_3, n_values_gr[3, ])
+                 ))
         )
       }
     }
@@ -365,6 +367,21 @@ summaryByVisitCategorical<- function(data,
     }
   }
 
+  # ---- CHANGE 3: final column order ---------------------------------------
+  # add_n_stat_k immediately before stat_k, then n, then stat_0. Done here, on
+  # the assembled table, because the per-stratum relocate above cannot move a
+  # column that stratum did not produce (e.g. add_n_stat_3 when a visit has no
+  # observations in group 3).
+  n_gr <- if (is.null(group)) 0L else nlevels(droplevels(as.factor(data[[group]])))
+  tbl <- gtsummary::modify_table_body(tbl, function(x) {
+    pairs <- if (n_gr > 0)
+      as.vector(rbind(paste0("add_n_stat_", seq_len(n_gr)),
+                      paste0("stat_",       seq_len(n_gr)))) else character(0)
+    tailc <- c(pairs, "n", "stat_0")
+    ord   <- c(setdiff(names(x), tailc), tailc)
+    dplyr::relocate(x, dplyr::all_of(ord[ord %in% names(x)]))
+  })
+
   # Replace variable names with labels
   for (i in 1:length(vars)){
     tbl[["table_body"]][["label"]] <- as.character(ifelse(tbl[["table_body"]][["label"]]==vars[i], labels[i], tbl[["table_body"]][["label"]]))
@@ -373,20 +390,58 @@ summaryByVisitCategorical<- function(data,
   ## some edits within the object table_body
   # Move up N to the desired row
   tbl$table_body<-tbl$table_body|>
-  mutate(across(everything(),
-                ~ if_else(is.na(.), lead(.), .)))
+    mutate(across(everything(),
+                  ~ if_else(is.na(.), lead(.), .)))
+
+  # use highest N for title row, rather than that from first row
+  set_header_n <- function(tbl, col, value) {
+    if (!is.finite(value)) return(tbl)
+    idx <- which(tbl$table_styling$header$column == col)
+    if (!length(idx)) return(tbl)
+    lab <- tbl$table_styling$header$label[idx]
+    tbl$table_styling$header$label[idx] <-
+      if (any(grepl("N = [0-9]+", lab)))
+        gsub("N = [0-9]+", paste0("N = ", value), lab)      # keep the existing label
+    else
+      paste0(lab, "  \n**N = ", value, "**")
+    tbl
+  }
+
+  # ---- CHANGE 2: N taken from `data`, not from the summary object ----------
+  # per group: the largest number of observations in any single visit. Being
+  # independent of the variable, this gives identical headers for every table,
+  # so tbl_stack() no longer reports "Column headers among stacked tables differ".
+  strata_cols <- if (is.null(visitgroup)) visit else c(visitgroup, visit)
+  visit_key   <- interaction(data[strata_cols], drop = TRUE)
+  n_overall   <- max(table(visit_key))                # busiest visit, all groups
+
+  if (is.null(group)) {
+    for (sc in grep("^stat_[0-9]+$", tbl$table_styling$header$column, value = TRUE))
+      tbl <- set_header_n(tbl, sc, n_overall)
+
+  } else {
+    g   <- factor(data[[group]])
+    n_g <- apply(table(visit_key, g), 2, max)         # busiest visit, per group
+    for (k in seq_along(levels(g)))
+      tbl <- set_header_n(tbl, paste0("stat_", k), n_g[[k]])
+    tbl <- set_header_n(tbl, "stat_0", n_overall)
+  }
+
+  idxN <- grepl("^(n|add_n_stat_[0-9]+)$", tbl$table_styling$header$column)
+  if (any(idxN)) tbl$table_styling$header$label[idxN] <- "**N**"
+
 
 
   # delete label row within visit
   if (!is.null(group)){
-  tbl$table_body <- tbl$table_body |>
-     dplyr::mutate(variable=ifelse(is.na(add_n_stat_1)==TRUE, dplyr::lead(add_n_stat_1), add_n_stat_1),
-                   variable=ifelse(is.na(add_n_stat_2)==TRUE, dplyr::lead(add_n_stat_2), add_n_stat_2))
+    tbl$table_body <- tbl$table_body |>
+      dplyr::mutate(variable=ifelse(is.na(add_n_stat_1)==TRUE, dplyr::lead(add_n_stat_1), add_n_stat_1),
+                    variable=ifelse(is.na(add_n_stat_2)==TRUE, dplyr::lead(add_n_stat_2), add_n_stat_2))
   }
 
   # remove undesired varibale rows within visits
   tbl$table_body <- tbl$table_body|>
-   filter(!(tbl$table_body$tbl_indent_id1 == 0 & !is.na(tbl$table_body$n)))
+    filter(!(tbl$table_body$tbl_indent_id1 == 0 & !is.na(tbl$table_body$n)))
 
 
   # if N column not desired
