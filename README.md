@@ -16,11 +16,14 @@ devtools::install_github(
 
 
 You can install the package from another branch using
+
+```
 devtools::install_github(
   repo = "SAKK-Statistics/summarySCI",
   dependencies = TRUE, 
   ref = "branchname"
 )
+```
 
 
 ## Functions
