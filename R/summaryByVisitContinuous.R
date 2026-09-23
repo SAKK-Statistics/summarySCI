@@ -156,17 +156,16 @@ summaryByVisitContinuous<- function(data,
     if (is.null(group)){
       assign(paste0("t", i), data|>
                dplyr::select(any_of(c(select_vars)))|>
+
                gtsummary::tbl_strata_nested_stack(
                  .x ,
                  strata = any_of(strata0),
                  .tbl_fun = ~ .x |>
                    gtsummary::tbl_summary(missing="no",
                                           statistic = list(gtsummary::all_continuous() ~ stat_cont),
-                                          type= vars[i] ~ "continuous",
+                                          type= all_of(vars[i]) ~ "continuous",
                                           digits = list(gtsummary::all_continuous() ~ digits_cont))|>
-      #              gtsummary::add_n(last=TRUE)|>
-      #              gtsummary::add_overall(last=TRUE)|>
-      #              gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
+
         gtsummary::add_n(last=TRUE)|>
         gtsummary::add_overall(last=TRUE)|>
         gtsummary::modify_table_body(~ .x |>
@@ -175,6 +174,7 @@ summaryByVisitContinuous<- function(data,
                                                        .before = dplyr::any_of("stat_0"))
         )|>
         gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE))
+
     }
     # for 2 groups
     else {

@@ -278,6 +278,7 @@ summaryByVisitCategorical<- function(data,
                      ) |>
                      gtsummary::modify_header(starts_with("add_n_stat") ~ "**N**")|>
                      gtsummary::modify_table_body(
+
                        ~{
                          x <- .x
                          x <- dplyr::relocate(x, n, .before = stat_0)

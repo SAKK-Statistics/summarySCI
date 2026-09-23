@@ -10,14 +10,14 @@ License: LGPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-Imports: Hmisc, cardx, dplyr, gtsummary (>= 2.3.0), forcats, labelled, purrr, rlang, tidyr, flextable, officer
+Depends: R (>= 4.1)
+Imports: Hmisc, cardx, dplyr, gtsummary (>= 2.3.0), forcats, labelled, purrr, rlang, tidyr, flextable, officer, stringr
 Suggests: 
     knitr,
     tidyverse,
     survival,
     testthat (>= 3.0.0),
-    rmarkdown,
-    stringr
+    rmarkdown
 VignetteBuilder: knitr
 URL: https://github.com/SAKK-Statistics/summarySCI/
 BugReports: https://github.com/SAKK-Statistics/summarySCI/issues
