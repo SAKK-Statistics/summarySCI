@@ -74,10 +74,10 @@ data$arm<- c(rep("Arm A", 70), rep("Arm B", 80))
 
 ## Basic table
 
-Now, we use `summarySCI::summaryLevels` to create a summary table for median and range of each lab-value by visit.
+Now, we use `summarySCI::summaryByVisit` to create a summary table for median and range of each lab-value by visit.
 
 ```{r}
-summaryByVisit(data,
+summaryByVisit(data = data,
          vars = c("LDH", "Lymphocytes", "stage"),
          visit = "visit", 
          add_n = TRUE)
@@ -96,7 +96,7 @@ summaryByVisit(data,
 We can stratify the table by groups via the `group` argument. The overall column can still be shown if desired, using the `overall = TRUE` argument. A maximum of 3 groups are supported.
 
 ```{r}
-summaryByVisit(data,
+summaryByVisit(data = data,
          vars = c("LDH", "Lymphocytes", "stage"),
          group = "arm",
          visitgroup = "visitgroup",
