@@ -369,7 +369,7 @@ if (length(dichotomous_vars) > 0) {
                                                             all_categorical() ~ stat_cat),
                                            missing = var_missing,
                                            missing_text = missing_text,
-                                           digits = list(all_categorical() ~ digits_cat,
+                                           digits = list(all_categorical() ~ c(0, digits_cat),
                                                          all_continuous() ~ digits_cont)) |>
 
         add_ci(method = list(all_continuous() ~ ci_cont,
@@ -421,7 +421,7 @@ tbl_missing_percent <- data_missing_as_level|>
                          statistic = list(all_continuous() ~ stat_cont,
                                           all_categorical() ~ stat_cat),
                          missing_text = missing_text,
-                         digits = list(all_categorical() ~ digits_cat,
+                         digits = list(all_categorical() ~ c(0, digits_cat),
                                        all_continuous() ~ digits_cont)) |>
   add_ci(method = list(all_continuous() ~ ci_cont,
                        all_categorical() ~ ci_cat_gt),
@@ -475,7 +475,7 @@ if(group != "dummygroup"){
                                                       missing_text = missing_text,
                                                       by = group,
                                                       statistic = list(all_categorical() ~ stat_cat),
-                                                      digits = list(all_categorical() ~ digits_cat)
+                                                      digits = list(all_categorical() ~ c(0, digits_cat))
         ) |>
           add_p(pvalue_fun = label_style_pvalue(digits = 2),
                 test = test_list) |>
