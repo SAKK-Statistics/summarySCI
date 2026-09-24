@@ -13,6 +13,7 @@ summaryTable_new(
   stat_cat = "n_percent",
   continuous_as = "continuous",
   dichotomous_as = "dichotomous",
+  continuous_as_categorical = NULL,
   ref_level = NULL,
   test = FALSE,
   test_cont = NULL,
@@ -58,13 +59,16 @@ include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
 \item{stat_cat}{Summary statistic to display for categorical variables.
 Options include "n_percent" (default) and "n", and "n_N".}
 
-\item{continuous_as}{Type for the continuous variables. Can either
+\item{continuous_as}{Type for all the continuous variables. Can either
 be "continuous" (default) or "categorical".}
 
 \item{dichotomous_as}{Type for the dichotomous variables. Can either be
 "categorical" (default, one row per level) or "dichotomous" (only
 one row with reference level (see argument \code{ref_level}), only works if \code{missing = "FALSE"} or
 \code{missing_percent = FALSE}.}
+
+\item{continuous_as_categorical}{A subset (vector) of continuous vars to to be
+treated as categorical. Default is NULL.}
 
 \item{ref_level}{Specifies the reference level of a variable to display on a single row.
 Default is the first appearing level. The syntax is as follows: \code{ref_level = list(varname ~ "level to show")}.}

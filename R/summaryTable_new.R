@@ -44,13 +44,16 @@
 #' cell counts >=5, and "fisher.test" for categorical variables with
 #' any expected cell count <5.
 #'
-#' @param continuous_as Type for the continuous variables. Can either
+#' @param continuous_as Type for all the continuous variables. Can either
 #' be "continuous" (default) or "categorical".
 #'
 #' @param dichotomous_as Type for the dichotomous variables. Can either be
 #' "categorical" (default, one row per level) or "dichotomous" (only
 #' one row with reference level (see argument `ref_level`), only works if `missing = "FALSE"` or
 #' `missing_percent = FALSE`.
+#'
+#' @param continuous_as_categorical A subset (vector) of continuous vars to to be
+#' treated as categorical. Default is NULL.
 #'
 #' @param ref_level Specifies the reference level of a variable to display on a single row.
 #' Default is the first appearing level. The syntax is as follows: `ref_level = list(varname ~ "level to show")`.
@@ -132,6 +135,7 @@ summaryTable_new <- function(data,
                          stat_cat = "n_percent",
                          continuous_as = "continuous",
                          dichotomous_as = "dichotomous",
+                         continuous_as_categorical = NULL,
                          ref_level = NULL,
                          test = FALSE,
                          test_cont = NULL,
@@ -155,6 +159,11 @@ summaryTable_new <- function(data,
 #
 # Settings and input checks ----------------------------------------------------
 #
+
+  # define selected continuous variables as categorical
+  if (!is.null(continuous_as_categorical)){
+    data[continuous_as_categorical] <- lapply(data[continuous_as_categorical], as.factor)
+  }
 
   ## Data exists and is df -----
   if (missing(data)) {
