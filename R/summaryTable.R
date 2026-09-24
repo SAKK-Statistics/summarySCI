@@ -160,11 +160,6 @@ summaryTable <- function(data,
 # Settings and input checks ----------------------------------------------------
 #
 
-  # define selected continuous variables as categorical
-  if (!is.null(continuous_as_categorical)){
-    data[continuous_as_categorical] <- lapply(data[continuous_as_categorical], as.factor)
-  }
-
   ## Data exists and is df -----
   if (missing(data)) {
     stop("'data' must be specified.")
@@ -201,6 +196,21 @@ summaryTable <- function(data,
   if (is.null(vars)) {
     vars <- setdiff(names(data), group)
   }
+
+
+  # define selected continuous variables as categorical
+  if (!is.null(continuous_as_categorical)){
+    data[continuous_as_categorical] <- lapply(data[continuous_as_categorical], as.factor)
+  }
+
+  # fix cardx bug with ordered variables.
+  is_ord <- vapply(data[vars], is.ordered, logical(1))
+  data[vars[is_ord]] <- lapply(data[vars[is_ord]], function(x) {
+    lab <- attr(x, "label")
+    x <- factor(x, levels = levels(x), ordered = FALSE)
+    attr(x, "label") <- lab
+    x
+  })
 
   # NEW
   ## Drop variables that are entirely NA -----
