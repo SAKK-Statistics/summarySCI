@@ -1,8 +1,8 @@
-#' Creates publication-ready summary tables for continuous data grouped, by visit
+#' Creates publication-ready summary tables for data grouped, by visit
 #'
 #' @param data A data frame or tibble containing the data to be summarized.
 #'
-#' @param vars Continuous variables to include in the summary table.
+#' @param vars Variables to include in the summary table.
 #' Need to be specified with quotes, e.g. `"age"` or `c("age", "response")`. Default to
 #' all variables present in the data except `group`.
 #'
@@ -53,6 +53,9 @@
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Ignored, if no groups are defined. Default to FALSE.
 #'
+#' @param continuous_as_categorical A subset (vector) of continuous vars to
+#' be treated as categrical. Default is NULL.
+#'
 #' @param as_flex_table Logical. If TRUE (default) the gtsummary object is
 #' converted to a flextable object. Useful when rendering to Word.
 #'
@@ -61,8 +64,8 @@
 #'
 #' @param word_output Logical. If TRUE, the table is also saved in a word document.
 #'
-#' @param file_name Character string.
-#' Specify the name of the Word document containing the table.
+#' @param file_path Character string.
+#' Specify the path of the Word document containing the table.
 #' Only used when `word_output` is TRUE. Needs to end with ".docx".
 #'
 #' @return A table of class "`flextable`" or `c("tbl_strata_nested_stack", "tbl_stack", "gtsummary")`.
@@ -90,10 +93,17 @@ summaryByVisit<- function(data,
                           missing_text = "Missing",
                           add_n = FALSE,
                           overall = FALSE,
-                          as_flex_table = FALSE,
+                          continuous_as_categorical = NULL,
+                          as_flex_table = TRUE,
                           border = TRUE,
                           word_output = FALSE,
-                          file_name = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")){
+                          file_path = file_path){
+
+  # define selected continuous variables as categorical
+  if (!is.null(continuous_as_categorical)){
+    data[continuous_as_categorical] <- lapply(data[continuous_as_categorical], as.factor)
+  }
+
   tbl_out <- NULL
   for (v in 1:length(vars)){
   if (is.numeric(data[[vars[[v]]]])==TRUE){
@@ -109,9 +119,9 @@ summaryByVisit<- function(data,
                    add_n = add_n,
                    overall = overall,
                    as_flex_table = FALSE,
-                   border = border,
-                   word_output = word_output,
-                   file_name = file_name)
+                   border = FALSE,
+                   word_output = FALSE,
+                   file_path = NULL)
   }
   else{
     tbl0 <- summaryByVisitCategorical(data,
@@ -129,9 +139,9 @@ summaryByVisit<- function(data,
                                          add_n = add_n,
                                          overall = overall,
                                          as_flex_table = FALSE,
-                                         border = border,
-                                         word_output = word_output,
-                                         file_name = file_name)
+                                         border = FALSE,
+                                         word_output = FALSE,
+                                         file_path = NULL)
 
   }
     tbl0$table_body$tbl_indent_id1 <-as.numeric(tbl0$table_body$tbl_indent_id1)
@@ -164,9 +174,9 @@ summaryByVisit<- function(data,
     doc <- flextable::body_add_flextable(doc, value = tbl_print)
 
     # Save to specified location
-    print(doc, target = file_name)
+    print(doc, target = file_path)
 
-    message("Table saved to: ", normalizePath(file_name))
+    message("Table saved to: ", normalizePath(file_path))
   }
 
 

@@ -96,6 +96,22 @@ add_by_n <- function(data, variable, by, ...) {
                        values_from = variable)
 }
 
+add_by_n_by_visit <- function(data, variable, by, ...) {
+  data |>
+    dplyr::select(all_of(c(variable, by))) |>
+    dplyr::arrange(pick(all_of(c(by, variable)))) |>
+    dplyr::group_by(.data[[by]], .drop = FALSE) |>          # <- keep empty levels
+    dplyr::summarise(across(everything(), ~sum(!is.na(.))), .groups = "drop") |>
+    rlang::set_names(c("by", "variable")) |>
+    dplyr::mutate(
+      by_col = paste0("add_n_stat_", dplyr::row_number()),
+      variable = gtsummary::style_number(variable)
+    ) %>%
+    select(-by) %>%
+    tidyr::pivot_wider(names_from = by_col,
+                       values_from = variable)
+}
+
 
 FitFlextableToPage <- function(ft, pgwidth = 6){
   ft_out <- ft |> flextable::autofit()

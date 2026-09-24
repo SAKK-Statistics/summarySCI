@@ -45,8 +45,8 @@
 #'
 #' @param word_output Logical. If TRUE, the table is also saved in a word document.
 #'
-#' @param file_name Character string.
-#' Specify the name of the Word document containing the table.
+#' @param file_path Character string.
+#' Specify the path of the Word document containing the table.
 #' Only used when `word_output` is TRUE. Needs to end with ".docx".
 #'
 #' @return A table of class "`flextable`" or `c("tbl_strata_nested_stack", "tbl_stack", "gtsummary")`.
@@ -68,10 +68,10 @@ summaryByVisitContinuous<- function(data,
                           digits_cont=1,
                           add_n = FALSE,
                           overall = FALSE,
-                          as_flex_table = TRUE,
+                          as_flex_table = FALSE,
                           border = TRUE,
                           word_output = FALSE,
-                          file_name = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")){
+                          file_path = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
 
   # --------- Some checks --------------------------------------------------- #
@@ -81,13 +81,22 @@ summaryByVisitContinuous<- function(data,
     stop("'data' must be specified.")
   }
 
-  # stop if more than 3 groups are requested
+  # stop if more than 3 groups are requested or group is in vars
   if (!is.null(group)){
+    # group must be a factor
+    data[[group]] <- factor(data[[group]])
     if (length(unique(data[[group]]))>3){
       stop("'A maximum of 3 groups are currently supported'")
     }
+    # stop if groups and vars are same
+    for (i in vars){
+      if (group==i){
+        stop("'Group cannot be in vars'")
+      }
+    }
+    # group must be a factor
+    data[[group]] <- factor(data[[group]])
   }
-
 
   if(is.null(labels)){
     labels <- get_labels(data = data, vars = vars)
@@ -98,7 +107,7 @@ summaryByVisitContinuous<- function(data,
 
   if (!is.null(order)){
     data <- data|>
-      dplyr::arrange(order)|>
+      dplyr::arrange(.data[[order]])|>
       as.data.frame()
   } else{
     # order visit numbers not lexicographic
@@ -128,8 +137,6 @@ summaryByVisitContinuous<- function(data,
     stop("'All vars must be numeric'")
   }
 
-
-
   tbl<-NULL
 
   for (i in 1:length(vars)){
@@ -150,7 +157,8 @@ summaryByVisitContinuous<- function(data,
     # Without groups
     if (is.null(group)){
       assign(paste0("t", i), data|>
-               dplyr::select(any_of(select_vars)) |>
+               dplyr::select(any_of(c(select_vars)))|>
+
                gtsummary::tbl_strata_nested_stack(
                  .x ,
                  strata = any_of(strata0),
@@ -159,19 +167,26 @@ summaryByVisitContinuous<- function(data,
                                           statistic = list(gtsummary::all_continuous() ~ stat_cont),
                                           type= all_of(vars[i]) ~ "continuous",
                                           digits = list(gtsummary::all_continuous() ~ digits_cont))|>
-                   gtsummary::add_n(last=TRUE)|>
-                   gtsummary::add_overall(last=TRUE)|>
-                   gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
-      )
+
+        gtsummary::add_n(last=TRUE)|>
+        gtsummary::add_overall(last=TRUE)|>
+        gtsummary::modify_table_body(~ .x |>
+                                       dplyr::ungroup() |>
+                                       dplyr::relocate(dplyr::any_of("n"),
+                                                       .before = dplyr::any_of("stat_0"))
+        )|>
+        gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE))
+
     }
     # for 2 groups
     else {
+      # stop if groups and vars are same
       if (length(unique(data[[group]]))==2){
         assign(paste0("t", i), data|>
-                 dplyr::select(select_vars, group)|>
+                 dplyr::select(any_of(c(select_vars, group)))|>
                  gtsummary::tbl_strata_nested_stack(
                    .x ,
-                   strata = strata0,
+                   strata = any_of(strata0),
                    .tbl_fun = ~ .x |>
                      gtsummary::tbl_summary(missing="no",
                                             statistic = list(gtsummary::all_continuous() ~ stat_cont),
@@ -181,7 +196,7 @@ summaryByVisitContinuous<- function(data,
                      gtsummary::add_n(last=TRUE)|>
                      gtsummary::add_overall(last=TRUE)|>
                      gtsummary::add_stat(
-                       fns = dplyr::everything() ~ add_by_n
+                       fns = dplyr::everything() ~ add_by_n_by_visit
                      ) |>
                      gtsummary::modify_header(starts_with("add_n_stat") ~ "**N**")  |>
                      gtsummary::modify_table_body(~ .x |>
@@ -196,10 +211,10 @@ summaryByVisitContinuous<- function(data,
       # for 3 groups
       if (length(unique(data[[group]]))==3){
         assign(paste0("t", i), data|>
-                 dplyr::select(select_vars, group)|>
+                 dplyr::select(any_of(c(select_vars, group)))|>
                  gtsummary::tbl_strata_nested_stack(
                    .x ,
-                   strata = strata0,
+                   strata = any_of(strata0),
                    .tbl_fun = ~ .x |>
                      gtsummary::tbl_summary(missing="no",
                                             statistic = list(gtsummary::all_continuous() ~ stat_cont),
@@ -209,15 +224,15 @@ summaryByVisitContinuous<- function(data,
                      gtsummary::add_n(last=TRUE)|>
                      gtsummary::add_overall(last=TRUE)|>
                      gtsummary::add_stat(
-                       fns = dplyr::everything() ~ add_by_n
+                       fns = dplyr::everything() ~ add_by_n_by_visit
                      ) |>
                      gtsummary::modify_header(starts_with("add_n_stat") ~ "**N**")  |>
-                     gtsummary::modify_table_body(
-                       ~ .x |>
-                         dplyr::relocate(n, .before = stat_0) |>
-                         dplyr::relocate(add_n_stat_1, .before = stat_1) |>
-                         dplyr::relocate(add_n_stat_2, .before = stat_2)|>
-                         dplyr::relocate(add_n_stat_3, .before = stat_3)
+                     gtsummary::modify_table_body(~ .x |>
+                                                    dplyr::ungroup() |>
+                                                    dplyr::relocate(dplyr::any_of("n"),            .before = dplyr::any_of("stat_0")) |>
+                                                    dplyr::relocate(dplyr::any_of("add_n_stat_1"), .before = dplyr::any_of("stat_1")) |>
+                                                    dplyr::relocate(dplyr::any_of("add_n_stat_2"), .before = dplyr::any_of("stat_2")) |>
+                                                    dplyr::relocate(dplyr::any_of("add_n_stat_3"), .before = dplyr::any_of("stat_3"))
                      )|>
                      gtsummary::modify_header(!!!list(label ~ paste0("**", gsub("\\b(\\w)", "\\U\\1", tolower(visit), perl = TRUE),"**"))), quiet = TRUE)
         )
@@ -233,6 +248,18 @@ summaryByVisitContinuous<- function(data,
       tbl$table_body<- rbind(c(i,1, vars[i], rep(NA, ncol(tbl$table_body)-3)), t1$table_body)
     }
   }
+
+  # ---- final column order -------------------------------------------------
+  # add_n_stat_k immediately before stat_k, then n, then stat_0
+  n_gr <- if (is.null(group)) 0L else nlevels(droplevels(as.factor(data[[group]])))
+  tbl <- gtsummary::modify_table_body(tbl, function(x) {
+    pairs <- if (n_gr > 0)
+      as.vector(rbind(paste0("add_n_stat_", seq_len(n_gr)),
+                      paste0("stat_",       seq_len(n_gr)))) else character(0)
+    tailc <- c(pairs, "n", "stat_0")
+    ord   <- c(setdiff(names(x), tailc), tailc)
+    dplyr::relocate(x, dplyr::all_of(ord[ord %in% names(x)]))
+  })
 
   # Replace variable names with labels
   for (i in 1:length(vars)){
@@ -317,6 +344,58 @@ summaryByVisitContinuous<- function(data,
     )|>
     modify_table_styling(columns = starts_with("add_n_stat_"), footnote = "N without missing values")
 
+  # use highest N for title row, rather than that from first row
+  # ---- N for the headers, taken from `data` --------------------------------
+  # per group: the largest number of observations in any single visit
+  set_header_n <- function(tbl, col, value) {
+    if (!is.finite(value)) return(tbl)
+    idx <- which(tbl$table_styling$header$column == col)
+    if (!length(idx)) return(tbl)
+    lab <- tbl$table_styling$header$label[idx]
+    tbl$table_styling$header$label[idx] <-
+      if (any(grepl("N = [0-9]+", lab)))
+        gsub("N = [0-9]+", paste0("N = ", value), lab)      # keep the group label
+    else
+      paste0(lab, "  \n**N = ", value, "**")
+    tbl
+  }
+
+  strata_cols <- if (is.null(visitgroup)) visit else c(visitgroup, visit)
+  visit_key   <- interaction(data[strata_cols], drop = TRUE)
+
+  n_overall <- max(table(visit_key))                  # busiest visit, all groups
+
+  if (is.null(group)) {
+    for (sc in grep("^stat_[0-9]+$", tbl$table_styling$header$column, value = TRUE))
+      tbl <- set_header_n(tbl, sc, n_overall)
+
+  } else {
+    g   <- factor(data[[group]])
+    tab <- table(visit_key, g)                        # visits x groups
+    n_g <- apply(tab, 2, max)                         # busiest visit, per group
+    for (k in seq_along(levels(g)))
+      tbl <- set_header_n(tbl, paste0("stat_", k), n_g[[k]])
+    tbl <- set_header_n(tbl, "stat_0", n_overall)
+  }
+
+  # the N columns themselves never show a count
+  idxN <- grepl("^(n|add_n_stat_[0-9]+)$", tbl$table_styling$header$column)
+  if (any(idxN)) tbl$table_styling$header$label[idxN] <- "**N**"
+  #<-
+
+
+  # replace NA (Inf, -Inf) by 0
+  tbl <- tbl |>
+    modify_table_body(
+      ~ .x |>
+        dplyr::mutate(
+          dplyr::across(
+            starts_with("stat_"),
+            ~ gsub("NA \\(Inf, -Inf\\)", "", .x)
+          )
+        )
+    )
+
   # if overall column not desired
   if (overall==FALSE & !is.null(group)){
     tbl<-tbl|>
@@ -344,9 +423,9 @@ summaryByVisitContinuous<- function(data,
     doc <- flextable::body_add_flextable(doc, value = tbl_print)
 
     # Save to specified location
-    print(doc, target = file_name)
+    print(doc, target = file_path)
 
-    message("Table saved to: ", normalizePath(file_name))
+    message("Table saved to: ", normalizePath(file_path))
   }
 
   tbl_print
