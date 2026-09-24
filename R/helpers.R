@@ -103,3 +103,25 @@ FitFlextableToPage <- function(ft, pgwidth = 6){
   return(ft_out)
 }
 
+
+# needed to know if a variable is dichotomous
+
+is_dichotomous <- function(x) {
+  if (is.logical(x)) {
+    return(length(unique(na.omit(x))) == 2)
+  }
+
+  if (is.numeric(x)) {
+    values <- sort(unique(na.omit(x)))
+    return(length(values) == 2 && all(values == c(0, 1)))
+  }
+
+  if (is.character(x) || is.factor(x)) {
+    values <- tolower(trimws(as.character(x)))
+    values <- unique(values[!is.na(values) & values != "" & values != "missing"])
+    return(length(values) == 2 && setequal(values, c("yes", "no")))
+  }
+
+  FALSE
+}
+
