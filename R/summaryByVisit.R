@@ -53,6 +53,9 @@
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Ignored, if no groups are defined. Default to FALSE.
 #'
+#' @param continuous_as_categorical A subset (vector) of continuous vars to
+#' be treated as categrical. Default is NULL.
+#'
 #' @param as_flex_table Logical. If TRUE (default) the gtsummary object is
 #' converted to a flextable object. Useful when rendering to Word.
 #'
@@ -90,10 +93,17 @@ summaryByVisit<- function(data,
                           missing_text = "Missing",
                           add_n = FALSE,
                           overall = FALSE,
+                          continuous_as_categorical = NULL,
                           as_flex_table = TRUE,
                           border = TRUE,
                           word_output = FALSE,
                           file_path = file_path){
+
+  # define selected continuous variables as categorical
+  if (!is.null(continuous_as_categorical)){
+    data[continuous_as_categorical] <- lapply(data[continuous_as_categorical], as.factor)
+  }
+
   tbl_out <- NULL
   for (v in 1:length(vars)){
   if (is.numeric(data[[vars[[v]]]])==TRUE){

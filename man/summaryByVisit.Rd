@@ -21,6 +21,7 @@ summaryByVisit(
   missing_text = "Missing",
   add_n = FALSE,
   overall = FALSE,
+  continuous_as_categorical = NULL,
   as_flex_table = TRUE,
   border = TRUE,
   word_output = FALSE,
@@ -80,6 +81,9 @@ number of non-missing observations for each variable is added.}
 
 \item{overall}{Logical. If TRUE, an additional column with the total is
 added to the table. Ignored, if no groups are defined. Default to FALSE.}
+
+\item{continuous_as_categorical}{A subset (vector) of continuous vars to
+be treated as categrical. Default is NULL.}
 
 \item{as_flex_table}{Logical. If TRUE (default) the gtsummary object is
 converted to a flextable object. Useful when rendering to Word.}
