@@ -127,7 +127,7 @@
 #' @export
 
 
-summaryTable_new <- function(data,
+summaryTable <- function(data,
                          vars = NULL,
                          group = NULL,
                          labels = NULL,
