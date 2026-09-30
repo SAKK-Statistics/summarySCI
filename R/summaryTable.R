@@ -177,6 +177,12 @@ summaryTable <- function(data,
     missing <- TRUE
   }
 
+  ## If missing is FALSE, missing_percent is FALSE
+
+  if(missing == FALSE){
+    missing_percent <- FALSE
+  }
+
   ## If missing percent is both, dichotomous_as is categorical -----
   if( missing_percent == "both"){
    dichotomous_as = "categorical"
@@ -186,7 +192,7 @@ summaryTable <- function(data,
   ## If missing is FALSE, var_missing is no
   var_missing <- ifelse(missing == FALSE, "no", "ifany")
 
-  # If missing is "both", var_missing is both
+  # If missing is "both", var_missing is no
   var_missing <- ifelse(missing_percent == "both",
                         "no",
                         var_missing)
@@ -314,20 +320,31 @@ numeric_vars_2 <- intersect(vars, names(data_missing_as_level)[sapply(data_missi
 
 ## Identify dichotomous and continuous variables -----
 if (length(numeric_vars_2) == 0) {
-  dichotomous_vars_2 <- character(0)
+  # dichotomous_vars_2 <- character(0)
   continuous_vars_2 <- character(0)
-} else {
+}
+
+
   ### Find dichotomous (binary) numeric variables -----
-  dichotomous_vars_2 <- numeric_vars_2[
-    sapply(data_missing_as_level[numeric_vars_2], function(x) {
-      values <- sort(unique(na.omit(x)))
-      length(values) == 2 && all(values == c(0, 1))
-    })
-  ]
+  # dichotomous_vars_2 <- numeric_vars_2[
+  #   sapply(data_missing_as_level[numeric_vars_2], function(x) {
+  #     values <- sort(unique(na.omit(x)))
+  #     length(values) == 2 && all(values == c(0, 1))
+  #   })
+  # ]
+dichotomous_vars_2 <- vars[
+  sapply(data_missing_as_level[vars], function(x) {
+    values <- unique(as.character(na.omit(x)))
+    length(values) == 2 && (
+      setequal(values, c("0", "1")) ||
+        setequal(tolower(values), c("no", "yes")) ||
+        setequal(tolower(values), c("false", "true"))
+    )
+  })
+]
 
   ### Continuous variables = numeric minus binary -----
   continuous_vars_2 <- setdiff(numeric_vars_2, dichotomous_vars_2)
-}
 
 
 ## set the type of variable for data_missing_as_level
@@ -349,20 +366,25 @@ if (length(dichotomous_vars_2) > 0) {
 numeric_vars <- intersect(vars, names(data)[sapply(data, is.numeric)])
 
 if (length(numeric_vars) == 0) {
-  dichotomous_vars <- character(0)
+  # dichotomous_vars <- character(0)
   continuous_vars <- character(0)
-  } else {
-    # Find dichotomous (binary) numeric variables
-    dichotomous_vars <- numeric_vars[
-      sapply(data[numeric_vars], function(x) {
-        values <- sort(unique(na.omit(x)))
-        length(values) == 2 && all(values == c(0, 1))
-        })
-      ]
+}
+
+
+
+dichotomous_vars <- vars[
+  sapply(data[vars], function(x) {
+    values <- unique(as.character(na.omit(x)))
+    length(values) == 2 && (
+      setequal(values, c("0", "1")) ||
+        setequal(tolower(values), c("no", "yes")) ||
+        setequal(tolower(values), c("false", "true"))
+    )
+  })
+]
 
         # Continuous variables = numeric minus binary
 continuous_vars <- setdiff(numeric_vars, dichotomous_vars)
-}
 
 type <- list()
 
@@ -512,10 +534,11 @@ if(group != "dummygroup"){
 
         tbl_return <-  tbl_merge(tbls = list(tbl_missing_percent, tbl_noMissing_default %>%
                                                add_n(last = TRUE) %>%
-                                             add_overall(last = TRUE)))
+                                             add_overall(last = TRUE)),
+                                 quiet = TRUE)
 
       } else{
-     tbl_return <-  tbl_merge(tbls = list(tbl_missing_percent, tbl_noMissing_default))
+     tbl_return <-  tbl_merge(tbls = list(tbl_missing_percent, tbl_noMissing_default), quiet = TRUE)
       }
     }
 
@@ -552,7 +575,7 @@ if(group != "dummygroup"){
 ## 4. test TRUE -----
       if(test == TRUE){
 
-        tbl_return <- tbl_merge(list(tbl_return, tbl_noMissing_short))
+        tbl_return <- tbl_merge(list(tbl_return, tbl_noMissing_short), quiet = TRUE)
       }
 
 ## 5. CI  FALSE -----
