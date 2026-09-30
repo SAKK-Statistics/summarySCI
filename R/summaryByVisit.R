@@ -11,7 +11,7 @@
 #' Summary statistics will be stratified according to this variable.
 #' Default to NULL. A maximum of 3 groups are currently supported.
 #'
-#' @param labels A list containing the labels that should be used for the
+#' @param labels A list, containing the labels that should be used for the
 #' variables in the table. If NULL, labels are automatically taken from the
 #' dataset. If no label present, the variable name is taken.
 #'
@@ -99,10 +99,29 @@ summaryByVisit<- function(data,
                           word_output = FALSE,
                           file_path = file_path){
 
+  #initial checks
+  check_summaryByVisit_args(
+    data = data, vars = vars, group = group, labels = labels,
+    stat_cont = stat_cont, stat_cat = stat_cat,
+    visit = visit, order = order, visitgroup = visitgroup,
+    digits_cont = digits_cont, digits_cat = digits_cat,
+    missing_percent = missing_percent, missing = missing,
+    missing_text = missing_text, add_n = add_n, overall = overall,
+    continuous_as_categorical = continuous_as_categorical,
+    as_flex_table = as_flex_table, border = border,
+    word_output = word_output, file_path = file_path
+  )
+
   # define selected continuous variables as categorical
   if (!is.null(continuous_as_categorical)){
     data[continuous_as_categorical] <- lapply(data[continuous_as_categorical], as.factor)
   }
+
+  # if vars = NULL, take all the variables (except group if not NULL).
+  if (is.null(vars)) {
+    vars <- setdiff(names(data), c(group, visit))
+  }
+
 
   tbl_out <- NULL
   for (v in 1:length(vars)){

@@ -88,33 +88,12 @@ summaryByVisitCategorical<- function(data,
 
   # --------- Some checks --------------------------------------------------- #
 
-  # Make sure that 'data' exists and that it is a data frame
-  if (missing(data)) {
-    stop("'data' must be specified.")
-  }
-
-  # stop if more than 3 groups are requested or group is in vars
+  # group must be a factor
   if (!is.null(group)){
-    # group must be a factor
-    data[[group]] <- factor(data[[group]])
-    if (length(unique(data[[group]]))>3){
-      stop("'A maximum of 3 groups are currently supported'")
-    }
-    # stop if groups and vars are same
-    for (i in vars){
-      if (group==i){
-        stop("'Group cannot be in vars'")
-      }
-    }
-    # group must be a factor
-    data[[group]] <- factor(data[[group]])
+    data[[group]] <- as.factor(data[[group]])
   }
 
-  # stop if there is no visit
-  if (is.null(visit) & is.null(data[[visit]])){
-    stop("'visit is not defined'")
-  }
-
+  # labels
   if(is.null(labels)){
     labels <- get_labels(data = data, vars = vars)
   }
@@ -246,7 +225,8 @@ summaryByVisitCategorical<- function(data,
     }
     # for 2 groups
     else {
-      if (length(unique(data[[group]]))==2){
+    #  if (length(unique(data[[group]]))==2){
+      if (length(levels(data[[group]]))==2){
         if (!is.null(visitgroup) & !is.null(order)){
           data_noMissing <-data_noMissing[(is.na(data_noMissing[group])==FALSE & is.na(data_noMissing[vars[i]])==FALSE),]
           data_noMissing<- data_noMissing[order(data_noMissing[[visitgroup]], data_noMissing[[order]]),]
@@ -300,6 +280,7 @@ summaryByVisitCategorical<- function(data,
         )
       }
       # for 3 groups
+      if (length(levels(data[[group]]))==3){
       if (!is.null(visitgroup) & !is.null(order)){
         data_noMissing <-data_noMissing[(is.na(data_noMissing[group])==FALSE & is.na(data_noMissing[vars[i]])==FALSE),]
         data_noMissing<- data_noMissing[order(data_noMissing[[visitgroup]], data_noMissing[[order]]),]
@@ -313,7 +294,7 @@ summaryByVisitCategorical<- function(data,
         n_values_gr<- table(cbind( data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][group], data_noMissing[(is.na(data_noMissing[vars[i]])==FALSE),][[visit]]))
       }
 
-      if (length(unique(data[[group]]))==3){
+      #  if (length(unique(data[[group]]))==2){
         assign(paste0("t", i), data|>
                  dplyr::select(any_of(c(select_vars, group)))|>
                  gtsummary::tbl_strata_nested_stack(
@@ -452,11 +433,13 @@ summaryByVisitCategorical<- function(data,
         gtsummary::modify_column_hide(columns = "n")
     }
     else {
-      if (length(unique(data[[group]]))==2){
+     # if (length(unique(data[[group]]))==2){
+      if (length(levels(data[[group]]))==2){
         tbl<-tbl|>
           gtsummary::modify_column_hide(columns = c("n", "add_n_stat_1", "add_n_stat_2"))
       }
-      if (length(unique(data[[group]]))==3){
+     # if (length(unique(data[[group]]))==3){
+      if (length(levels(data[[group]]))==3){
         tbl<-tbl|>
           gtsummary::modify_column_hide(columns = c("n", "add_n_stat_1", "add_n_stat_2", "add_n_stat_3"))
       }

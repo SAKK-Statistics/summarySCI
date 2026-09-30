@@ -76,28 +76,12 @@ summaryByVisitContinuous<- function(data,
 
   # --------- Some checks --------------------------------------------------- #
 
-  # Make sure that 'data' exists and that it is a data frame
-  if (missing(data)) {
-    stop("'data' must be specified.")
-  }
-
-  # stop if more than 3 groups are requested or group is in vars
+  # group must be a factor
   if (!is.null(group)){
-    # group must be a factor
-    data[[group]] <- factor(data[[group]])
-    if (length(unique(data[[group]]))>3){
-      stop("'A maximum of 3 groups are currently supported'")
-    }
-    # stop if groups and vars are same
-    for (i in vars){
-      if (group==i){
-        stop("'Group cannot be in vars'")
-      }
-    }
-    # group must be a factor
-    data[[group]] <- factor(data[[group]])
+    data[[group]] <- as.factor(data[[group]])
   }
 
+  # labels
   if(is.null(labels)){
     labels <- get_labels(data = data, vars = vars)
   }
@@ -181,7 +165,8 @@ summaryByVisitContinuous<- function(data,
     # for 2 groups
     else {
       # stop if groups and vars are same
-      if (length(unique(data[[group]]))==2){
+     # if (length(unique(data[[group]]))==2){
+      if (length(levels(data[[group]]))==2){
         assign(paste0("t", i), data|>
                  dplyr::select(any_of(c(select_vars, group)))|>
                  gtsummary::tbl_strata_nested_stack(
@@ -209,7 +194,8 @@ summaryByVisitContinuous<- function(data,
         )
       }
       # for 3 groups
-      if (length(unique(data[[group]]))==3){
+     # if (length(unique(data[[group]]))==3){
+      if (length(levels(data[[group]]))==3){
         assign(paste0("t", i), data|>
                  dplyr::select(any_of(c(select_vars, group)))|>
                  gtsummary::tbl_strata_nested_stack(
@@ -283,7 +269,7 @@ summaryByVisitContinuous<- function(data,
     }
   }else {
     # if 3 groups
-    if (length(unique(data[[group]]))==3){
+    if (length(levels(data[[group]]))==3){
       tbl$table_body <- tbl$table_body |>
         dplyr::mutate(variable=ifelse(tbl_indent_id1==indent, dplyr::lead(variable), variable),
                       var_type= ifelse(tbl_indent_id1==indent, dplyr::lead(var_type), var_type),
@@ -325,11 +311,13 @@ summaryByVisitContinuous<- function(data,
         gtsummary::modify_column_hide(columns = "n")
     }
     else {
-      if (length(unique(data[[group]]))==2){
+     # if (length(unique(data[[group]]))==2){
+      if (length(levels(data[[group]]))==2){
         tbl<-tbl|>
           gtsummary::modify_column_hide(columns = c("n", "add_n_stat_1", "add_n_stat_2"))
       }
-      if (length(unique(data[[group]]))==3){
+     # if (length(unique(data[[group]]))==3){
+      if (length(levels(data[[group]]))==3){
         tbl<-tbl|>
           gtsummary::modify_column_hide(columns = c("n", "add_n_stat_1", "add_n_stat_2", "add_n_stat_3"))
       }
