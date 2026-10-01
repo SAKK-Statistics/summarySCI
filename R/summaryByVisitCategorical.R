@@ -93,11 +93,6 @@ summaryByVisitCategorical<- function(data,
     data[[group]] <- as.factor(data[[group]])
   }
 
-  # labels
-  if(is.null(labels)){
-    labels <- get_labels(data = data, vars = vars)
-  }
-
 
   # ---------------------------------------------------- #
   # define visit order

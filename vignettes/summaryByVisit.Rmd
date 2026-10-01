@@ -133,7 +133,7 @@ The labels can be changed by using the "labels" statement.
 ```{r}
 summaryByVisit(data,
          vars = c("LDH", "Lymphocytes", "stage"),
-         labels=c("LDH (g/L)", "Lymphocytes (g)", "Stage"),
+         labels=list(LDH="LDH (g/L)", Lymphocytes="Lymphocytes (g)", stage="Stage"),
          group = "arm",
          overall = TRUE,
          visitgroup = "visitgroup",

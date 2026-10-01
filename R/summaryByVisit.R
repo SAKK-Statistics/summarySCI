@@ -122,6 +122,13 @@ summaryByVisit<- function(data,
     vars <- setdiff(names(data), c(group, visit))
   }
 
+  # labels
+  labels <- vapply(
+    vars,
+    function(v) labels[[v]] %||% attr(data[[v]], "label") %||% v,
+    character(1),
+    USE.NAMES = FALSE
+  )
 
   tbl_out <- NULL
   for (v in 1:length(vars)){

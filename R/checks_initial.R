@@ -31,7 +31,11 @@
 #' Check the arguments of summaryByVisit() and stop early with a clear message
 #'
 #' @return Invisibly, a list with the resolved `vars` and `labels`.
+#' @importFrom utils head
 #' @noRd
+check_summaryByVisit_args <- function(data, vars, group, labels, ...) {
+  ...
+}
 check_summaryByVisit_args <- function(data, vars, group, labels,
                                       stat_cont, stat_cat,
                                       visit, order, visitgroup,
@@ -78,10 +82,10 @@ check_summaryByVisit_args <- function(data, vars, group, labels,
     # H03, H07, H08, H14, R-cases with arm_na:
     # NA in group was counted as an extra group ("add_n_stat_3 not found",
     # "maximum of 3 groups" for a 3-level group with NA)
-    # if (anyNA(g))
-    #   abort("`group` = ", q(group), " contains ", sum(is.na(g)),
-    #         " missing value(s). Remove these rows or recode the missing ",
-    #         "values (e.g. as \"Unknown\") before calling summaryByVisit().")
+     if (anyNA(g))
+       message("WARNING: `group` = ", q(group), " contains ", sum(is.na(g)),
+            " missing value(s). These will be removed from the table. If you wish these to be shown as a column, recode the missing ",
+             "values (e.g. as \"Unknown\") before calling summaryByVisit().")
     n_grp <- length(unique(g))
     # H04, L07 ("object 't1' not found")
     if (n_grp < 2L)
@@ -163,27 +167,31 @@ check_summaryByVisit_args <- function(data, vars, group, labels,
             '`labels = c("Age (years)", "Sex")`.')
     if (is.list(labels) && any(vapply(labels, inherits, logical(1), "formula")))
       abort("`labels` must not use formula syntax (age ~ \"Age\"). ",
-            'Use `labels = c(age = "Age", ...)` instead.')
+            'Use `labels = list(age = "Age", ...)` instead.')
     ok <- vapply(labels, function(l) is.character(l) && length(l) == 1L && !is.na(l),
                  logical(1))
     if (!all(ok))
       abort("Each element of `labels` must be a single, non-missing character string.")
-    if (length(labels) != length(vars))
-      abort("`labels` must have the same length as `vars` (", length(vars),
-            "), but has length ", length(labels), ".\n",
-            "  vars: ", q(vars), if (length(vars) > 10) " ..." else "")
-    nm <- names(labels)
+    # if (length(labels) != length(vars))
+    #   abort("`labels` must have the same length as `vars` (", length(vars),
+    #         "), but has length ", length(labels), ".\n",
+    #         "  vars: ", q(vars), if (length(vars) > 10) " ..." else "")
+     nm <- names(labels)
     if (!is.null(nm) && any(nzchar(nm))) {
       # Named: names must be exactly the vars (any order) -> reorder to vars
-      if (!setequal(nm, vars) || anyDuplicated(nm))
-        abort("The names of `labels` must match `vars`.\n",
-              "  Not in vars: ", q(setdiff(nm, vars)), "\n",
-              "  Missing:     ", q(setdiff(vars, nm)))
+      # if (!setequal(nm, vars) || anyDuplicated(nm))
+      #   abort("The names of `labels` must match `vars`.\n",
+      #         "  Not in vars: ", q(setdiff(nm, vars)), "\n",
+      #         "  Missing:     ", q(setdiff(vars, nm)))
       labels <- labels[vars]
     } else {
       # Unnamed: taken in the order of vars
       names(labels) <- vars
     }
+     if (is.atomic(labels)) {
+       stop("`labels` must be a list, e.g. list(age = \"Age\"), ",
+            "not a ", class(labels)[1], " vector.", call. = FALSE)
+     }
   }
 
   # ---- statistics ------------------------------------------------------------ #

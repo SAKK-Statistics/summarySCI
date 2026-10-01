@@ -40,7 +40,7 @@ Need to be specified with quotes, e.g. \code{"treatment"}.
 Summary statistics will be stratified according to this variable.
 Default to NULL. A maximum of 3 groups are currently supported.}
 
-\item{labels}{A list containing the labels that should be used for the
+\item{labels}{A list, containing the labels that should be used for the
 variables in the table. If NULL, labels are automatically taken from the
 dataset. If no label present, the variable name is taken.}
 

@@ -9,31 +9,49 @@
 #' @keywords internal
 
 get_labels <- function(data, vars) {
+
   labels <- lapply(vars, function(var) {
+
     # Ensure column exists
+
     if (!var %in% names(data)) return(var)
 
     # Use tryCatch in case attr access throws errors on weird types
+
     lbl <- tryCatch({
+
       attr(data[[var]], "label")
+
     }, error = function(e) NULL)
 
     # If still NULL, attempt labelled::var_label if available
+
     if (is.null(lbl) && requireNamespace("labelled", quietly = TRUE)) {
+
       lbl <- labelled::var_label(data[[var]])
+
       if (is.list(lbl)) lbl <- unlist(lbl)  # var_label returns a named list
+
     }
 
     # Final check
+
     if (!is.null(lbl) && is.character(lbl) && nzchar(lbl)) {
+
       return(lbl)
+
     } else {
+
       return(var)
+
     }
+
   })
 
   names(labels) <- vars
+
   return(labels)
+
 }
 
 
