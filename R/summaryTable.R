@@ -33,8 +33,7 @@
 #' for continuous variables. Only used if `test = TRUE`.
 #' Options include "t.test", "oneway.test", "kruskal.test" (default for
 #' more than two groups), "wilcox.test" (default for two
-#' groups),
-#' "paired.t.test", "paired.wilcox.test"
+#' groups).
 #'
 #' @param test_cat Test type used to calculated the p-value
 #' for categorical variables.  Only used if `test = TRUE`.
@@ -48,8 +47,9 @@
 #' be "continuous" (default) or "categorical".
 #'
 #' @param dichotomous_as Type for the dichotomous variables. Can either be
-#' "categorical" (default, one row per level) or "dichotomous" (only
-#' one row with reference level (see argument `ref_level`), only works if `missing = "FALSE"` or
+#' "categorical" (one row per level) or "dichotomous" (only
+#' one row with reference level (see argument `ref_level`), only works if
+#' the variable does not contain missing values, or if `missing = "FALSE"` or
 #' `missing_percent = FALSE`.
 #'
 #' @param continuous_as_categorical A subset (vector) of continuous vars to to be
@@ -235,6 +235,7 @@ summaryTable <- function(data,
   if (is.null(vars)) {
     vars <- setdiff(names(data), group)
   }
+  check_no_dates(data, vars, group)
 
 
   # define selected continuous variables as categorical
@@ -464,6 +465,23 @@ if (dichotomous_as == "categorical" && length(dichotomous_vars) > 0) {
   type <- append(type, list(all_of(dichotomous_vars) ~ "categorical"))
 }
 
+## Overall column: must be added BEFORE add_ci(), otherwise Overall gets no CI
+maybe_overall <- function(tbl, use = TRUE) {
+  if (isTRUE(overall) && isTRUE(use) && group != "dummygroup") {
+    gtsummary::add_overall(tbl, last = TRUE)
+  } else {
+    tbl
+  }
+}
+
+## Put the N column (from add_n) before the Overall column
+n_before_overall <- function(tbl) {
+  cols <- names(tbl$table_body)
+  if (all(c("n", "stat_0") %in% cols)) {
+    tbl <- gtsummary::modify_table_body(tbl, ~ dplyr::relocate(.x, "n", .before = "stat_0"))
+  }
+  tbl
+}
 
 # Table without missing or with missing but without percent -----
       tbl_noMissing_default <- gtsummary::tbl_summary(data = data,
@@ -478,7 +496,7 @@ if (dichotomous_as == "categorical" && length(dichotomous_vars) > 0) {
                                            missing_text = missing_text,
                                            digits = list(all_categorical() ~ c(0, digits_cat),
                                                          all_continuous() ~ digits_cont)) |>
-
+  maybe_overall() |>
         add_ci(method = list(all_continuous() ~ ci_cont,
                              all_categorical() ~ ci_cat_gt),
 
@@ -530,6 +548,7 @@ tbl_missing_percent <- data_missing_as_level|>
                          missing_text = missing_text,
                          digits = list(all_categorical() ~ c(0, digits_cat),
                                        all_continuous() ~ digits_cont)) |>
+  maybe_overall(use = missing_percent != "both") |>
   add_ci(method = list(all_continuous() ~ ci_cont,
                        all_categorical() ~ ci_cat_gt),
          style_fun = list(
@@ -599,8 +618,8 @@ if(group != "dummygroup"){
       if(overall == TRUE){
 
         tbl_return <-  tbl_merge(tbls = list(tbl_missing_percent, tbl_noMissing_default %>%
-                                               add_n(last = TRUE) %>%
-                                             add_overall(last = TRUE)),
+                                               add_n(last = TRUE) |>
+                                   n_before_overall()),
                                  quiet = TRUE)
 
       } else{
@@ -612,9 +631,9 @@ if(group != "dummygroup"){
       	if(missing_percent == FALSE | missing == FALSE){
 
       	  if(overall == TRUE){
-      	  tbl_return <- tbl_noMissing_default %>%
-      	    add_n(last = TRUE) %>%
-      	    add_overall(last = TRUE) %>%
+      	  tbl_return <- tbl_noMissing_default |>
+      	    add_n(last = TRUE) |>
+      	    n_before_overall() |>
       	    modify_table_styling(columns = c(starts_with("n")), footnote = "N without missing values")
 
       	  } else {
@@ -627,8 +646,8 @@ if(group != "dummygroup"){
 
         if(overall == TRUE){
           tbl_return <- tbl_missing_percent %>%
-            add_n(last = TRUE) %>%
-            add_overall(last = TRUE) %>%
+            add_n(last = TRUE) |>
+            n_before_overall() |>
             modify_table_styling(columns = c(starts_with("n")), footnote = "N without missing values")
         } else{
 

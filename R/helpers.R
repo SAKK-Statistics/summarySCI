@@ -125,3 +125,24 @@ is_dichotomous <- function(x) {
   FALSE
 }
 
+
+
+# Function to detect dates variables
+
+# Internal: stop if any variable is a date / date-time
+check_no_dates <- function(data, vars, group = NULL) {
+  is_date <- function(x) inherits(x, c("Date", "POSIXt", "difftime"))
+  all_v    <- unique(c(vars, group))
+  date_v   <- all_v[vapply(data[all_v], is_date, logical(1))]
+
+  if (length(date_v) > 0) {
+    stop(sprintf(
+      "summaryTable() is not adapted for date variables. Remove %s from `vars`%s, or convert %s first (e.g. to a duration with difftime() or to a year with format(x, \"%%Y\")).",
+      paste0("`", date_v, "`", collapse = ", "),
+      if (!is.null(group) && group %in% date_v) " / `group`" else "",
+      if (length(date_v) == 1) "it" else "them"
+    ), call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
