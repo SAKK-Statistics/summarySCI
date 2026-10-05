@@ -167,6 +167,39 @@ summaryTable <- function(data,
   data <- as.data.frame(data)
 
 
+
+  ## group exists in data -----
+  if (!is.null(group)) {
+    if (!is.character(group) || length(group) != 1) {
+      stop("'group' must be a single column name in quotes, e.g. group = \"treatment\".",
+           call. = FALSE)
+    }
+    if (!group %in% names(data)) {
+      stop("Column '", group, "' (given in 'group') was not found in 'data'.",
+           call. = FALSE)
+    }
+  }
+
+  ## vars exist in data -----
+  if (!is.null(vars)) {
+    if (!is.character(vars)) {
+      stop("'vars' must be a character vector of column names, e.g. vars = c(\"age\", \"sex\").",
+           call. = FALSE)
+    }
+    missing_vars <- setdiff(vars, names(data))
+    if (length(missing_vars) > 0) {
+      stop("The following column(s) given in 'vars' were not found in 'data': ",
+           paste(missing_vars, collapse = ", "), ".",
+           call. = FALSE)
+    }
+    # group should not also be summarized as a variable
+    if (!is.null(group) && group %in% vars) {
+      vars <- setdiff(vars, group)
+      message("'", group, "' was removed from 'vars' because it is used as 'group'.")
+    }
+  }
+
+
   ## Test is TRUE only if group is given -----
   if(is.null(group) & test == TRUE){
     stop("Error: 'group' needs to be given for a test to be calculated.")
@@ -228,8 +261,24 @@ summaryTable <- function(data,
     vars <- vars[!all_na]
   }
 
-  ## Group as factor -----
-  if(!is.null(group)) data[[group]] <- as.factor(data[[group]])
+  ## Group as factor (drop empty levels) -----
+  if (!is.null(group)) {
+    data[[group]] <- as.factor(data[[group]])
+    empty <- setdiff(levels(data[[group]]), unique(as.character(stats::na.omit(data[[group]]))))
+    if (length(empty) > 0) {
+      message("Empty level(s) of '", group, "' removed: ", paste(empty, collapse = ", "))
+      data[[group]] <- droplevels(data[[group]])
+    }
+  }
+
+  ## Group must have at least two levels -----
+  if (!is.null(group)) {
+    n_levels <- length(unique(stats::na.omit(data[[group]])))
+    if (n_levels < 2) {
+      stop("'group' must have at least two levels; '", group, "' has ", n_levels, ".",
+           call. = FALSE)
+    }
+  }
 
 
   ## Summary stat for continuous and categorical variables -----
@@ -297,21 +346,37 @@ colnames(data_missing_as_level) <-  colnames(data)
 
 ## make missing a level -----
 
-      for (i in colnames(data_missing_as_level|>
-                         dplyr::select(all_of(c(vars))))) {
+      # for (i in colnames(data_missing_as_level|>
+      #                    dplyr::select(all_of(c(vars))))) {
+      #
+      #   if (is.factor(data_missing_as_level[[i]]) == TRUE | is.character(data_missing_as_level[[i]])) {
+      #     data_missing_as_level[[i]] <- forcats::fct_na_value_to_level(as.factor(data_missing_as_level[[i]]), level = missing_text)
+      #     if (!is.null(attr(data[[i]], "label"))) {
+      #       Hmisc::label(data_missing_as_level[[i]]) <- attr(data[[i]], "label")
+      #     }
+      #   } else if (all(data_missing_as_level[[i]] %in% c(0, 1, NA))) {
+      #     data_missing_as_level[[i]] <- forcats::fct_na_value_to_level(factor(data_missing_as_level[[i]]), level = missing_text)
+      #     if (!is.null(attr(data[[i]], "label"))) {
+      #       Hmisc::label(data_missing_as_level[[i]]) <- attr(data[[i]], "label")
+      #     }
+      #   }
+      # }
 
-        if (is.factor(data_missing_as_level[[i]]) == TRUE | is.character(data_missing_as_level[[i]])) {
-          data_missing_as_level[[i]] <- forcats::fct_na_value_to_level(as.factor(data_missing_as_level[[i]]), level = missing_text)
-          if (!is.null(attr(data[[i]], "label"))) {
-            Hmisc::label(data_missing_as_level[[i]]) <- attr(data[[i]], "label")
-          }
-        } else if (all(data_missing_as_level[[i]] %in% c(0, 1, NA))) {
-          data_missing_as_level[[i]] <- forcats::fct_na_value_to_level(factor(data_missing_as_level[[i]]), level = missing_text)
-          if (!is.null(attr(data[[i]], "label"))) {
-            Hmisc::label(data_missing_as_level[[i]]) <- attr(data[[i]], "label")
-          }
-        }
-      }
+for (i in colnames(data_missing_as_level |> dplyr::select(all_of(c(vars))))) {
+
+  if (is.factor(data_missing_as_level[[i]]) == TRUE | is.character(data_missing_as_level[[i]])) {
+    data_missing_as_level[[i]] <- forcats::fct_na_value_to_level(as.factor(data_missing_as_level[[i]]), level = missing_text)
+    if (!is.null(attr(data[[i]], "label"))) {
+      Hmisc::label(data_missing_as_level[[i]]) <- attr(data[[i]], "label")
+    }
+  } else if (anyNA(data_missing_as_level[[i]]) &&
+             all(data_missing_as_level[[i]] %in% c(0, 1, NA))) {
+    data_missing_as_level[[i]] <- forcats::fct_na_value_to_level(factor(data_missing_as_level[[i]]), level = missing_text)
+    if (!is.null(attr(data[[i]], "label"))) {
+      Hmisc::label(data_missing_as_level[[i]]) <- attr(data[[i]], "label")
+    }
+  }
+}
 
 data_missing_as_level <- droplevels(data_missing_as_level)
 
@@ -356,10 +421,10 @@ if (length(continuous_vars_2) > 0) {
 }
 
 ### Append dichotomous variable types if any
-if (length(dichotomous_vars_2) > 0) {
-  type_missing_as_level <- append(type_missing_as_level, list(all_of(dichotomous_vars_2) ~ dichotomous_as))
-}
 
+if (dichotomous_as == "categorical" && length(dichotomous_vars_2) > 0) {
+  type_missing_as_level <- append(type_missing_as_level, list(all_of(dichotomous_vars_2) ~ "categorical"))
+}
 
 
 ## Set the variable type for missing not as level -----
@@ -393,17 +458,18 @@ if (length(continuous_vars) > 0) {
   type <- append(type, list(all_of(continuous_vars) ~ continuous_as))
   }
 
+
 # Append dichotomous variable types if any
-if (length(dichotomous_vars) > 0) {
-  type <- append(type, list(all_of(dichotomous_vars) ~ dichotomous_as))
-  }
+if (dichotomous_as == "categorical" && length(dichotomous_vars) > 0) {
+  type <- append(type, list(all_of(dichotomous_vars) ~ "categorical"))
+}
 
 
 # Table without missing or with missing but without percent -----
       tbl_noMissing_default <- gtsummary::tbl_summary(data = data,
                                            include = all_of(vars),
                                            label = labels,
-                                           by = group,
+                                           by = all_of(group),
                                            type = type,
                                            value = ref_level,
                                            statistic = list(all_continuous() ~ stat_cont,
@@ -431,7 +497,7 @@ if (length(dichotomous_vars) > 0) {
     ) %>%
     modify_header(starts_with("add_n_stat") ~ "**N**") %>%
     modify_table_body(
-      ~ reduce(
+      ~ purrr::reduce(
         .x = seq_len(length(unique(na.omit(data[, group])))),
         .init = .x,
         .f = ~ relocate(
@@ -454,7 +520,7 @@ if (length(dichotomous_vars) > 0) {
 
 # Table with missing ------
 tbl_missing_percent <- data_missing_as_level|>
-  gtsummary::tbl_summary(by = group,
+  gtsummary::tbl_summary(by = all_of(group),
                          label = labels,
                          include = all_of(vars),
                          type = type_missing_as_level,
@@ -487,7 +553,7 @@ tbl_missing_percent <- data_missing_as_level|>
         modify_header(starts_with("add_n_stat") ~ "**N**") %>%
 
         modify_table_body(
-          ~ reduce(
+          ~ purrr::reduce(
             .x = seq_len(length(unique(na.omit(data[, group])))),
             .init = .x,
             .f = ~ relocate(
@@ -514,7 +580,7 @@ if(group != "dummygroup"){
                                                       missing = "no",
                                                       # missing = var_missing,
                                                       missing_text = missing_text,
-                                                      by = group,
+                                                      by = all_of(group),
                                                       statistic = list(all_categorical() ~ stat_cat),
                                                       digits = list(all_categorical() ~ c(0, digits_cat))
         ) |>
@@ -549,7 +615,7 @@ if(group != "dummygroup"){
       	  tbl_return <- tbl_noMissing_default %>%
       	    add_n(last = TRUE) %>%
       	    add_overall(last = TRUE) %>%
-      	    modify_table_styling(columns = c(starts_with("n_")), footnote = "N without missing values")
+      	    modify_table_styling(columns = c(starts_with("n")), footnote = "N without missing values")
 
       	  } else {
       	    tbl_return <- tbl_noMissing_default
@@ -563,7 +629,7 @@ if(group != "dummygroup"){
           tbl_return <- tbl_missing_percent %>%
             add_n(last = TRUE) %>%
             add_overall(last = TRUE) %>%
-            modify_table_styling(columns = c(starts_with("n_")), footnote = "N without missing values")
+            modify_table_styling(columns = c(starts_with("n")), footnote = "N without missing values")
         } else{
 
 

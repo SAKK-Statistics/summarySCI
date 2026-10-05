@@ -18,7 +18,7 @@ test_that("median and range are correct", {
   min_1 <- round(summary_age["Min."], 0)
   max_1 <- round(summary_age["Max."], 0)
 
-  median_range_fct <- tbl[["table_body"]][["stat_0"]][[1]]
+  median_range_fct <- tbl[["table_body"]][["stat_1"]][[1]]
   median_range_truth <- paste0(median_1, " (",min_1, ", ", max_1, ")")
   expect_equal(median_range_fct,median_range_truth )
 })
@@ -34,7 +34,7 @@ test_that("Number of non-missing observations is correct", {
                         as_flex_table = FALSE,
                         add_n = TRUE)
 
-  n_noMissing_fct <- as.numeric(tbl_5[["table_body"]][["N"]][1])
+  n_noMissing_fct <- as.numeric(tbl_5[["table_body"]][["add_n_stat_1"]][1])
   n_noMissing_truth <- sum(!is.na(trial$age))
   expect_equal(n_noMissing_fct, n_noMissing_truth)
 })
