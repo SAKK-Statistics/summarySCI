@@ -8,8 +8,8 @@ Generates boxplots over time for one or multiple sub-groups.
 boxplotSCI(
   data,
   var,
-  time = NULL,
-  time_labels = NULL,
+  order = NULL,
+  visit = NULL,
   group = NULL,
   group_names = NULL,
   group_names_short = NULL,
@@ -51,7 +51,7 @@ boxplotSCI(
   Name of the column in `data` indicating the measurement to be plotted.
   Supports bare or quoted column names.
 
-- time:
+- order:
 
   Name of the column in `data` containing the time points of interest.
   The time points can be either numeric, character, or a factor. If the
@@ -60,7 +60,7 @@ boxplotSCI(
   assume a single time point. If character, they need to be able to be
   ordered by numerical logic.
 
-- time_labels:
+- visit:
 
   Name of the column in `data` containing descriptive labels for the
   time points. Optional.
@@ -221,7 +221,7 @@ library(summarySCI)
 data("hemoglobin_data")
 boxplotSCI(data = hemoglobin_data,
                  var = hb,
-                  time = visit_nr,
+                  order = visit_nr,
                   group = Arm,
                   group_names = c("Treatment (Arm A)", "Control (Arm B)"),
                   group_names_short = c("A", "B"),

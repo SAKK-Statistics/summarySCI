@@ -48,8 +48,8 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">boxplotSCI</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
 <span>  <span class="va">var</span>,</span>
-<span>  time <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  time_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  order <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  visit <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  group_names <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  group_names_short <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -93,7 +93,7 @@
 plotted. Supports bare or quoted column names.</p></dd>
 
 
-<dt id="arg-time">time<a class="anchor" aria-label="anchor" href="#arg-time"></a></dt>
+<dt id="arg-order">order<a class="anchor" aria-label="anchor" href="#arg-order"></a></dt>
 <dd><p>Name of the column in <code>data</code> containing the time points of interest.
 The time points can be either numeric, character, or a factor.
 If the time points are factors, the factor levels must be in the correct
@@ -102,7 +102,7 @@ a single time point. If character, they need to be able to be ordered by
 numerical logic.</p></dd>
 
 
-<dt id="arg-time-labels">time_labels<a class="anchor" aria-label="anchor" href="#arg-time-labels"></a></dt>
+<dt id="arg-visit">visit<a class="anchor" aria-label="anchor" href="#arg-visit"></a></dt>
 <dd><p>Name of the column in <code>data</code> containing descriptive labels
 for the time points. Optional.</p></dd>
 
@@ -252,7 +252,7 @@ and rendering a matching tracking legend. Default is <code>FALSE</code>.</p></dd
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"hemoglobin_data"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">boxplotSCI</span><span class="op">(</span>data <span class="op">=</span> <span class="va">hemoglobin_data</span>,</span></span>
 <span class="r-in"><span>                 var <span class="op">=</span> <span class="va">hb</span>,</span></span>
-<span class="r-in"><span>                  time <span class="op">=</span> <span class="va">visit_nr</span>,</span></span>
+<span class="r-in"><span>                  order <span class="op">=</span> <span class="va">visit_nr</span>,</span></span>
 <span class="r-in"><span>                  group <span class="op">=</span> <span class="va">Arm</span>,</span></span>
 <span class="r-in"><span>                  group_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Treatment (Arm A)"</span>, <span class="st">"Control (Arm B)"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                  group_names_short <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span>,</span></span>
