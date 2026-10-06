@@ -5,13 +5,13 @@
 #' @param data A data frame or tibble containing the data to be plotted.
 #' @param var Name of the column in `data` indicating the measurement to be
 #' plotted. Supports bare or quoted column names.
-#' @param time Name of the column in `data` containing the time points of interest.
+#' @param order Name of the column in `data` containing the time points of interest.
 #' The time points can be either numeric, character, or a factor.
 #' If the time points are factors, the factor levels must be in the correct
 #' chronological order for plotting. If left empty, the function will assume
 #' a single time point. If character, they need to be able to be ordered by
 #' numerical logic.
-#' @param time_labels Name of the column in `data` containing descriptive labels
+#' @param visit Name of the column in `data` containing descriptive labels
 #' for the time points. Optional.
 #' @param group Name of the column in `data` containing the grouping variables
 #' (e.g., treatment arms). If left empty, the function will assume a single group.
@@ -78,7 +78,7 @@
 #' data("hemoglobin_data")
 #' boxplotSCI(data = hemoglobin_data,
 #'                  var = hb,
-#'                   time = visit_nr,
+#'                   order = visit_nr,
 #'                   group = Arm,
 #'                   group_names = c("Treatment (Arm A)", "Control (Arm B)"),
 #'                   group_names_short = c("A", "B"),
@@ -104,8 +104,8 @@
 
 boxplotSCI <- function(data,
                               var,
-                              time = NULL,
-                              time_labels = NULL,
+                              order = NULL,
+                              visit = NULL,
                               group = NULL,
                               group_names = NULL,
                               group_names_short = NULL,
@@ -149,8 +149,8 @@ boxplotSCI <- function(data,
 
   var         <- get_col_name(substitute(var))
   group       <- get_col_name(substitute(group))
-  time        <- get_col_name(substitute(time))
-  time_labels <- get_col_name(substitute(time_labels))
+  order        <- get_col_name(substitute(order))
+  visit <- get_col_name(substitute(visit))
 
   if (is.null(var)) stop("Specified target variable 'var' column not found.")
 
@@ -165,23 +165,23 @@ boxplotSCI <- function(data,
   if (is.null(group_names)) group_names <- group_levels
   if (is.null(group_names_short)) group_names_short <- group_names
 
-  if (!is.null(time)) {
-    if (is.character(data[[time]])) {
-      data[[time]] <- factor(data[[time]], levels = unique(data[[time]]))
+  if (!is.null(order)) {
+    if (is.character(data[[order]])) {
+      data[[order]] <- factor(data[[order]], levels = unique(data[[order]]))
     }
-    if (is.factor(data[[time]])) data[[time]] <- droplevels(data[[time]])
-    master_timepoints <- sort(unique(data[[time]]))
+    if (is.factor(data[[order]])) data[[order]] <- droplevels(data[[order]])
+    master_timepoints <- sort(unique(data[[order]]))
   } else {
     master_timepoints <- 1
   }
   n_timepoints <- length(master_timepoints)
 
   # Design and environment configurations
-  if (is.null(xlab)) xlab <- ifelse(is.null(time) || n_timepoints == 1, "Group", "Time")
+  if (is.null(xlab)) xlab <- ifelse(is.null(order) || n_timepoints == 1, "Group", "Time")
 
   # Dynamic layout tracking
   if (is.null(xlab_line)) {
-    if (is.null(time) || n_timepoints == 1) {
+    if (is.null(order) || n_timepoints == 1) {
       xlab_line <- 3.0
     } else {
       xlab_line <- 2 + (group_number - 1) * 0.65 + 1.2
@@ -213,7 +213,7 @@ boxplotSCI <- function(data,
 
   # Flexible Boxwex calculation
   if (is.null(boxwex)) {
-    if (is.null(time) || n_timepoints == 1) {
+    if (is.null(order) || n_timepoints == 1) {
       boxwex <- 0.65 - 0.15 * (min(group_number, 12) / 12)
     } else {
       if (group_number == 1) {
@@ -228,7 +228,7 @@ boxplotSCI <- function(data,
 
   # Dynamic Margins calculation
   if (is.null(mar_custom)) {
-    if (is.null(time) || n_timepoints == 1) {
+    if (is.null(order) || n_timepoints == 1) {
       calculated_bottom <- 4.0
       left_margin       <- 4.5
     } else {
@@ -246,7 +246,7 @@ boxplotSCI <- function(data,
 
   # 2. Rendering loop
 
-  if (is.null(time) || n_timepoints == 1) {
+  if (is.null(order) || n_timepoints == 1) {
     boxplot(data[[var]] ~ data[[group]], xlab = "", ylab = "", col = col,
             xaxt = "n", yaxt = "n", ylim = ylim, boxwex = boxwex)
 
@@ -258,13 +258,13 @@ boxplotSCI <- function(data,
 
       current_box_col <- if (color_time && group_number == 1) col else col[g]
 
-      boxplot(g_subset[[var]] ~ factor(g_subset[[time]], levels = master_timepoints),
+      boxplot(g_subset[[var]] ~ factor(g_subset[[order]], levels = master_timepoints),
               col = current_box_col, at = at_positions, add = (g > 1),
               xaxt = "n", yaxt = "n", xlab = "", ylab = "", ylim = ylim, boxwex = boxwex,
               xlim = c(0.5, n_timepoints + 0.5))
 
       if (nrow(g_subset) > 0) {
-        n_counts <- table(factor(g_subset[[time]][!is.na(g_subset[[var]])], levels = master_timepoints))
+        n_counts <- table(factor(g_subset[[order]][!is.na(g_subset[[var]])], levels = master_timepoints))
         n_counts[n_counts == 0] <- missing_nr
       } else {
         n_counts <- rep(missing_nr, n_timepoints)
@@ -279,7 +279,7 @@ boxplotSCI <- function(data,
       }
     }
 
-    x_axis_labels <- if (is.null(time_labels)) master_timepoints else unique(data[order(data[[time]]), time_labels])
+    x_axis_labels <- if (is.null(visit)) master_timepoints else unique(data[order(data[[order]]), visit])
     axis(side = 1, at = 1:n_timepoints, labels = x_axis_labels, cex.axis = cex_axis)
   }
 
@@ -296,7 +296,7 @@ boxplotSCI <- function(data,
   if (show_legend) {
     if (group_number == 1 && color_time) {
       # Legacy Mode active: display distinct timepoint steps
-      legend_labels <- if (is.null(time_labels)) master_timepoints else unique(data[order(data[[time]]), time_labels])
+      legend_labels <- if (is.null(visit)) master_timepoints else unique(data[order(data[[order]]), visit])
       legend_col    <- col
     } else if (group_number == 1 && !color_time) {
       # Standard Single Group Longitudinal: display the cohort name or fall back to the tested variable name

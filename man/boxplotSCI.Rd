@@ -7,8 +7,8 @@
 boxplotSCI(
   data,
   var,
-  time = NULL,
-  time_labels = NULL,
+  order = NULL,
+  visit = NULL,
   group = NULL,
   group_names = NULL,
   group_names_short = NULL,
@@ -44,14 +44,14 @@ boxplotSCI(
 \item{var}{Name of the column in \code{data} indicating the measurement to be
 plotted. Supports bare or quoted column names.}
 
-\item{time}{Name of the column in \code{data} containing the time points of interest.
+\item{order}{Name of the column in \code{data} containing the time points of interest.
 The time points can be either numeric, character, or a factor.
 If the time points are factors, the factor levels must be in the correct
 chronological order for plotting. If left empty, the function will assume
 a single time point. If character, they need to be able to be ordered by
 numerical logic.}
 
-\item{time_labels}{Name of the column in \code{data} containing descriptive labels
+\item{visit}{Name of the column in \code{data} containing descriptive labels
 for the time points. Optional.}
 
 \item{group}{Name of the column in \code{data} containing the grouping variables
@@ -146,7 +146,7 @@ library(summarySCI)
 data("hemoglobin_data")
 boxplotSCI(data = hemoglobin_data,
                  var = hb,
-                  time = visit_nr,
+                  order = visit_nr,
                   group = Arm,
                   group_names = c("Treatment (Arm A)", "Control (Arm B)"),
                   group_names_short = c("A", "B"),
