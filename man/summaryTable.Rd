@@ -63,8 +63,9 @@ Options include "n_percent" (default) and "n", and "n_N".}
 be "continuous" (default) or "categorical".}
 
 \item{dichotomous_as}{Type for the dichotomous variables. Can either be
-"categorical" (default, one row per level) or "dichotomous" (only
-one row with reference level (see argument \code{ref_level}), only works if \code{missing = "FALSE"} or
+"categorical" (one row per level) or "dichotomous" (only
+one row with reference level (see argument \code{ref_level}), only works if
+the variable does not contain missing values, or if \code{missing = "FALSE"} or
 \code{missing_percent = FALSE}.}
 
 \item{continuous_as_categorical}{A subset (vector) of continuous vars to to be
@@ -80,8 +81,7 @@ or not (FALSE). Default to FALSE}
 for continuous variables. Only used if \code{test = TRUE}.
 Options include "t.test", "oneway.test", "kruskal.test" (default for
 more than two groups), "wilcox.test" (default for two
-groups),
-"paired.t.test", "paired.wilcox.test"}
+groups).}
 
 \item{test_cat}{Test type used to calculated the p-value
 for categorical variables.  Only used if \code{test = TRUE}.
