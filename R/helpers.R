@@ -98,7 +98,7 @@ add_by_n <- function(data, variable, by, ...) {
 
 
 FitFlextableToPage <- function(ft, pgwidth = 6){
-  ft_out <- ft %>% flextable::autofit()
+  ft_out <- ft |> flextable::autofit()
   ft_out <- flextable::width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable::flextable_dim(ft_out)$widths))
   return(ft_out)
 }
