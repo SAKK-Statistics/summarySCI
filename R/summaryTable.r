@@ -676,7 +676,7 @@ if(group != "dummygroup"){
 
 
 
-## 4. test TRUE ----- other alternative, to be checked tomorrow.
+## 4. test TRUE ----- other alternative,
 if(test == TRUE){
 
   tbl_return <- tbl_merge(list(tbl_return, tbl_noMissing_short), quiet = TRUE) |>
