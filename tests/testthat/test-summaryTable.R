@@ -581,3 +581,91 @@ test_that("Word file is written", {
   summaryTable(trial, vars = "age", word_output = TRUE, file_name = f)
   expect_true(file.exists(f))
 })
+
+# ============================================================================ #
+# Tesing the column order
+# ============================================================================ #
+
+
+data("cancer", package = "survival")
+dat <- cancer
+dat$sex <- factor(dat$sex, labels = c("Male", "Female"))
+
+# Visible columns of a gtsummary object, in display order
+visible_cols <- function(tbl) {
+  hdr <- tbl$table_styling$header
+  vis <- hdr$column[!hdr$hide]
+  names(tbl$table_body)[names(tbl$table_body) %in% vis]
+}
+
+run_tbl <- function(...) {
+  summaryTable(data = dat,
+               vars = c("age", "ph.ecog", "wt.loss"),
+               group = "sex",
+               as_flex_table = FALSE,   # keep the gtsummary object to inspect columns
+               ...)
+}
+
+run_tbl(test = TRUE, overall = TRUE, add_n = FALSE)
+test_that("test + overall: Overall is the last column, p-value right before it", {
+  tbl  <- run_tbl(test = TRUE, overall = TRUE, add_n = FALSE)
+  cols <- visible_cols(tbl)
+
+  p_pos  <- grep("^p.value", cols)
+  ov_pos <- grep("^stat_0", cols)
+
+  expect_length(p_pos, 1)
+  expect_length(ov_pos, 1)
+  expect_equal(ov_pos, length(cols))       # Overall is last
+  expect_equal(p_pos, ov_pos - 1)          # p-value directly before Overall
+  expect_true(all(grep("^stat_[1-9]", cols) < p_pos))  # all groups before p-value
+})
+
+test_that("test + overall + add_n: order is groups -> p -> N -> Overall", {
+  tbl  <- run_tbl(test = TRUE, overall = TRUE, add_n = TRUE)
+  cols <- visible_cols(tbl)
+
+  p_pos  <- grep("^p.value", cols)
+  n_pos  <- grep("^n_\\d+$", cols)
+  ov_pos <- grep("^stat_0", cols)
+
+  expect_length(n_pos, 1)
+  expect_equal(ov_pos, length(cols))
+  expect_equal(n_pos, ov_pos - 1)
+  expect_equal(p_pos, n_pos - 1)
+})
+
+test_that("test without overall: p-value is the last column", {
+  tbl  <- run_tbl(test = TRUE, overall = FALSE, add_n = FALSE)
+  cols <- visible_cols(tbl)
+
+  expect_length(grep("^stat_0", cols), 0)
+  expect_equal(grep("^p.value", cols), length(cols))
+})
+
+test_that("overall without test: Overall is last and no p-value column", {
+  tbl  <- run_tbl(test = FALSE, overall = TRUE, add_n = FALSE)
+  cols <- visible_cols(tbl)
+
+  expect_length(grep("^p.value", cols), 0)
+  expect_equal(grep("^stat_0", cols), length(cols))
+})
+
+test_that("missing_percent = 'both': Overall still last, p-value before it", {
+  tbl  <- run_tbl(test = TRUE, overall = TRUE,
+                  missing_percent = "both",
+                  continuous_as_categorical = "ph.ecog",
+                  add_n = FALSE)
+  cols <- visible_cols(tbl)
+
+  p_pos  <- grep("^p.value", cols)
+  ov_pos <- grep("^stat_0", cols)
+
+  expect_length(ov_pos, 1)
+  expect_equal(ov_pos, length(cols))
+  expect_lt(p_pos, ov_pos)
+})
+
+
+
+

@@ -52,7 +52,10 @@
 #' the variable does not contain missing values, or if `missing = "FALSE"` or
 #' `missing_percent = FALSE`.
 #'
-#' @param continuous_as_categorical A subset (vector) of continuous vars to to be
+#' @param continuous_as_categorical A subset (vector) of continuous vars to be
+#' treated as categorical. Default is NULL.
+#'
+#' @param dichotomous_as_categorical A subset (vector) of dichotomous vars to be
 #' treated as categorical. Default is NULL.
 #'
 #' @param ref_level Specifies the reference level of a variable to display on a single row.
@@ -136,6 +139,7 @@ summaryTable <- function(data,
                          continuous_as = "continuous",
                          dichotomous_as = "dichotomous",
                          continuous_as_categorical = NULL,
+                         dichotomous_as_categorical = NULL,
                          ref_level = NULL,
                          test = FALSE,
                          test_cont = NULL,
@@ -261,6 +265,9 @@ summaryTable <- function(data,
     }
     vars <- vars[!all_na]
   }
+
+  ## Dichotomous variables to be shown as categorical -----
+  dich_as_cat <- intersect(dichotomous_as_categorical, vars)
 
   ## Group as factor (drop empty levels) -----
   if (!is.null(group)) {
@@ -427,6 +434,11 @@ if (dichotomous_as == "categorical" && length(dichotomous_vars_2) > 0) {
   type_missing_as_level <- append(type_missing_as_level, list(all_of(dichotomous_vars_2) ~ "categorical"))
 }
 
+### Selected dichotomous variables as categorical
+if (length(dich_as_cat) > 0) {
+  type_missing_as_level <- append(type_missing_as_level, list(all_of(dich_as_cat) ~ "categorical"))
+}
+
 
 ## Set the variable type for missing not as level -----
 numeric_vars <- intersect(vars, names(data)[sapply(data, is.numeric)])
@@ -463,6 +475,11 @@ if (length(continuous_vars) > 0) {
 # Append dichotomous variable types if any
 if (dichotomous_as == "categorical" && length(dichotomous_vars) > 0) {
   type <- append(type, list(all_of(dichotomous_vars) ~ "categorical"))
+}
+
+# Selected dichotomous variables as categorical
+if (length(dich_as_cat) > 0) {
+  type <- append(type, list(all_of(dich_as_cat) ~ "categorical"))
 }
 
 ## Overall column: must be added BEFORE add_ci(), otherwise Overall gets no CI
@@ -657,11 +674,23 @@ if(group != "dummygroup"){
       }
 
 
-## 4. test TRUE -----
-      if(test == TRUE){
 
-        tbl_return <- tbl_merge(list(tbl_return, tbl_noMissing_short), quiet = TRUE)
+
+## 4. test TRUE ----- other alternative, to be checked tomorrow.
+if(test == TRUE){
+
+  tbl_return <- tbl_merge(list(tbl_return, tbl_noMissing_short), quiet = TRUE) |>
+    modify_table_body(~ {
+      cols <- names(.x)
+      # first column belonging to the overall block (N or Overall stat)
+      ov <- grep("^(n|stat_0)(_\\d+)+$", cols)
+      if (length(ov) > 0) {
+        dplyr::relocate(.x, dplyr::starts_with("p.value"), .before = dplyr::all_of(cols[min(ov)]))
+      } else {
+        dplyr::relocate(.x, dplyr::starts_with("p.value"), .after = dplyr::last_col())
       }
+    })
+}
 
 ## 5. CI  FALSE -----
         if(ci == FALSE){
