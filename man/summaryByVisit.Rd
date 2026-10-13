@@ -71,7 +71,8 @@ variables. Default to 1.}
 or not (FALSE) for categorical variables.
 If "both", then both options are displayed next to each other.}
 
-\item{missing}{Logical. If TRUE (default), the missing values are shown.}
+\item{missing}{Logical. If TRUE (default), the missing values are shown
+(only for categorical variables).}
 
 \item{missing_text}{String indicating text shown on missing row. Default to
 "Missing".}
