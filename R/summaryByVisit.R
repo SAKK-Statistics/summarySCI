@@ -184,7 +184,7 @@ summaryByVisit<- function(data,
       tbl_stack(list(tbl_out, tbl0))
     }
   }
-<<<<<<< HEAD
+
   # footnote
   is_cont <- vapply(data[vars], is.numeric, logical(1))
   if (any(is_cont) && !all(is_cont)) {
@@ -198,9 +198,6 @@ summaryByVisit<- function(data,
       )
     }
   }
-=======
-
->>>>>>> 5b67d06676406abe732430036b058d8ac14cccf5
   #
 
   # if flex_table is needed
