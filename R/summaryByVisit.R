@@ -131,6 +131,9 @@ summaryByVisit<- function(data,
   )
 
   tbl_out <- NULL
+  # footnote
+  fn_list <- list()
+  #
   for (v in 1:length(vars)){
   if (is.numeric(data[[vars[[v]]]])==TRUE){
     tbl0 <- summaryByVisitContinuous(data,
@@ -170,11 +173,27 @@ summaryByVisit<- function(data,
                                          file_path = NULL)
 
   }
+    # footnote
+    fn_list[[v]] <- tbl0$table_styling$footnote_header
+    #
     tbl0$table_body$tbl_indent_id1 <-as.numeric(tbl0$table_body$tbl_indent_id1)
     tbl_out <- if (is.null(tbl_out)) {
       tbl0
     } else {
       tbl_stack(list(tbl_out, tbl0))
+    }
+  }
+  # footnote
+  is_cont <- vapply(data[vars], is.numeric, logical(1))
+  if (any(is_cont) && !all(is_cont)) {
+    fh <- do.call(rbind, lapply(fn_list, function(x)
+      x[!duplicated(x$column, fromLast = TRUE) & !x$remove & !is.na(x$footnote), ]))
+    for (col in unique(fh$column)) {
+      tbl_out <- modify_footnote_header(
+        tbl_out,
+        footnote = paste(unique(fh$footnote[fh$column == col]), collapse = "; "),
+        columns  = all_of(col)
+      )
     }
   }
   #
