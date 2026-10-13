@@ -4,13 +4,14 @@
 \alias{summarizeSCI}
 \title{Summarize data as a table or a plot}
 \usage{
-summarizeSCI(type = c("table", "boxplot", "lineplot"), ...)
+summarizeSCI(type = c("table", "boxplot", "lineplot", "barplot"), ...)
 }
 \arguments{
-\item{type}{Which summary to produce: \code{"table"} or \code{"boxplot"} or \code{"lineplot"}.}
+\item{type}{Which summary to produce: \code{"table"}, \code{"boxplot"}, \code{"lineplot"}
+or \code{"barplot"}.}
 
 \item{...}{
-  Arguments passed on to \code{\link[=summaryTable]{summaryTable}}, \code{\link[=boxplotSCI]{boxplotSCI}}
+  Arguments passed on to \code{\link[=summaryTable]{summaryTable}}, \code{\link[=boxplotSCI]{boxplotSCI}}, \code{\link[=lineplotSCI]{lineplotSCI}}, \code{\link[=stackedbarplotSCI]{stackedbarplotSCI}}
   \describe{
     \item{\code{data}}{A data frame or tibble containing the data to be summarized.}
     \item{\code{vars}}{Variables to include in the summary table.
@@ -154,8 +155,80 @@ sizes on the x-axis should be displayed. Default is \code{0}. Can also be set to
 legacy use, where, for a single timepoint, multiple groups were used as "timepoint" variable.
 If set to \code{TRUE}, it treats timepoints as individual categories,applying sequential coloring
 and rendering a matching tracking legend. Default is \code{FALSE}.}
+    \item{\code{order}}{Name of the column in \code{data} containing the time points of interest.
+The time points must be numeric or coercible to numeric, since they are used
+as the plotting coordinates on the x-axis. Rows with a missing time point
+are dropped.}
+    \item{\code{visit}}{Descriptive labels for the time points. Either a character
+vector with one entry per tick position, or the name of a column in \code{data}
+containing the labels (in which case the first label observed at each time
+point is used). Default is \code{NULL}, which prints the time values themselves.}
+    \item{\code{n_order}}{A numeric value indicating the number of tick positions on the
+x-axis. Default is \code{NULL}, which places one tick at each distinct value of
+\code{order}. Set explicitly to reserve ticks for time points with no observed data,
+in which case ticks are drawn at \code{1:n_order}.}
+    \item{\code{stat}}{The summary statistic plotted as the point estimate. Either
+\code{"median"} (the default) or \code{"mean"}.}
+    \item{\code{interval}}{The quantity spanned by the error band around the point
+estimate. One of \code{"iqr"} (the default, 25th to 75th percentile), \code{"range"}
+(observed minimum to maximum), \code{"ci"} (a two-sided confidence interval at
+level \code{1 - alpha}), \code{"sd"} (point estimate +/- one standard deviation), or
+\code{"none"} to plot point estimates alone.}
+    \item{\code{interval_type}}{The style in which the error band is drawn. Either
+\code{"whiskers"} (the default; vertical bars with caps) or \code{"ribbon"} (a shaded
+polygon with a dashed border). Ignored when \code{interval} is \code{"none"}.}
+    \item{\code{alpha}}{The two-sided significance level used when \code{interval = "ci"}.
+Default is \code{0.05}, giving 95\% confidence intervals. For \code{stat = "mean"} the
+interval is the usual t-interval; for \code{stat = "median"} it is the
+distribution-free interval based on the binomial order statistics, which is
+undefined for very small cells and returned as \code{NA} there.}
+    \item{\code{connect_shade}}{A numeric value between \code{0} and \code{1} giving how much
+lighter the connecting lines are drawn than the point estimates. The color is
+mixed with white rather than made transparent, so the lines stay opaque where
+they cross error bars or a ribbon. Default is \code{0.15} (15\% lighter); \code{0} draws
+the lines in the group color.}
+    \item{\code{dodge}}{A numeric value giving the total horizontal offset applied
+across groups, in x-axis units, so that overlapping error bars remain
+readable. Default is \code{0} (all groups drawn at the same x position).}
+    \item{\code{connect}}{A logical toggle switch controlling whether the point estimates
+within a group are joined by a line. Default is \code{TRUE}.}
+    \item{\code{risk_table}}{A logical toggle switch enabling the table of patient numbers
+(non-missing observations of \code{var} per group and time point) beneath the
+x-axis. Default is \code{FALSE}.}
+    \item{\code{rotate_labels}}{A logical toggle switch rotating the x-axis tick labels
+by 90 degrees. Default is \code{FALSE}. Bottom margin and label offsets are adjusted
+accordingly.}
+    \item{\code{legend_title}}{Title of the legend box. Default is \code{NULL} (no title).}
+    \item{\code{id}}{Name of the column in \code{data} identifying the patient. Only used
+when \code{var} names several Yes/No columns, as the denominator of the
+percentages. Default is \code{NULL}, which counts rows instead.}
+    \item{\code{level_names}}{A character vector containing the names of the stacked
+segments to be displayed in the legend. The order must match the levels of
+\code{var} (or the columns in \code{var}). Default is \code{NULL}, which uses the levels
+(or column names) themselves.}
+    \item{\code{scale}}{The quantity on the y-axis. Either \code{"percent"} (the default) or
+\code{"count"}.}
+    \item{\code{greyscale}}{A logical toggle switch replacing the color palette by a
+sequential grey ramp, for print or black-and-white reproduction. Default is
+\code{FALSE}. Ignored if \code{col} is supplied.}
+    \item{\code{percent_labels}}{A logical toggle switch enabling the percentage labels
+printed inside the segments. Default is \code{TRUE}. Empty segments, and segments
+too thin to hold a label, are left unlabelled.}
+    \item{\code{col_percent}}{A character value giving the color of the percentage
+labels. Default is \code{NULL}, which picks black or white per segment, whichever
+contrasts better with the fill.}
+    \item{\code{cex_percent}}{A numeric value specifying the font size of the percentage
+labels. Default is \code{0.8}.}
+    \item{\code{digits}}{A numeric value indicating the number of decimal places shown
+in the percentage labels. Default is \code{0}.}
+    \item{\code{bar_width}}{A numeric value giving the width of each bar in x-axis
+units. Default is \code{NULL}, which fills about 70\% of each time point with the
+cluster of group bars.}
   }}
 }
 \description{
-Wrapper around \code{\link[=summaryTable]{summaryTable()}}, \code{\link[=boxplotSCI]{boxplotSCI()}} and \code{\link[=lineplotSCI]{lineplotSCI()}}.
+Wrapper around \code{\link[=summaryTable]{summaryTable()}}, \code{\link[=boxplotSCI]{boxplotSCI()}}, \code{\link[=lineplotSCI]{lineplotSCI()}} and
+\code{\link[=stackedbarplotSCI]{stackedbarplotSCI()}}. Arguments in \code{...} are passed on unchanged, so they
+must be those of the function selected by \code{type} (e.g. \code{vars} for tables,
+\code{var} for plots).
 }
