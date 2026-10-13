@@ -206,7 +206,8 @@ summaryByVisitCategorical<- function(data,
                    gtsummary::tbl_summary(missing=missing,
                                           statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                           type= vars[i] ~ "categorical",
-                                          digits = list(gtsummary::all_categorical() ~ digits_cat))|>
+                                          digits = list(gtsummary::all_categorical() ~ digits_cat),
+                                          missing_text = missing_text)|>
                    gtsummary::add_n(last=TRUE)|>
                    gtsummary::add_overall(last=TRUE)|>
                    gtsummary::modify_table_body(
@@ -245,7 +246,8 @@ summaryByVisitCategorical<- function(data,
                                             statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                             by=group,
                                             type= vars[i] ~ "categorical",
-                                            digits = list(gtsummary::all_categorical() ~ digits_cat))|>
+                                            digits = list(gtsummary::all_categorical() ~ digits_cat),
+                                            missing_text = missing_text)|>
                      gtsummary::add_n(last=TRUE)|>
                      gtsummary::add_overall(last=TRUE)|>
                      gtsummary::add_stat(
@@ -300,7 +302,8 @@ summaryByVisitCategorical<- function(data,
                                             statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                             by=group,
                                             type= vars[i] ~ "categorical",
-                                            digits = list(gtsummary::all_categorical() ~ digits_cat))|>
+                                            digits = list(gtsummary::all_categorical() ~ digits_cat),
+                                            missing_text = missing_text)|>
                      gtsummary::add_n(last=TRUE)|>
                      gtsummary::add_overall(last=TRUE)|>
                      gtsummary::add_stat(

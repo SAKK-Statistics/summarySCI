@@ -37,7 +37,8 @@
 #' @param digits_cat Digits for summary statistics and CI of categorical
 #' variables. Default to 1.
 #'
-#' @param missing Logical. If TRUE (default), the missing values are shown.
+#' @param missing Logical. If TRUE (default), the missing values are shown
+#' (only for categorical variables).
 #'
 #' @param missing_percent Indicates whether percentages for missings are shown
 #' (TRUE, default)
@@ -177,6 +178,7 @@ summaryByVisit<- function(data,
       tbl_stack(list(tbl_out, tbl0))
     }
   }
+
   #
 
   # if flex_table is needed
