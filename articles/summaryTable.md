@@ -80,22 +80,7 @@ the dataset.
 summaryTable(data = colon2)
 ```
 
-| Characteristic            | N   | N = 6191          |
-|---------------------------|-----|-------------------|
-| rx                        | 619 |                   |
-| Control                   |     | 315 (51%)         |
-| Lev+5FU                   |     | 304 (49%)         |
-| Male                      | 619 |                   |
-| 0                         |     | 312 (50%)         |
-| 1                         |     | 307 (50%)         |
-| age                       | 619 | 61.0 (18.0, 85.0) |
-| extent                    | 557 |                   |
-| 1                         |     | 17 (3%)           |
-| 2                         |     | 68 (11%)          |
-| 3                         |     | 446 (72%)         |
-| 4                         |     | 26 (4%)           |
-| Missing                   |     | 62 (10%)          |
-| 1n (%); Median (Min, Max) |     |                   |
+[TABLE]
 
 If only specific variables are to be included, they need to be entered
 in the argument `vars`. The argument `group` allows the summary
@@ -177,9 +162,7 @@ considered as dichotomous. This can be changed by setting the argument
 `continuous_as` to `categorical`.
 
 For dichotomous variables, all levels are displayed by default. To show
-only one row, use the argument `dichotomous_as = dichotomous`. The
-reference level is specified using the argument
-`value = list(variable ~ "level to show")`.
+only one row, use the argument `dichotomous_as = dichotomous`.
 
 ``` r
 
@@ -188,7 +171,6 @@ summaryTable(data = colon2,
              vars = "Male",
             labels = list(age = "Age"), 
             dichotomous_as = "dichotomous", 
-            value = list(Male ~ "1"),
             missing = FALSE)
 ```
 
