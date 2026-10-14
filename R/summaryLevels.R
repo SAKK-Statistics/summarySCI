@@ -149,7 +149,7 @@ summaryLevels <- function(data,
       for (i in 1:length(vars)){
         if (is.null(group)){
           assign(paste0("t", i), data|>
-                   dplyr::select(vars[i])|>
+                   dplyr::select(any_of(c(vars[i])))|>
                    gtsummary::tbl_summary(missing="no",
                                           statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                           label = labels,
@@ -158,7 +158,7 @@ summaryLevels <- function(data,
         if (!is.null(group)){
           if (overall==FALSE & test==FALSE){
             assign(paste0("t", i), data|>
-                 dplyr::select(vars[i], group)|>
+                 dplyr::select(any_of(c(vars[i], group)))|>
                  gtsummary::tbl_summary(by= paste0(group), missing="no",
                                         statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                         label = labels,
@@ -166,7 +166,7 @@ summaryLevels <- function(data,
           }
           if (overall==TRUE & test==FALSE){
             assign(paste0("t", i), data|>
-                     dplyr::select(vars[i], group)|>
+                     dplyr::select(any_of(c(vars[i], group)))|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
                                             statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                             label = labels,
@@ -175,7 +175,7 @@ summaryLevels <- function(data,
           }
           if (overall==TRUE & test==TRUE){
             assign(paste0("t", i), data|>
-                     dplyr::select(vars[i], group)|>
+                     dplyr::select(any_of(c(vars[i], group)))|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
                                             statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                             label = labels,
@@ -186,7 +186,7 @@ summaryLevels <- function(data,
           }
           if (overall==FALSE & test==TRUE){
             assign(paste0("t", i), data|>
-                     dplyr::select(vars[i], group)|>
+                     dplyr::select(any_of(c(vars[i], group)))|>
                      gtsummary::tbl_summary(by= paste0(group), missing="no",
                                             statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                             label = labels,
