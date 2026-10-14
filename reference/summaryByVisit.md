@@ -1,7 +1,6 @@
-# Creates publication-ready summary tables for continuous data grouped, by visit
+# Creates publication-ready summary tables for data grouped, by visit
 
-Creates publication-ready summary tables for continuous data grouped, by
-visit
+Creates publication-ready summary tables for data grouped, by visit
 
 ## Usage
 
@@ -23,10 +22,11 @@ summaryByVisit(
   missing_text = "Missing",
   add_n = FALSE,
   overall = FALSE,
-  as_flex_table = FALSE,
+  continuous_as_categorical = NULL,
+  as_flex_table = TRUE,
   border = TRUE,
   word_output = FALSE,
-  file_name = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")
+  file_path = file_path
 )
 ```
 
@@ -38,9 +38,9 @@ summaryByVisit(
 
 - vars:
 
-  Continuous variables to include in the summary table. Need to be
-  specified with quotes, e.g. `"age"` or `c("age", "response")`. Default
-  to all variables present in the data except `group`.
+  Variables to include in the summary table. Need to be specified with
+  quotes, e.g. `"age"` or `c("age", "response")`. Default to all
+  variables present in the data except `group`.
 
 - group:
 
@@ -51,7 +51,7 @@ summaryByVisit(
 
 - labels:
 
-  A list containing the labels that should be used for the variables in
+  A list, containing the labels that should be used for the variables in
   the table. If NULL, labels are automatically taken from the dataset.
   If no label present, the variable name is taken.
 
@@ -99,7 +99,8 @@ summaryByVisit(
 
 - missing:
 
-  Logical. If TRUE (default), the missing values are shown.
+  Logical. If TRUE (default), the missing values are shown (only for
+  categorical variables).
 
 - missing_text:
 
@@ -115,6 +116,11 @@ summaryByVisit(
   Logical. If TRUE, an additional column with the total is added to the
   table. Ignored, if no groups are defined. Default to FALSE.
 
+- continuous_as_categorical:
+
+  A subset (vector) of continuous vars to be treated as categrical.
+  Default is NULL.
+
 - as_flex_table:
 
   Logical. If TRUE (default) the gtsummary object is converted to a
@@ -129,9 +135,9 @@ summaryByVisit(
 
   Logical. If TRUE, the table is also saved in a word document.
 
-- file_name:
+- file_path:
 
-  Character string. Specify the name of the Word document containing the
+  Character string. Specify the path of the Word document containing the
   table. Only used when `word_output` is TRUE. Needs to end with
   ".docx".
 

@@ -11,8 +11,7 @@
   Hemoglobin data (to illustrate `boxplot_over_time()`)
 
 - [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
-  : Creates publication-ready summary tables for continuous data
-  grouped, by visit
+  : Creates publication-ready summary tables for data grouped, by visit
 
 - [`summaryByVisitCategorical()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisitCategorical.md)
   : Creates publication-ready summary tables for categorical data

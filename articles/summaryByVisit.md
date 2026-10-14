@@ -45,19 +45,82 @@ data$arm<- c(rep("Arm A", 70), rep("Arm B", 80))
 ### Basic table
 
 Now, we use
-[`summarySCI::summaryLevels`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
+[`summarySCI::summaryByVisit`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
 to create a summary table for median and range of each lab-value by
 visit.
 
 ``` r
 
-summaryByVisit(data,
+summaryByVisit(data = data,
          vars = c("LDH", "Lymphocytes", "stage"),
          visit = "visit", 
          add_n = TRUE)
 ```
 
-[TABLE]
+| Visit                     | N1  | N = 152          |
+|---------------------------|-----|------------------|
+| LDH                       |     |                  |
+| Visit 1                   | 15  | 0.1 (-1.9, 2.0)  |
+| Visit 2                   | 15  | 0.1 (-1.4, 1.3)  |
+| Visit 3                   | 14  | 0.5 (-1.1, 1.9)  |
+| Visit 4                   | 15  | 0.0 (-1.3, 1.6)  |
+| Visit 5                   | 15  | 0.1 (-1.8, 1.3)  |
+| Visit 6                   | 15  | 0.5 (-1.0, 2.8)  |
+| Visit 7                   | 15  | -0.5 (-2.6, 1.1) |
+| Visit 8                   | 15  | -0.2 (-1.7, 2.7) |
+| Visit 9                   | 15  | 0.2 (-1.5, 1.3)  |
+| Visit 10                  | 15  | 0.2 (-1.9, 2.2)  |
+| Lymphocytes               |     |                  |
+| Visit 1                   | 15  | -0.3 (-1.2, 1.1) |
+| Visit 2                   | 15  | -0.5 (-2.2, 1.4) |
+| Visit 3                   | 15  | 0.0 (-1.7, 1.5)  |
+| Visit 4                   | 15  | 0.1 (-1.8, 1.5)  |
+| Visit 5                   | 15  | 0.4 (-2.4, 2.1)  |
+| Visit 6                   | 15  | 0.1 (-2.1, 2.0)  |
+| Visit 7                   | 15  | 0.3 (-1.4, 2.2)  |
+| Visit 8                   | 15  | 0.4 (-1.0, 2.6)  |
+| Visit 9                   | 15  | 0.6 (-2.1, 1.9)  |
+| Visit 10                  | 15  | 0.2 (-1.7, 2.6)  |
+| stage                     |     |                  |
+| Visit 1                   | 15  |                  |
+| I                         |     | 7.0 (46.7%)      |
+| II                        |     | 8.0 (53.3%)      |
+| Visit 2                   | 15  |                  |
+| I                         |     | 7.0 (46.7%)      |
+| II                        |     | 8.0 (53.3%)      |
+| Visit 3                   | 15  |                  |
+| I                         |     | 7.0 (46.7%)      |
+| II                        |     | 8.0 (53.3%)      |
+| Visit 4                   | 14  |                  |
+| I                         |     | 7.0 (46.7%)      |
+| II                        |     | 7.0 (46.7%)      |
+| Missing                   |     | 1.0 (6.7%)       |
+| Visit 5                   | 12  |                  |
+| I                         |     | 5.0 (33.3%)      |
+| II                        |     | 7.0 (46.7%)      |
+| Missing                   |     | 3.0 (20.0%)      |
+| Visit 6                   | 13  |                  |
+| I                         |     | 7.0 (46.7%)      |
+| II                        |     | 6.0 (40.0%)      |
+| Missing                   |     | 2.0 (13.3%)      |
+| Visit 7                   | 13  |                  |
+| I                         |     | 6.0 (40.0%)      |
+| II                        |     | 7.0 (46.7%)      |
+| Missing                   |     | 2.0 (13.3%)      |
+| Visit 8                   | 13  |                  |
+| I                         |     | 7.0 (46.7%)      |
+| II                        |     | 6.0 (40.0%)      |
+| Missing                   |     | 2.0 (13.3%)      |
+| Visit 9                   | 14  |                  |
+| I                         |     | 7.0 (46.7%)      |
+| II                        |     | 7.0 (46.7%)      |
+| Missing                   |     | 1.0 (6.7%)       |
+| Visit 10                  | 13  |                  |
+| I                         |     | 7.0 (46.7%)      |
+| II                        |     | 6.0 (40.0%)      |
+| Missing                   |     | 2.0 (13.3%)      |
+| 1N without missing values |     |                  |
+| 2Median (Min, Max); n (%) |     |                  |
 
 ### Add visit group
 
@@ -72,7 +135,78 @@ summaryByVisit(data,
          visit = "visit")
 ```
 
-[TABLE]
+| Visit                     | N = 151          |
+|---------------------------|------------------|
+| LDH                       |                  |
+| Baseline                  |                  |
+| Visit 1                   | 0.1 (-1.9, 2.0)  |
+| Visit 2                   | 0.1 (-1.4, 1.3)  |
+| Treatment                 |                  |
+| Visit 3                   | 0.5 (-1.1, 1.9)  |
+| Visit 4                   | 0.0 (-1.3, 1.6)  |
+| Follow-up                 |                  |
+| Visit 5                   | 0.1 (-1.8, 1.3)  |
+| Visit 6                   | 0.5 (-1.0, 2.8)  |
+| Visit 7                   | -0.5 (-2.6, 1.1) |
+| Visit 8                   | -0.2 (-1.7, 2.7) |
+| Visit 9                   | 0.2 (-1.5, 1.3)  |
+| Visit 10                  | 0.2 (-1.9, 2.2)  |
+| Lymphocytes               |                  |
+| Baseline                  |                  |
+| Visit 1                   | -0.3 (-1.2, 1.1) |
+| Visit 2                   | -0.5 (-2.2, 1.4) |
+| Treatment                 |                  |
+| Visit 3                   | 0.0 (-1.7, 1.5)  |
+| Visit 4                   | 0.1 (-1.8, 1.5)  |
+| Follow-up                 |                  |
+| Visit 5                   | 0.4 (-2.4, 2.1)  |
+| Visit 6                   | 0.1 (-2.1, 2.0)  |
+| Visit 7                   | 0.3 (-1.4, 2.2)  |
+| Visit 8                   | 0.4 (-1.0, 2.6)  |
+| Visit 9                   | 0.6 (-2.1, 1.9)  |
+| Visit 10                  | 0.2 (-1.7, 2.6)  |
+| stage                     |                  |
+| Baseline                  |                  |
+| Visit 1                   |                  |
+| I                         | 7.0 (46.7%)      |
+| II                        | 8.0 (53.3%)      |
+| Visit 2                   |                  |
+| I                         | 7.0 (46.7%)      |
+| II                        | 8.0 (53.3%)      |
+| Treatment                 |                  |
+| Visit 3                   |                  |
+| I                         | 7.0 (46.7%)      |
+| II                        | 8.0 (53.3%)      |
+| Visit 4                   |                  |
+| I                         | 7.0 (46.7%)      |
+| II                        | 7.0 (46.7%)      |
+| Missing                   | 1.0 (6.7%)       |
+| Follow-up                 |                  |
+| Visit 5                   |                  |
+| I                         | 5.0 (33.3%)      |
+| II                        | 7.0 (46.7%)      |
+| Missing                   | 3.0 (20.0%)      |
+| Visit 6                   |                  |
+| I                         | 7.0 (46.7%)      |
+| II                        | 6.0 (40.0%)      |
+| Missing                   | 2.0 (13.3%)      |
+| Visit 7                   |                  |
+| I                         | 6.0 (40.0%)      |
+| II                        | 7.0 (46.7%)      |
+| Missing                   | 2.0 (13.3%)      |
+| Visit 8                   |                  |
+| I                         | 7.0 (46.7%)      |
+| II                        | 6.0 (40.0%)      |
+| Missing                   | 2.0 (13.3%)      |
+| Visit 9                   |                  |
+| I                         | 7.0 (46.7%)      |
+| II                        | 7.0 (46.7%)      |
+| Missing                   | 1.0 (6.7%)       |
+| Visit 10                  |                  |
+| I                         | 7.0 (46.7%)      |
+| II                        | 6.0 (40.0%)      |
+| Missing                   | 2.0 (13.3%)      |
+| 1Median (Min, Max); n (%) |                  |
 
 ### By group
 
@@ -82,7 +216,7 @@ argument. A maximum of 3 groups are supported.
 
 ``` r
 
-summaryByVisit(data,
+summaryByVisit(data = data,
          vars = c("LDH", "Lymphocytes", "stage"),
          group = "arm",
          visitgroup = "visitgroup",
@@ -129,7 +263,7 @@ The labels can be changed by using the “labels” statement.
 
 summaryByVisit(data,
          vars = c("LDH", "Lymphocytes", "stage"),
-         labels=c("LDH (g/L)", "Lymphocytes (g)", "Stage"),
+         labels=list(LDH="LDH (g/L)", Lymphocytes="Lymphocytes (g)", stage="Stage"),
          group = "arm",
          overall = TRUE,
          visitgroup = "visitgroup",
