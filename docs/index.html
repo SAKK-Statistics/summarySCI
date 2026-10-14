@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">summarySCI</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,8 +35,8 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/summaryByVisit.html">summaryByVisit</a></li>
-    <li><a class="dropdown-item" href="articles/summaryLevels.html">summaryLevels</a></li>
+<li><a class="dropdown-item" href="articles/boxplotSCI.html">BoxplotSCI</a></li>
+    <li><a class="dropdown-item" href="articles/summaryByVisit.html">summaryByVisit</a></li>
     <li><a class="dropdown-item" href="articles/summaryTable.html">summaryTable</a></li>
   </ul>
 </li>
@@ -61,10 +61,16 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install the package using</p>
+<p>You can install the package from the main branch using</p>
 <pre><code>devtools::install_github(
   repo = "SAKK-Statistics/summarySCI",
   dependencies = TRUE
+)</code></pre>
+<p>You can install the package from another branch using</p>
+<pre><code>devtools::install_github(
+  repo = "SAKK-Statistics/summarySCI",
+  dependencies = TRUE,
+  ref = "branchname"
 )</code></pre>
 </div>
 <div class="section level2">
@@ -81,6 +87,7 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=summarySCI" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/SAKK-Statistics/summarySCI/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/SAKK-Statistics/summarySCI/issues" class="external-link">Report a bug</a></li>
 </ul>
