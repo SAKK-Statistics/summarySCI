@@ -181,8 +181,6 @@ dichotomous. This can be changed by setting the argument `continuous_as` to `cat
 For dichotomous variables, all levels are displayed by default. 
 To show only one row, use the argument
 `dichotomous_as = dichotomous`. 
-The reference level is specified using the argument
-`value = list(variable ~ "level to show")`. 
 
 
 ```{r}
@@ -191,7 +189,6 @@ summaryTable(data = colon2,
              vars = "Male",
             labels = list(age = "Age"), 
             dichotomous_as = "dichotomous", 
-            value = list(Male ~ "1"),
             missing = FALSE)
 ```
 
