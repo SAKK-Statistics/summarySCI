@@ -25,4 +25,4 @@
   : summaryLevels
 
 - [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md)
-  : Creates publication-ready summary tables (new internal structure)
+  : Creates publication-ready summary tables
