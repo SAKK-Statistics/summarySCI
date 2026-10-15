@@ -9,7 +9,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/SAKK-Statistics/summarySCI/blob/v__1.0.0/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/SAKK-Statistics/summarySCI/blob/main/DESCRIPTION)
 
 Schär S, Micheloud C (2026). *summarySCI: Produces Publication-Ready
 Summary Tables*. R package version 1.0.0,

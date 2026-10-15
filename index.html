@@ -62,16 +62,9 @@
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>You can install the package from the main branch using</p>
-<pre><code>devtools::install_github(
-  repo = "SAKK-Statistics/summarySCI",
-  dependencies = TRUE
-)</code></pre>
+<pre><code><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"SAKK-Statistics/summarySCI"</span><span class="op">)</span></span></code></pre>
 <p>You can install the package from another branch using</p>
-<pre><code>devtools::install_github(
-  repo = "SAKK-Statistics/summarySCI",
-  dependencies = TRUE,
-  ref = "branchname"
-)</code></pre>
+<pre><code><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"SAKK-Statistics/summarySCI@branchname"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a>
@@ -81,6 +74,7 @@
 <li><code><a href="reference/summaryTable.html">summaryTable()</a></code></li>
 <li><code><a href="reference/summaryLevels.html">summaryLevels()</a></code></li>
 <li><code><a href="reference/summaryByVisit.html">summaryByVisit()</a></code></li>
+<li><code><a href="reference/boxplotSCI.html">boxplotSCI()</a></code></li>
 </ul>
 </div>
 </div>

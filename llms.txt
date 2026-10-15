@@ -6,18 +6,11 @@ Welcome to the Git repository of the package `summarySCI`.
 
 You can install the package from the main branch using
 
-    devtools::install_github(
-      repo = "SAKK-Statistics/summarySCI",
-      dependencies = TRUE
-    )
+    pak::pak("SAKK-Statistics/summarySCI")
 
 You can install the package from another branch using
 
-    devtools::install_github(
-      repo = "SAKK-Statistics/summarySCI",
-      dependencies = TRUE,
-      ref = "branchname"
-    )
+    pak::pak("SAKK-Statistics/summarySCI@branchname", dependencies = TRUE)
 
 ## Functions
 
@@ -26,6 +19,7 @@ Currently, the package contains three functions:
 - [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md)
 - [`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
 - [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
+- [`boxplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/boxplotSCI.md)
 
 # Package index
 
