@@ -3,7 +3,7 @@
 title: "summaryLevels"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Summary table}
+  %\VignetteIndexEntry{Summary levels}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
