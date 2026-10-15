@@ -1,4 +1,4 @@
-#' Creates publication-ready summary tables (new internal structure)
+#' Creates publication-ready summary tables
 #'
 #' Creates publication-ready summary tables based on the gtsummary
 #' package.
@@ -106,8 +106,8 @@
 #'
 #' @param word_output Logical. If TRUE, the table is also saved in a word document.
 #'
-#' @param file_name Character string.
-#' Specify the name of the Word document containing the table.
+#' @param file_path Character string.
+#' Specify the path of the Word document containing the table.
 #' Only used when `word_output` is TRUE. Needs to end with ".docx".
 #'
 #' @return A table of class "`flextable`" or `c("tbl_summary", "gtsummary")`.
@@ -150,7 +150,7 @@ summaryTable <- function(data,
                          conf_level = 0.95,
                          digits_cont = 1,
                          digits_cat = 0,
-                         missing = TRUE, ## !
+                         missing = TRUE,
                          missing_percent = TRUE,
                          missing_text = "Missing",
                          overall = FALSE,
@@ -158,7 +158,7 @@ summaryTable <- function(data,
                          as_flex_table = TRUE,
                          border = TRUE,
                          word_output = FALSE,
-                         file_name = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")){
+                         file_path = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
 #
 # Settings and input checks ----------------------------------------------------
@@ -354,21 +354,6 @@ colnames(data_missing_as_level) <-  colnames(data)
 
 ## make missing a level -----
 
-      # for (i in colnames(data_missing_as_level|>
-      #                    dplyr::select(all_of(c(vars))))) {
-      #
-      #   if (is.factor(data_missing_as_level[[i]]) == TRUE | is.character(data_missing_as_level[[i]])) {
-      #     data_missing_as_level[[i]] <- forcats::fct_na_value_to_level(as.factor(data_missing_as_level[[i]]), level = missing_text)
-      #     if (!is.null(attr(data[[i]], "label"))) {
-      #       Hmisc::label(data_missing_as_level[[i]]) <- attr(data[[i]], "label")
-      #     }
-      #   } else if (all(data_missing_as_level[[i]] %in% c(0, 1, NA))) {
-      #     data_missing_as_level[[i]] <- forcats::fct_na_value_to_level(factor(data_missing_as_level[[i]]), level = missing_text)
-      #     if (!is.null(attr(data[[i]], "label"))) {
-      #       Hmisc::label(data_missing_as_level[[i]]) <- attr(data[[i]], "label")
-      #     }
-      #   }
-      # }
 
 for (i in colnames(data_missing_as_level |> dplyr::select(all_of(c(vars))))) {
 
@@ -398,13 +383,6 @@ if (length(numeric_vars_2) == 0) {
 }
 
 
-  ### Find dichotomous (binary) numeric variables -----
-  # dichotomous_vars_2 <- numeric_vars_2[
-  #   sapply(data_missing_as_level[numeric_vars_2], function(x) {
-  #     values <- sort(unique(na.omit(x)))
-  #     length(values) == 2 && all(values == c(0, 1))
-  #   })
-  # ]
 dichotomous_vars_2 <- vars[
   sapply(data_missing_as_level[vars], function(x) {
     values <- unique(as.character(na.omit(x)))
@@ -461,7 +439,7 @@ dichotomous_vars <- vars[
   })
 ]
 
-        # Continuous variables = numeric minus binary
+# Continuous variables = numeric minus binary
 continuous_vars <- setdiff(numeric_vars, dichotomous_vars)
 
 type <- list()
@@ -742,9 +720,9 @@ if (word_output == TRUE) {
   doc <- flextable::body_add_flextable(doc, value = tbl_print)
 
   # Save to specified location
-  print(doc, target = file_name)
+  print(doc, target = file_path)
 
-  message("Table saved to: ", normalizePath(file_name))
+  message("Table saved to: ", normalizePath(file_path))
 }
 
 # return table

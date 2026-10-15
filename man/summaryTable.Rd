@@ -2,7 +2,7 @@
 % Please edit documentation in R/summaryTable.r
 \name{summaryTable}
 \alias{summaryTable}
-\title{Creates publication-ready summary tables (new internal structure)}
+\title{Creates publication-ready summary tables}
 \usage{
 summaryTable(
   data,
@@ -33,7 +33,7 @@ summaryTable(
   as_flex_table = TRUE,
   border = TRUE,
   word_output = FALSE,
-  file_name = paste0("SummaryTable_", format(Sys.Date(), "\%Y\%m\%d"), ".docx")
+  file_path = paste0("SummaryTable_", format(Sys.Date(), "\%Y\%m\%d"), ".docx")
 )
 }
 \arguments{
@@ -139,8 +139,8 @@ available if flex_table = TRUE. Default is TRUE.}
 
 \item{word_output}{Logical. If TRUE, the table is also saved in a word document.}
 
-\item{file_name}{Character string.
-Specify the name of the Word document containing the table.
+\item{file_path}{Character string.
+Specify the path of the Word document containing the table.
 Only used when \code{word_output} is TRUE. Needs to end with ".docx".}
 }
 \value{

@@ -578,7 +578,7 @@ test_that("Return class depends on as_flex_table", {
 test_that("Word file is written", {
   trial <- gtsummary::trial
   f <- tempfile(fileext = ".docx")
-  summaryTable(trial, vars = "age", word_output = TRUE, file_name = f)
+  summaryTable(trial, vars = "age", word_output = TRUE, file_path = f)
   expect_true(file.exists(f))
 })
 
