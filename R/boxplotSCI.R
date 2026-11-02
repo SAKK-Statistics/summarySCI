@@ -138,21 +138,17 @@ boxplotSCI <- function(data,
   if (missing(data)) stop("'data' must be specified.")
   data <- as.data.frame(data)
 
-  # Unified parser
-  get_col_name <- function(x_expr) {
-    if (is.null(x_expr)) return(NULL)
-    name <- deparse(x_expr)
-    name <- gsub('^"|"$', '', name)
-    if (name %in% colnames(data)) return(name)
-    return(NULL)
-  }
+  # Accept quoted ("x") and unquoted (x) column names, like the other plots
+  var   <- col_names(substitute(var),   function() var)
+  group <- col_names(substitute(group), function() group)
+  order <- col_names(substitute(order), function() order)
+  visit <- col_names(substitute(visit), function() visit)
 
-  var         <- get_col_name(substitute(var))
-  group       <- get_col_name(substitute(group))
-  order        <- get_col_name(substitute(order))
-  visit <- get_col_name(substitute(visit))
-
-  if (is.null(var)) stop("Specified target variable 'var' column not found.")
+  if (length(var) != 1L || !var %in% colnames(data))
+    stop("Specified target variable 'var' column not found.")
+  missing_cols <- setdiff(c(group, order, visit), colnames(data))
+  if (length(missing_cols) > 0)
+    stop("Column(s) not found in 'data': ", paste(missing_cols, collapse = ", "), ".")
 
   group_number <- 1
   group_levels <- NULL
@@ -235,10 +231,17 @@ boxplotSCI <- function(data,
   # 2. Rendering loop
 
   if (is.null(order) || n_timepoints == 1) {
-    boxplot(data[[var]] ~ data[[group]], xlab = "", ylab = "", col = col,
-            xaxt = "n", yaxt = "n", ylim = ylim, boxwex = boxwex)
+    # without a grouping variable, a single box of all observations
+    if (is.null(group)) {
+      boxplot(data[[var]], xlab = "", ylab = "", col = col,
+              xaxt = "n", yaxt = "n", ylim = ylim, boxwex = boxwex)
+    } else {
+      boxplot(data[[var]] ~ data[[group]], xlab = "", ylab = "", col = col,
+              xaxt = "n", yaxt = "n", ylim = ylim, boxwex = boxwex)
+    }
 
-    axis(side = 1, at = 1:group_number, labels = group_names, cex.axis = cex_axis)
+    axis(side = 1, at = 1:group_number,
+         labels = if (is.null(group)) "" else group_names, cex.axis = cex_axis)
   } else {
     for (g in 1:group_number) {
       g_subset <- if (is.null(group)) data else data[data[[group]] == group_levels[g], ]

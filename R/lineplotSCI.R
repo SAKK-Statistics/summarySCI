@@ -29,13 +29,16 @@
 #' @param group_names_short A character vector containing short names or abbreviations
 #' for the groups, to be displayed below the x-axis near the patient counts.
 #' Optional. Defaults to `group_names`.
-#' @param stat The summary statistic plotted as the point estimate. Either
-#' `"median"` (the default) or `"mean"`.
+#' @param stat The summary statistic plotted as the point estimate: `"median"`
+#' (the default), `"mean"` or `"geomean"` (geometric mean, for positive values).
 #' @param interval The quantity spanned by the error band around the point
-#' estimate. One of `"iqr"` (the default, 25th to 75th percentile), `"range"`
-#' (observed minimum to maximum), `"ci"` (a two-sided confidence interval at
-#' level `1 - alpha`), `"sd"` (point estimate +/- one standard deviation), or
-#' `"none"` to plot point estimates alone.
+#' estimate. One of `"iqr"` (the default, 25th to 75th percentile, computed as
+#' in the summary tables, i.e. `quantile(type = 2)`), `"range"` (observed
+#' minimum to maximum), `"ci"` (a two-sided confidence interval at level
+#' `1 - alpha`), `"sd"` (point estimate +/- one standard deviation), `"se"`
+#' (point estimate +/- one standard error), or `"none"` to plot point
+#' estimates alone. With `stat = "geomean"`, only `"iqr"`, `"range"` and
+#' `"none"` are available.
 #' @param interval_type The style in which the error band is drawn. Either
 #' `"whiskers"` (the default; vertical bars with caps) or `"ribbon"` (a shaded
 #' polygon with a dashed border). Ignored when `interval` is `"none"`.
@@ -121,8 +124,8 @@
 lineplotSCI <- function(data, var, order, group = NULL,
                       visit = NULL, n_order = NULL,
                       group_names = NULL, group_names_short = NULL,
-                      stat = c("median", "mean"),
-                      interval = c("iqr", "range", "ci", "sd", "none"),
+                      stat = c("median", "mean", "geomean"),
+                      interval = c("iqr", "range", "ci", "sd", "se", "none"),
                       interval_type = c("whiskers", "ribbon"), alpha = 0.05,
                       dodge = 0, connect = TRUE, connect_shade = 0.15,
                       main = "", xlab = "Time", ylab = "Variable",
@@ -155,6 +158,8 @@ lineplotSCI <- function(data, var, order, group = NULL,
   interval      <- match.arg(interval)
   interval_type <- match.arg(interval_type)
   band          <- interval != "none"
+  if (stat == "geomean" && interval %in% c("ci", "sd", "se"))
+    stop("With stat = \"geomean\", 'interval' must be \"iqr\", \"range\" or \"none\".")
 
   v <- data[[var_name]]
   o <- data[[order_name]]
@@ -169,9 +174,12 @@ lineplotSCI <- function(data, var, order, group = NULL,
     n <- length(x)
     switch(interval,
            none  = c(NA_real_, NA_real_),
-           iqr   = unname(quantile(x, c(0.25, 0.75), type = 7)),
+           # type 2, as gtsummary uses for the quartiles of the tables
+           iqr   = unname(quantile(x, c(0.25, 0.75), type = 2)),
            range = range(x),
            sd    = if (n < 2) c(NA_real_, NA_real_) else m + c(-1, 1) * sd(x),
+           se    = if (n < 2) c(NA_real_, NA_real_) else
+             m + c(-1, 1) * sd(x) / sqrt(n),
            ci    = if (stat == "mean") {
              if (n < 2) c(NA_real_, NA_real_) else
                m + c(-1, 1) * qt(1 - alpha / 2, n - 1) * sd(x) / sqrt(n)
@@ -197,7 +205,10 @@ lineplotSCI <- function(data, var, order, group = NULL,
       x <- x[!is.na(x)]
       obs[i, j] <- length(x)
       if (length(x) == 0L) next
-      centre[i, j] <- if (stat == "median") median(x) else mean(x)
+      centre[i, j] <- switch(stat,
+                             median  = median(x),
+                             mean    = mean(x),
+                             geomean = exp(mean(log(x))))
       iv <- interval_of(x, centre[i, j])
       lower[i, j] <- iv[1]
       upper[i, j] <- iv[2]

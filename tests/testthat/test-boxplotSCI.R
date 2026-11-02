@@ -465,3 +465,13 @@ test_that("reference lines are drawn at the requested heights and styles", {
   rec3 <- capture_boxplotSCI(data = df, var = "value", order = "time", group = "arm")
   expect_length(rec3$abline, 0)
 })
+
+test_that("column names are resolved like in the other plots", {
+  d <- make_fixture()
+  # a variable holding a column name works, as in lineplotSCI and stackedbarplotSCI
+  v <- names(d)[sapply(d, is.numeric)][1]
+  expect_no_error(draw_quietly(boxplotSCI(d, v)))
+  # a misspelt column is an error instead of being silently ignored
+  expect_error(boxplotSCI(d, v, group = nope), "not found in 'data': nope")
+  expect_error(boxplotSCI(d, v, order = "nope"), "not found in 'data': nope")
+})

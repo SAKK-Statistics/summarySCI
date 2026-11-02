@@ -2,229 +2,119 @@
 % Please edit documentation in R/summarize.R
 \name{summarizeSCI}
 \alias{summarizeSCI}
-\title{Summarize data as a table or a plot}
+\title{Summarize data as a table and plots}
 \usage{
-summarizeSCI(type = c("table", "boxplot", "lineplot", "barplot"), ...)
+summarizeSCI(
+  data,
+  vars = NULL,
+  group = NULL,
+  labels = NULL,
+  stat_cont = "median_range",
+  stat_cat = "n_percent",
+  missing = TRUE,
+  missing_percent = TRUE,
+  missing_text = "Missing",
+  type = c("both", "table", "plot"),
+  plot_args = list(),
+  as_flex_table = TRUE,
+  border = TRUE,
+  ...
+)
 }
 \arguments{
-\item{type}{Which summary to produce: \code{"table"}, \code{"boxplot"}, \code{"lineplot"}
-or \code{"barplot"}.}
+\item{data}{A data frame or tibble containing the data to be summarized.}
 
-\item{...}{
-  Arguments passed on to \code{\link[=summaryTable]{summaryTable}}, \code{\link[=boxplotSCI]{boxplotSCI}}, \code{\link[=lineplotSCI]{lineplotSCI}}, \code{\link[=stackedbarplotSCI]{stackedbarplotSCI}}
-  \describe{
-    \item{\code{data}}{A data frame or tibble containing the data to be summarized.}
-    \item{\code{vars}}{Variables to include in the summary table.
+\item{vars}{Variables to include in the summary table.
 Need to be specified with quotes, e.g. \code{"age"} or \code{c("age", "response")}.
 Default to
 all variables present in the data except \code{group}.}
-    \item{\code{group}}{A single column from \code{data}.
+
+\item{group}{A single column from \code{data}.
 Need to be specified with quotes, e.g. \code{"treatment"}.
 Summary statistics will be stratified according to this variable.
 Default to NULL.}
-    \item{\code{labels}}{A list containing the labels that should be used for the
+
+\item{labels}{A list containing the labels that should be used for the
 variables in the table. If NULL, labels are automatically taken from the
 dataset. If no label present, the variable name is taken.}
-    \item{\code{stat_cont}}{Summary statistic to display for continuous variables. Options
+
+\item{stat_cont}{Summary statistic to display for continuous variables. Options
 include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
 "geomMean_sd".}
-    \item{\code{stat_cat}}{Summary statistic to display for categorical variables.
+
+\item{stat_cat}{Summary statistic to display for categorical variables.
 Options include "n_percent" (default) and "n", and "n_N".}
-    \item{\code{test}}{Logical. Indicates whether p-values are displayed (TRUE)
-or not (FALSE). Default to FALSE}
-    \item{\code{test_cont}}{Test type used to calculate the p-value
-for continuous variables. Only used if \code{test = TRUE}.
-Options include "t.test", "oneway.test", "kruskal.test" (default for
-more than two groups), "wilcox.test" (default for two
-groups).}
-    \item{\code{test_cat}}{Test type used to calculated the p-value
-for categorical variables.  Only used if \code{test = TRUE}.
-Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".
-If NULL, the function decides itself: "chisq.test.no.correct" for categorical
-variables with all expected
-cell counts >=5, and "fisher.test" for categorical variables with
-any expected cell count <5.}
-    \item{\code{continuous_as}}{Type for all the continuous variables. Can either
-be "continuous" (default) or "categorical".}
-    \item{\code{dichotomous_as}}{Type for the dichotomous variables. Can either be
-"categorical" (one row per level) or "dichotomous" (only
-one row with reference level (see argument \code{ref_level}), only works if
-the variable does not contain missing values, or if \code{missing = "FALSE"} or
-\code{missing_percent = FALSE}.}
-    \item{\code{continuous_as_categorical}}{A subset (vector) of continuous vars to be
-treated as categorical. Default is NULL.}
-    \item{\code{dichotomous_as_categorical}}{A subset (vector) of dichotomous vars to be
-treated as categorical. Default is NULL.}
-    \item{\code{ref_level}}{Specifies the reference level of a variable to display on a single row.
-Default is the first appearing level. The syntax is as follows: \code{ref_level = list(varname ~ "level to show")}.}
-    \item{\code{ci}}{Logical. Indicates whether CI are displayed (TRUE) or
-not (FALSE). Default to FALSE.}
-    \item{\code{ci_cont}}{Confidence interval method for continuous variables.
-Only used if \code{ci = TRUE}.
-Options include "t.test" and "wilcox.test" (default).}
-    \item{\code{ci_cat}}{Confidence interval method for categorical variables.
-Options include "clopper.pearson" (default) "wilson", "wilson.no.correct",
-"wald", "wald.no.correct", "agresti.coull" and "jeffreys".
-If NULL, no CI will be displayed.}
-    \item{\code{conf_level}}{Numeric. Confidence level. Default to 0.95.}
-    \item{\code{digits_cont}}{Numeric. Digits for summary statistics and CI of continuous
-variables. Default to 1.}
-    \item{\code{digits_cat}}{Numeric. Digits for summary statistics and CI of categorical
-variables. Default to 0.}
-    \item{\code{missing}}{Logical. If TRUE (default), the missing values are shown.}
-    \item{\code{missing_percent}}{Indicates whether percentages for missings are shown
+
+\item{missing}{Logical. If TRUE (default), the missing values are shown.}
+
+\item{missing_percent}{Indicates whether percentages for missings are shown
 (TRUE, default)
 or not (FALSE) for categorical variables.
 If "both", then both options are displayed next to each other.}
-    \item{\code{missing_text}}{String indicating text shown on missing row. Default to
+
+\item{missing_text}{String indicating text shown on missing row. Default to
 "Missing".}
-    \item{\code{overall}}{Logical. If TRUE, an additional column with the total is
-added to the table. Default to FALSE.}
-    \item{\code{add_n}}{Logical. If TRUE (default), an additional column with the total
-number of non-missing observations for each variable is added.}
-    \item{\code{as_flex_table}}{Logical. If TRUE (default) the gtsummary object is
+
+\item{type}{What to produce: \code{"both"} (the default) the table and a plot per
+variable, \code{"table"} the table alone, or \code{"plot"} the plots alone. The table
+is built in every case, since it decides the type of each plot.}
+
+\item{plot_args}{A named list of further arguments for the plotting
+functions, e.g. \code{list(risk_table = TRUE, col = c("grey", "black"))}. Each
+plot receives the arguments its function has.}
+
+\item{as_flex_table}{Logical. If TRUE (default) the gtsummary object is
 converted to a flextable object. Useful when rendering to Word.}
-    \item{\code{border}}{Logical. If TRUE, a border will be drawn around the table. Only
+
+\item{border}{Logical. If TRUE, a border will be drawn around the table. Only
 available if flex_table = TRUE. Default is TRUE.}
-    \item{\code{word_output}}{Logical. If TRUE, the table is also saved in a word document.}
-    \item{\code{file_path}}{Character string.
-Specify the path of the Word document containing the table.
-Only used when \code{word_output} is TRUE. Needs to end with ".docx".}
-    \item{\code{var}}{Name of the column in \code{data} indicating the measurement to be
-plotted. Supports bare or quoted column names.}
-    \item{\code{order}}{Name of the column in \code{data} containing the time points of interest.
-The time points can be either numeric, character, or a factor.
-If the time points are factors, the factor levels must be in the correct
-chronological order for plotting. If left empty, the function will assume
-a single time point. If character, they need to be able to be ordered by
-numerical logic.}
-    \item{\code{visit}}{Name of the column in \code{data} containing descriptive labels
-for the time points. Optional.}
-    \item{\code{group_names}}{A character vector containing the names of the groups
-to be displayed in the legend. The order must match \code{levels(factor(data$group))}.
-Default is \code{NULL}, which falls back to the group names found in the data.}
-    \item{\code{group_names_short}}{A character vector containing short names or abbreviations
-for the groups, to be displayed below the x-axis near the patient counts.
-Optional. Defaults to \code{group_names}.}
-    \item{\code{main}}{Title of the plot. Defaults to \code{""} (no title).}
-    \item{\code{xlab}}{A label for the x-axis. Default is \code{"Time"} if there are multiple
-time points, otherwise defaults to \code{"Group"}.}
-    \item{\code{ylab}}{A label for the y-axis. Default is \code{"Variable"}.}
-    \item{\code{ylim}}{The y-axis limits of the plot as a numeric vector of length 2.
-Default is \code{NULL}, which adds a 10\% padding buffer above and below the data range.}
-    \item{\code{y_ticks}}{A numeric vector specifying the explicit tick positions on the
-y-axis. Default is \code{NULL}, which calculates 5 evenly spaced ticks across the data range.}
-    \item{\code{col}}{A character vector of hex colors or color names to use for the boxes.
-Default is \code{NULL}, which automatically applies the SCI color palette.}
-    \item{\code{cex_lab}}{A numeric value specifying the font size of the main axis labels. Default is \code{1}.}
-    \item{\code{cex_axis}}{A numeric value specifying the font size of the axis tick marks. Default is \code{1}.}
-    \item{\code{cex_n_patients}}{A numeric value specifying the font size of the sample size
-labels and numbers displayed beneath the horizontal axis. Default is \code{0.7}.}
-    \item{\code{boxwex}}{Scale factor for the width of the boxes. Default is \code{NULL}, which
-scales the box flexibly to the size of total timepoints and groups.}
-    \item{\code{shift}}{A numeric value indicating the distance between adjacent boxes
-within a timepoint cluster. Default is \code{NULL}, which dynamically sets spacing to
-\code{boxwex * 1.15}.}
-    \item{\code{mar_custom}}{A numeric vector indicating the plot margins to be used in
-the form \code{c(bottom, left, top, right)}. Default is \code{NULL}, which dynamically
-calculates spacing so that stacked sample-size rows are never clipped.}
-    \item{\code{xlab_line}}{A numeric value indicating the margin line offset for the x-axis label.
-Default is \code{NULL}, which calculates an adaptive offset based on the number of groups.}
-    \item{\code{ylab_line}}{A numeric value indicating the margin line offset for the y-axis label.
-Default is \code{3.0}.}
-    \item{\code{xlab_position}}{Horizontal position coordinate adjustment for the sample size
-group headers down the left-hand margin. Default is \code{NULL}, which auto-aligns them.}
-    \item{\code{lines}}{A numeric vector indicating the vertical coordinates where horizontal
-reference lines will be plotted. Optional.}
-    \item{\code{lty}}{A numeric vector of length 1 or of the same length as \code{lines}
-indicating the line type to be plotted. Default is \code{1} (solid).}
-    \item{\code{col_lines}}{A character vector of length 1 or of the same length as
-\code{lines} indicating the color of the reference lines. Default is \code{"grey"}.}
-    \item{\code{legend_position}}{Position of the legend box. Options include standard base R
-keywords (e.g., \code{"topright"}, \code{"topleft"}, \code{"bottom"}) or manual numeric coordinate pairs
-\code{c(x, y)}. Default is \code{"topright"}.}
-    \item{\code{legend_offset}}{A numeric vector of length 2 specifying an \code{inset} to nudge the
-legend position away from plot elements. Default is \code{c(0, 0)}.}
-    \item{\code{legend_cex}}{A numeric value specifying the font and element scaling size
-inside the legend box. Default is \code{1}.}
-    \item{\code{legend_bty}}{The type of box border to be drawn around the legend.
-Allowed values are \code{"n"} (transparent/no border, the default) and \code{"o"} (standard box frame).}
-    \item{\code{missing_nr}}{A numeric or character value indicating how zero-count patient
-sizes on the x-axis should be displayed. Default is \code{0}. Can also be set to \code{NA}.}
-    \item{\code{color_time}}{A logical toggle switch enabling legacy timepoint colorization. Supports
-legacy use, where, for a single timepoint, multiple groups were used as "timepoint" variable.
-If set to \code{TRUE}, it treats timepoints as individual categories,applying sequential coloring
-and rendering a matching tracking legend. Default is \code{FALSE}.}
-    \item{\code{n_order}}{A numeric value indicating the number of tick positions on the
-x-axis. Default is \code{NULL}, which places one tick at each distinct value of
-\code{order}. Set explicitly to reserve ticks for time points with no observed data,
-in which case ticks are drawn at \code{1:n_order}.}
-    \item{\code{stat}}{The summary statistic plotted as the point estimate. Either
-\code{"median"} (the default) or \code{"mean"}.}
-    \item{\code{interval}}{The quantity spanned by the error band around the point
-estimate. One of \code{"iqr"} (the default, 25th to 75th percentile), \code{"range"}
-(observed minimum to maximum), \code{"ci"} (a two-sided confidence interval at
-level \code{1 - alpha}), \code{"sd"} (point estimate +/- one standard deviation), or
-\code{"none"} to plot point estimates alone.}
-    \item{\code{interval_type}}{The style in which the error band is drawn. Either
-\code{"whiskers"} (the default; vertical bars with caps) or \code{"ribbon"} (a shaded
-polygon with a dashed border). Ignored when \code{interval} is \code{"none"}.}
-    \item{\code{alpha}}{The two-sided significance level used when \code{interval = "ci"}.
-Default is \code{0.05}, giving 95\% confidence intervals. For \code{stat = "mean"} the
-interval is the usual t-interval; for \code{stat = "median"} it is the
-distribution-free interval based on the binomial order statistics, which is
-undefined for very small cells and returned as \code{NA} there.}
-    \item{\code{connect_shade}}{A numeric value between \code{0} and \code{1} giving how much
-lighter the connecting lines are drawn than the point estimates. The color is
-mixed with white rather than made transparent, so the lines stay opaque where
-they cross error bars or a ribbon. Default is \code{0.15} (15\% lighter); \code{0} draws
-the lines in the group color.}
-    \item{\code{dodge}}{A numeric value giving the total horizontal offset applied
-across groups, in x-axis units, so that overlapping error bars remain
-readable. Default is \code{0} (all groups drawn at the same x position).}
-    \item{\code{connect}}{A logical toggle switch controlling whether the point estimates
-within a group are joined by a line. Default is \code{TRUE}.}
-    \item{\code{xlim}}{The x-axis limits of the plot as a numeric vector of length 2.
-Default is \code{NULL}, which spans all tick positions and observed time points.}
-    \item{\code{risk_table}}{A logical toggle switch enabling the table of patient numbers
-(non-missing observations of \code{var} per group and time point) beneath the
-x-axis. Default is \code{FALSE}.}
-    \item{\code{rotate_labels}}{A logical toggle switch rotating the x-axis tick labels
-by 90 degrees. Default is \code{FALSE}. Bottom margin and label offsets are adjusted
-accordingly.}
-    \item{\code{legend_title}}{Title of the legend box. Default is \code{NULL} (no title).}
-    \item{\code{id}}{Name of the column in \code{data} identifying the patient. Only used
-when \code{var} names several Yes/No columns, as the denominator of the
-percentages. Default is \code{NULL}, which counts rows instead.}
-    \item{\code{level_names}}{A character vector containing the names of the stacked
-segments to be displayed in the legend. The order must match the levels of
-\code{var} (or the columns in \code{var}). Default is \code{NULL}, which uses the levels
-(or column names) themselves.}
-    \item{\code{scale}}{The quantity on the y-axis. Either \code{"percent"} (the default) or
-\code{"count"}.}
-    \item{\code{greyscale}}{A logical toggle switch replacing the color palette by a
-sequential grey ramp, for print or black-and-white reproduction. Default is
-\code{FALSE}. Ignored if \code{col} is supplied.}
-    \item{\code{percent_labels}}{A logical toggle switch enabling the percentage labels
-printed inside the segments. Default is \code{TRUE}. Empty segments, and segments
-too thin to hold a label, are left unlabelled.}
-    \item{\code{col_percent}}{A character value giving the color of the percentage
-labels. Default is \code{NULL}, which picks black or white per segment, whichever
-contrasts better with the fill.}
-    \item{\code{cex_percent}}{A numeric value specifying the font size of the percentage
-labels. Default is \code{NULL}, which sizes them to fit the width of the bars
-(at most \code{0.8}). A number is used as given, even if labels then overflow
-narrow bars. The group labels beneath the bars always shrink to fit.}
-    \item{\code{digits}}{A numeric value indicating the number of decimal places shown
-in the percentage labels. Default is \code{0}.}
-    \item{\code{bar_width}}{A numeric value giving the width of each bar in x-axis
-units. Default is \code{NULL}, which fills about 70\% of each time point with the
-cluster of group bars.}
-  }}
+
+\item{...}{Further arguments passed on to \code{\link[=summaryTable]{summaryTable()}}, e.g. \code{test},
+\code{ci}, \code{overall} or \code{digits_cont}.}
+}
+\value{
+An object of class \code{summarizeSCI}, a list with
+\itemize{
+\item \code{table}: the table, a flextable or (with \code{as_flex_table = FALSE}) a
+gtsummary object; \code{NULL} with \code{type = "plot"};
+\item \code{plots}: a named list with one plot per variable, e.g. \code{res$plots$hb};
+empty with \code{type = "table"}. Printing a plot draws it; \code{\link[=save_plots]{save_plots()}}
+writes them to files.
+}
+
+Printing the result shows the table and lists the plots.
 }
 \description{
-Wrapper around \code{\link[=summaryTable]{summaryTable()}}, \code{\link[=boxplotSCI]{boxplotSCI()}}, \code{\link[=lineplotSCI]{lineplotSCI()}} and
-\code{\link[=stackedbarplotSCI]{stackedbarplotSCI()}}. Arguments in \code{...} are passed on unchanged, so they
-must be those of the function selected by \code{type} (e.g. \code{vars} for tables,
-\code{var} for plots).
+Produces the summary table of \code{\link[=summaryTable]{summaryTable()}} and one plot per variable,
+or either of them alone (see \code{type}): a boxplot for continuous variables
+(\code{\link[=boxplotSCI]{boxplotSCI()}}) and a
+stacked barplot for categorical and dichotomous ones
+(\code{\link[=stackedbarplotSCI]{stackedbarplotSCI()}}). The type of each plot follows the type the
+variable has in the table, so that table and plots always agree.
+}
+\details{
+The settings of the table carry over to the plots: the variable labels
+become the axis or legend titles, \code{missing} / \code{missing_percent} decide
+whether missing values form a segment of their own (as they are counted in
+the table's percentages), and \code{stat_cat = "n"} shows counts instead of
+percentages. Options that only concern the plots go into \code{plot_args}.
+}
+\examples{
+library(summarySCI)
+data("hemoglobin_data")
+d <- hemoglobin_data[hemoglobin_data$visit_nr == 2, ]
+d$hb_cat <- cut(d$hb, c(-Inf, 120, 140, Inf),
+                labels = c("< 120", "120-140", "> 140"))
+res <- summarizeSCI(d, vars = c("hb", "hb_cat"), group = "Arm")
+res$table
+res$plots$hb
+res$plots$hb_cat
+
+# the plots alone
+plots <- summarizeSCI(d, vars = c("hb", "hb_cat"), group = "Arm",
+                      type = "plot")$plots
+\dontrun{
+save_plots(res, file_name = "fig", file_path = "figures")
+}
+
 }

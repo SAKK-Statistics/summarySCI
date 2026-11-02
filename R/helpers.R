@@ -230,3 +230,24 @@ sci_palette <- function(n, lines = FALSE) {
          "5" = base,
          grDevices::colorRampPalette(base)(n))
 }
+
+
+
+#' Convert a gtsummary table to a flextable
+#'
+#' The conversion [summaryTable()] applies when `as_flex_table = TRUE`: a
+#' flextable fitted to the page width, with an outer border if requested.
+#'
+#' @param tbl A gtsummary table.
+#' @param border Logical. Draw a border around header and body.
+#' @return A flextable.
+#' @keywords internal
+to_flextable <- function(tbl, border = TRUE) {
+  ft <- gtsummary::as_flex_table(tbl)
+  if (isTRUE(border)) {
+    ft <- ft |>
+      flextable::border_outer(part = "header") |>
+      flextable::border_outer(part = "body")
+  }
+  FitFlextableToPage(ft)
+}

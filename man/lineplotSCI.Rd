@@ -13,8 +13,8 @@ lineplotSCI(
   n_order = NULL,
   group_names = NULL,
   group_names_short = NULL,
-  stat = c("median", "mean"),
-  interval = c("iqr", "range", "ci", "sd", "none"),
+  stat = c("median", "mean", "geomean"),
+  interval = c("iqr", "range", "ci", "sd", "se", "none"),
   interval_type = c("whiskers", "ribbon"),
   alpha = 0.05,
   dodge = 0,
@@ -82,14 +82,17 @@ Default is \code{NULL}, which falls back to the group names found in the data.}
 for the groups, to be displayed below the x-axis near the patient counts.
 Optional. Defaults to \code{group_names}.}
 
-\item{stat}{The summary statistic plotted as the point estimate. Either
-\code{"median"} (the default) or \code{"mean"}.}
+\item{stat}{The summary statistic plotted as the point estimate: \code{"median"}
+(the default), \code{"mean"} or \code{"geomean"} (geometric mean, for positive values).}
 
 \item{interval}{The quantity spanned by the error band around the point
-estimate. One of \code{"iqr"} (the default, 25th to 75th percentile), \code{"range"}
-(observed minimum to maximum), \code{"ci"} (a two-sided confidence interval at
-level \code{1 - alpha}), \code{"sd"} (point estimate +/- one standard deviation), or
-\code{"none"} to plot point estimates alone.}
+estimate. One of \code{"iqr"} (the default, 25th to 75th percentile, computed as
+in the summary tables, i.e. \code{quantile(type = 2)}), \code{"range"} (observed
+minimum to maximum), \code{"ci"} (a two-sided confidence interval at level
+\code{1 - alpha}), \code{"sd"} (point estimate +/- one standard deviation), \code{"se"}
+(point estimate +/- one standard error), or \code{"none"} to plot point
+estimates alone. With \code{stat = "geomean"}, only \code{"iqr"}, \code{"range"} and
+\code{"none"} are available.}
 
 \item{interval_type}{The style in which the error band is drawn. Either
 \code{"whiskers"} (the default; vertical bars with caps) or \code{"ribbon"} (a shaded
