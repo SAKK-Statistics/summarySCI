@@ -9,31 +9,49 @@
 #' @keywords internal
 
 get_labels <- function(data, vars) {
+
   labels <- lapply(vars, function(var) {
+
     # Ensure column exists
+
     if (!var %in% names(data)) return(var)
 
     # Use tryCatch in case attr access throws errors on weird types
+
     lbl <- tryCatch({
+
       attr(data[[var]], "label")
+
     }, error = function(e) NULL)
 
     # If still NULL, attempt labelled::var_label if available
+
     if (is.null(lbl) && requireNamespace("labelled", quietly = TRUE)) {
+
       lbl <- labelled::var_label(data[[var]])
+
       if (is.list(lbl)) lbl <- unlist(lbl)  # var_label returns a named list
+
     }
 
     # Final check
+
     if (!is.null(lbl) && is.character(lbl) && nzchar(lbl)) {
+
       return(lbl)
+
     } else {
+
       return(var)
+
     }
+
   })
 
   names(labels) <- vars
+
   return(labels)
+
 }
 
 
@@ -86,6 +104,22 @@ add_by_n <- function(data, variable, by, ...) {
     dplyr::arrange(pick(all_of(c(by, variable)))) |>
     dplyr::group_by(.data[[by]]) |>
     dplyr::summarise(across(everything(), ~sum(!is.na(.)))) |>
+    rlang::set_names(c("by", "variable")) |>
+    dplyr::mutate(
+      by_col = paste0("add_n_stat_", dplyr::row_number()),
+      variable = gtsummary::style_number(variable)
+    ) %>%
+    select(-by) %>%
+    tidyr::pivot_wider(names_from = by_col,
+                       values_from = variable)
+}
+
+add_by_n_by_visit <- function(data, variable, by, ...) {
+  data |>
+    dplyr::select(all_of(c(variable, by))) |>
+    dplyr::arrange(pick(all_of(c(by, variable)))) |>
+    dplyr::group_by(.data[[by]], .drop = FALSE) |>          # <- keep empty levels
+    dplyr::summarise(across(everything(), ~sum(!is.na(.))), .groups = "drop") |>
     rlang::set_names(c("by", "variable")) |>
     dplyr::mutate(
       by_col = paste0("add_n_stat_", dplyr::row_number()),

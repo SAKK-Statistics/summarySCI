@@ -1,6 +1,6 @@
 Package: summarySCI
 Title: Produces Publication-Ready Summary Tables
-Version: 0.1.1
+Version: 1.0.0
 Authors@R: 
     c(person("Sämi", "Schär", email = "Saemi.Schaer@swisscancerinstitute.ch", role = "aut"),
       person("Charlotte", "Micheloud", email = "Charlotte.Micheloud@swisscancerinstitute.ch", 
@@ -19,6 +19,6 @@ Suggests:
     testthat (>= 3.0.0),
     rmarkdown
 VignetteBuilder: knitr
-URL: https://github.com/SAKK-Statistics/summarySCI/
+URL: https://sakk-statistics.github.io/summarySCI/, https://github.com/SAKK-Statistics/summarySCI
 BugReports: https://github.com/SAKK-Statistics/summarySCI/issues
 Config/testthat/edition: 3
