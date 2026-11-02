@@ -217,7 +217,7 @@ tidySummaryByVisit <- function(tbl, stat_cont = NULL) {
 
 # Numbers as printed by gtsummary: thousands separators, unicode minus, "NA"
 parse_number <- function(x) {
-  x <- gsub("−", "-", trimws(as.character(x)))
+  x <- gsub("\u2212", "-", trimws(as.character(x)))
   suppressWarnings(as.numeric(gsub(",", "", x)))
 }
 

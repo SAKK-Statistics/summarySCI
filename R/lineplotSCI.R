@@ -56,6 +56,8 @@
 #' @param main Title of the plot. Defaults to `""` (no title).
 #' @param xlab A label for the x-axis. Default is `"Time"`.
 #' @param ylab A label for the y-axis. Default is `"Variable"`.
+#' @param xlim The x-axis limits of the plot as a numeric vector of length 2.
+#' Default is `NULL`, which spans all tick positions and observed time points.
 #' @param ylim The y-axis limits of the plot as a numeric vector of length 2.
 #' Default is `NULL`, which adds a 10% padding buffer above and below the data
 #' range (band included, where one is drawn).
@@ -111,6 +113,9 @@
 #' `upper` (both all-`NA` when `interval` is `"none"`) and `n`, the number of
 #' non-missing observations per cell.
 #'
+#' @importFrom stats median qbinom qt quantile
+#' @importFrom graphics arrows box points polygon
+#' @importFrom grDevices adjustcolor col2rgb rgb
 #' @export
 lineplotSCI <- function(data, var, order, group,
                       visit = NULL, n_order = NULL,

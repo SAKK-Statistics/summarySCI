@@ -218,7 +218,7 @@ test_that("printed numbers are parsed", {
                list(centre = 10, lower = 7.5, upper = 12.5))
   expect_equal(parse_continuous("NA (NA, NA)", "median_IQR"),
                list(centre = NA_real_, lower = NA_real_, upper = NA_real_))
-  expect_equal(parse_continuous("−1.0 (−2.0, 0.5)", "median_range")$lower, -2)
+  expect_equal(parse_continuous("\u22121.0 (\u22122.0, 0.5)", "median_range")$lower, -2)
   expect_equal(parse_count(c("1,234.0 (12.5%)", "18.0/60.0", "7", "0 (NA%)")),
                c(1234, 18, 7, 0))
 })

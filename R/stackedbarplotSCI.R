@@ -76,7 +76,9 @@
 #' labels. Default is `NULL`, which picks black or white per segment, whichever
 #' contrasts better with the fill.
 #' @param cex_percent A numeric value specifying the font size of the percentage
-#' labels. Default is `0.8`.
+#' labels. Default is `NULL`, which sizes them to fit the width of the bars
+#' (at most `0.8`). A number is used as given, even if labels then overflow
+#' narrow bars. The group labels beneath the bars always shrink to fit.
 #' @param digits A numeric value indicating the number of decimal places shown
 #' in the percentage labels. Default is `0`.
 #' @param bar_width A numeric value giving the width of each bar in x-axis
@@ -102,10 +104,12 @@
 #' Default is `3.0`.
 #' @param xlab_position Horizontal position of the row labels of the table of
 #' patient numbers. Default is `NULL`, which aligns them just outside the plot region.
-#' @param legend_position Position of the legend box. `"right"` (the default)
-#' places it outside the plot region to the right of the bars; `"none"`
-#' suppresses it. Standard base R keywords (e.g., `"topright"`) place it inside
-#' the plot region, and a numeric pair `c(x, y)` gives explicit coordinates.
+#' @param legend_position Position of the legend box. `"top"` (the default)
+#' places it in one row above the bars, which keeps their full width;
+#' `"right"` places it outside the plot region to the right of the bars;
+#' `"none"` or `NULL` suppresses it. Other base R keywords (e.g.,
+#' `"topright"`) place it inside the plot region, and a numeric pair `c(x, y)`
+#' gives explicit coordinates. The margins are sized to the legend text.
 #' @param legend_title Title of the legend box. Default is `NULL` (no title).
 #' @param legend_offset A numeric vector of length 2 specifying an `inset` to
 #' nudge a keyword-placed legend. Default is `c(0, 0)`.
@@ -153,13 +157,13 @@ stackedbarplotSCI <- function(data, var, time = NULL, time_labels = NULL,
                               ylim = NULL, y_ticks = NULL,
                               col = NULL, greyscale = FALSE,
                               percent_labels = TRUE, col_percent = NULL,
-                              cex_percent = 0.8, digits = 0, bar_width = NULL,
+                              cex_percent = NULL, digits = 0, bar_width = NULL,
                               cex_lab = 1, cex_axis = 1, cex_n_patients = 0.7,
                               risk_table = FALSE, missing_nr = 0,
                               rotate_labels = FALSE,
                               mar_custom = NULL, xlab_line = NULL,
                               ylab_line = 3.0, xlab_position = NULL,
-                              legend_position = "right", legend_title = NULL,
+                              legend_position = "top", legend_title = NULL,
                               legend_offset = c(0, 0), legend_cex = 1,
                               legend_bty = "n", ...) {
 
@@ -283,13 +287,13 @@ stackedbar_draw <- function(counts, n, time_labels = dimnames(counts)[[3]],
                             ylab = NULL, ylim = NULL, y_ticks = NULL,
                             col = NULL, greyscale = FALSE,
                             percent_labels = TRUE, col_percent = NULL,
-                            cex_percent = 0.8, digits = 0, bar_width = NULL,
+                            cex_percent = NULL, digits = 0, bar_width = NULL,
                             cex_lab = 1, cex_axis = 1, cex_n_patients = 0.7,
                             risk_table = FALSE, missing_nr = 0,
                             rotate_labels = FALSE, mar_custom = NULL,
                             xlab_line = NULL, ylab_line = 3.0,
                             xlab_position = NULL,
-                            legend_position = "right", legend_title = NULL,
+                            legend_position = "top", legend_title = NULL,
                             legend_offset = c(0, 0), legend_cex = 1,
                             legend_bty = "n", ...) {
 
@@ -357,8 +361,18 @@ stackedbar_draw <- function(counts, n, time_labels = dimnames(counts)[[3]],
   label_line  <- if (show_grp) 0.8 else 0
   header_line <- (if (rotate_labels) 6 else 3) + label_line
   n_rows      <- if (n_time == 1L) 1 else n_grp
-  show_legend <- !identical(legend_position, "none")
-  outside     <- show_legend && identical(legend_position, "right")
+  show_legend <- !is.null(legend_position) && !identical(legend_position, "none")
+  legend_side <- if (show_legend && is.character(legend_position) &&
+                     legend_position %in% c("top", "right")) legend_position else ""
+
+  # Legend size in margin lines, measured on the current device
+  csi       <- graphics::par("csi")
+  leg_txt_w <- max(graphics::strwidth(c(levs, legend_title), units = "inches",
+                                      cex = legend_cex))
+  leg_key_w <- 4 * graphics::strwidth("0", units = "inches", cex = legend_cex)
+  top_lines <- if (legend_side == "top") {
+    1.6 * legend_cex + if (is.null(legend_title)) 0 else 1.2 * legend_cex
+  } else 0
 
   if (is.null(mar_custom)) {
     bottom <- (if (rotate_labels) 7 else 4) + label_line
@@ -368,21 +382,32 @@ stackedbar_draw <- function(counts, n, time_labels = dimnames(counts)[[3]],
       lab_chars <- max(nchar(c("No. of patients", groups_short)))
       left      <- max(left, 1.5 + 0.45 * lab_chars * cex_n_patients)
     }
-    right <- if (outside) {
-      2 + 0.5 * legend_cex * max(nchar(c(levs, legend_title))) + 2.5 * legend_cex
-    } else 2
-    mar_custom <- c(bottom, left, if (nzchar(main)) 3 else 2, right)
+    right <- if (legend_side == "right") 1.5 + (leg_txt_w + leg_key_w) / csi else 2
+    top   <- top_lines + if (nzchar(main)) 2.5 else if (top_lines > 0) 0.5 else 2
+    mar_custom <- c(bottom, left, top, right)
   }
   op <- graphics::par(mar = mar_custom)
   on.exit(graphics::par(op), add = TRUE)
 
   graphics::plot(NULL, xlim = c(0.5, max(tick_at) + 0.5), ylim = ylim,
-                 yaxs = "i", main = main, xlab = "", ylab = "",
+                 yaxs = "i", xlab = "", ylab = "",
                  xaxt = "n", yaxt = "n", ...)
+  graphics::title(main = main, line = top_lines + 0.8)
   usr <- graphics::par("usr")
 
+  # Shrink a label size until the widest label fits into 'width' (user units)
+  fit_cex <- function(cex, text, width) {
+    min(cex, cex * 0.92 * width / max(graphics::strwidth(text, cex = cex)))
+  }
+
   # --- Bars and percentage labels --------------------------------------------
-  min_h <- graphics::strheight("0", cex = cex_percent) * 1.2
+  # an explicit 'cex_percent' is used as given; by default the labels are
+  # sized to fit the bars, at most 0.8
+  cex_pct <- if (is.null(cex_percent)) {
+    fit_cex(0.8, paste0(formatC(100, format = "f", digits = digits), "%"),
+            bar_width)
+  } else cex_percent
+  min_h <- graphics::strheight("0", cex = cex_pct) * 1.2
   for (j in seq_len(n_time)) {
     for (i in seq_len(n_grp)) {
       h <- heights[, i, j]
@@ -398,7 +423,7 @@ stackedbar_draw <- function(counts, n, time_labels = dimnames(counts)[[3]],
           graphics::text(x_at[i, j], ((bot_y + top_y) / 2)[lab],
                          paste0(formatC(percent[lab, i, j], format = "f",
                                         digits = digits), "%"),
-                         col = txt_col[lab], cex = cex_percent)
+                         col = txt_col[lab], cex = cex_pct)
         }
       }
     }
@@ -413,11 +438,13 @@ stackedbar_draw <- function(counts, n, time_labels = dimnames(counts)[[3]],
   }
   graphics::axis(1, at = tick_at, labels = FALSE)
   graphics::axis(1, at = tick_at, labels = tick_labels, tick = FALSE,
-                 line = label_line, cex.axis = cex_axis,
-                 las = if (rotate_labels) 2 else 1)
+                 line = label_line, cex.axis = if (rotate_labels) cex_axis else
+                   fit_cex(cex_axis, tick_labels, 0.85),
+                 las = if (rotate_labels) 2 else 1, gap.axis = 0.25)
   if (show_grp) {
     graphics::mtext(rep(groups_short, n_time), side = 1, line = 0.2,
-                    at = as.vector(x_at), cex = cex_n_patients)
+                    at = as.vector(x_at),
+                    cex = fit_cex(cex_n_patients, groups_short, 0.85 * shift))
   }
   graphics::mtext(ylab, side = 2, line = ylab_line, cex = cex_lab)
 
@@ -451,16 +478,24 @@ stackedbar_draw <- function(counts, n, time_labels = dimnames(counts)[[3]],
   }
   graphics::mtext(xlab, side = 1, line = xlab_line, cex = cex_lab)
 
-  # --- Legend: top segment listed first --------------------------------------
+  # --- Legend: stacking order, bottom segment last (vertical) or first (top) -
   if (show_legend) {
     legend_args <- list(legend = rev(levs), fill = rev(col), border = NA,
                         title = legend_title, title.adj = 0,
                         bty = legend_bty, cex = legend_cex,
                         bg = if (legend_bty == "n") NA else "white",
                         box.col = "grey70")
-    if (outside) {
+    if (legend_side == "right") {
       do.call(graphics::legend,
-              c(list(x = usr[2] + 0.02 * diff(usr[1:2]), y = usr[4], xpd = NA),
+              c(list(x = usr[2] + 0.01 * diff(usr[1:2]), y = usr[4], xpd = NA),
+                legend_args))
+    } else if (legend_side == "top") {
+      legend_args$legend <- levs
+      legend_args$fill   <- col
+      legend_args$title.adj <- 0.5
+      do.call(graphics::legend,
+              c(list(x = mean(usr[1:2]), y = usr[4] + 0.01 * diff(usr[3:4]),
+                     xjust = 0.5, yjust = 0, horiz = TRUE, xpd = NA),
                 legend_args))
     } else if (is.numeric(legend_position) && length(legend_position) == 2L) {
       do.call(graphics::legend,

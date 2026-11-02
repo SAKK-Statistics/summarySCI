@@ -20,7 +20,7 @@ stackedbar_draw(
   greyscale = FALSE,
   percent_labels = TRUE,
   col_percent = NULL,
-  cex_percent = 0.8,
+  cex_percent = NULL,
   digits = 0,
   bar_width = NULL,
   cex_lab = 1,
@@ -33,7 +33,7 @@ stackedbar_draw(
   xlab_line = NULL,
   ylab_line = 3,
   xlab_position = NULL,
-  legend_position = "right",
+  legend_position = "top",
   legend_title = NULL,
   legend_offset = c(0, 0),
   legend_cex = 1,
@@ -94,7 +94,9 @@ labels. Default is \code{NULL}, which picks black or white per segment, whicheve
 contrasts better with the fill.}
 
 \item{cex_percent}{A numeric value specifying the font size of the percentage
-labels. Default is \code{0.8}.}
+labels. Default is \code{NULL}, which sizes them to fit the width of the bars
+(at most \code{0.8}). A number is used as given, even if labels then overflow
+narrow bars. The group labels beneath the bars always shrink to fit.}
 
 \item{digits}{A numeric value indicating the number of decimal places shown
 in the percentage labels. Default is \code{0}.}
@@ -133,10 +135,12 @@ Default is \code{3.0}.}
 \item{xlab_position}{Horizontal position of the row labels of the table of
 patient numbers. Default is \code{NULL}, which aligns them just outside the plot region.}
 
-\item{legend_position}{Position of the legend box. \code{"right"} (the default)
-places it outside the plot region to the right of the bars; \code{"none"}
-suppresses it. Standard base R keywords (e.g., \code{"topright"}) place it inside
-the plot region, and a numeric pair \code{c(x, y)} gives explicit coordinates.}
+\item{legend_position}{Position of the legend box. \code{"top"} (the default)
+places it in one row above the bars, which keeps their full width;
+\code{"right"} places it outside the plot region to the right of the bars;
+\code{"none"} or \code{NULL} suppresses it. Other base R keywords (e.g.,
+\code{"topright"}) place it inside the plot region, and a numeric pair \code{c(x, y)}
+gives explicit coordinates. The margins are sized to the legend text.}
 
 \item{legend_title}{Title of the legend box. Default is \code{NULL} (no title).}
 

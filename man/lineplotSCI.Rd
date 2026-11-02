@@ -119,6 +119,9 @@ the lines in the group color.}
 
 \item{ylab}{A label for the y-axis. Default is \code{"Variable"}.}
 
+\item{xlim}{The x-axis limits of the plot as a numeric vector of length 2.
+Default is \code{NULL}, which spans all tick positions and observed time points.}
+
 \item{ylim}{The y-axis limits of the plot as a numeric vector of length 2.
 Default is \code{NULL}, which adds a 10\% padding buffer above and below the data
 range (band included, where one is drawn).}

@@ -192,6 +192,8 @@ across groups, in x-axis units, so that overlapping error bars remain
 readable. Default is \code{0} (all groups drawn at the same x position).}
     \item{\code{connect}}{A logical toggle switch controlling whether the point estimates
 within a group are joined by a line. Default is \code{TRUE}.}
+    \item{\code{xlim}}{The x-axis limits of the plot as a numeric vector of length 2.
+Default is \code{NULL}, which spans all tick positions and observed time points.}
     \item{\code{risk_table}}{A logical toggle switch enabling the table of patient numbers
 (non-missing observations of \code{var} per group and time point) beneath the
 x-axis. Default is \code{FALSE}.}
@@ -218,7 +220,9 @@ too thin to hold a label, are left unlabelled.}
 labels. Default is \code{NULL}, which picks black or white per segment, whichever
 contrasts better with the fill.}
     \item{\code{cex_percent}}{A numeric value specifying the font size of the percentage
-labels. Default is \code{0.8}.}
+labels. Default is \code{NULL}, which sizes them to fit the width of the bars
+(at most \code{0.8}). A number is used as given, even if labels then overflow
+narrow bars. The group labels beneath the bars always shrink to fit.}
     \item{\code{digits}}{A numeric value indicating the number of decimal places shown
 in the percentage labels. Default is \code{0}.}
     \item{\code{bar_width}}{A numeric value giving the width of each bar in x-axis
