@@ -8,10 +8,14 @@ tidySummaryByVisit(tbl, stat_cont = NULL)
 }
 \arguments{
 \item{tbl}{A table returned by \code{\link[=summaryByVisit]{summaryByVisit()}} with
-\code{as_flex_table = FALSE}.}
+\code{as_flex_table = FALSE} (the default \code{TRUE} returns a flextable, from which
+the numbers cannot be read back).}
 
 \item{stat_cont}{The statistic of continuous variables, as passed to
-\code{\link[=summaryByVisit]{summaryByVisit()}}. Default is \code{NULL}, which reads it from the table footnote.}
+\code{\link[=summaryByVisit]{summaryByVisit()}}. Default is \code{NULL}, which reads it from the table
+footnote; if the footnote is not recognised, \code{plotByVisit()} stops and asks
+for \code{stat_cont} rather than guess. A \code{stat_cont} that does not fit the
+printed cells (e.g. \code{"mean_sd"} for a median (range) table) is an error too.}
 }
 \value{
 A data frame with columns \code{variable} (the label of the header row),

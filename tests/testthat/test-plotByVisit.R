@@ -19,7 +19,7 @@ continuous_truth <- function(d, var, group_col, res, fun) {
 
 check_continuous <- function(d, var, group_col, stat_cont, fun, digits = 2,
                              k = 1, ...) {
-  tbl <- summaryByVisit(d, vars = var, group = group_col, visit = "visit",
+  tbl <- summaryByVisit(d, as_flex_table = FALSE, vars = var, group = group_col, visit = "visit",
                         stat_cont = stat_cont, digits_cont = digits, ...)
   res <- draw_quietly(plotByVisit(tbl))
   truth <- continuous_truth(d, var, group_col, res, fun)
@@ -82,7 +82,7 @@ test_that("three arms, thousands separators and negative values are parsed", {
 
 test_that("visits are plotted in the order of the table rows", {
   d <- hb_fixture()
-  tbl <- summaryByVisit(d, vars = "hb", group = "Arm", visit = "visit")
+  tbl <- summaryByVisit(d, as_flex_table = FALSE, vars = "hb", group = "Arm", visit = "visit")
   res <- draw_quietly(plotByVisit(tbl))
   rows <- tbl$table_body$label[tbl$table_body$row_type %in% "label"]
   expect_equal(colnames(res$centre), unique(rows))
@@ -91,7 +91,7 @@ test_that("visits are plotted in the order of the table rows", {
 # --- Categorical -------------------------------------------------------------
 
 check_categorical <- function(d, var, group_col, ...) {
-  tbl <- summaryByVisit(d, vars = var, group = group_col, visit = "visit", ...)
+  tbl <- summaryByVisit(d, as_flex_table = FALSE, vars = var, group = group_col, visit = "visit", ...)
   res <- draw_quietly(plotByVisit(tbl))
   expect_equal(res$type, "categorical")
   for (g in dimnames(res$counts)[[2]]) for (v in dimnames(res$counts)[[3]]) {
@@ -125,7 +125,7 @@ test_that("categorical counts are read correctly without groups and with three a
 
 test_that("the N column of the table matches the counts it summarises", {
   d <- hb_fixture()
-  tbl <- summaryByVisit(d, vars = "hb_cat", group = "Arm", visit = "visit")
+  tbl <- summaryByVisit(d, as_flex_table = FALSE, vars = "hb_cat", group = "Arm", visit = "visit")
   sm <- tidySummaryByVisit(tbl)
   sm <- sm[sm$level != "Missing", ]
   n_from_counts <- tapply(sm$count, paste(sm$group, sm$visit), sum)
@@ -135,7 +135,7 @@ test_that("the N column of the table matches the counts it summarises", {
 
 test_that("missing values can be shown as a segment of their own", {
   d <- hb_fixture()
-  tbl <- summaryByVisit(d, vars = "hb_cat", group = "Arm", visit = "visit")
+  tbl <- summaryByVisit(d, as_flex_table = FALSE, vars = "hb_cat", group = "Arm", visit = "visit")
   res <- draw_quietly(plotByVisit(tbl, missing = TRUE))
   expect_equal(dimnames(res$counts)[[1]][4], "Missing")
   for (g in c("Arm A", "Arm B")) for (v in unique(d$visit)) {
@@ -155,7 +155,7 @@ test_that("missing values can be shown as a segment of their own", {
 
 test_that("one variable is picked from a table with several", {
   d <- hb_fixture()
-  tbl <- summaryByVisit(d, vars = c("hb", "hb_cat"), group = "Arm",
+  tbl <- summaryByVisit(d, as_flex_table = FALSE, vars = c("hb", "hb_cat"), group = "Arm",
                         visit = "visit", visitgroup = "vg")
   sm <- tidySummaryByVisit(tbl)
   expect_equal(unique(sm$variable), c("Hemoglobin", "hb_cat"))
@@ -167,21 +167,21 @@ test_that("one variable is picked from a table with several", {
   expect_equal(cat$type, "categorical")
 
   # the same numbers as when the variables are tabulated on their own
-  alone <- summaryByVisit(d, vars = "hb", group = "Arm", visit = "visit")
+  alone <- summaryByVisit(d, as_flex_table = FALSE, vars = "hb", group = "Arm", visit = "visit")
   expect_equal(cont$centre, draw_quietly(plotByVisit(alone))$centre[, colnames(cont$centre)])
-  alone <- summaryByVisit(d, vars = "hb_cat", group = "Arm", visit = "visit")
+  alone <- summaryByVisit(d, as_flex_table = FALSE, vars = "hb_cat", group = "Arm", visit = "visit")
   expect_equal(cat$counts,
                draw_quietly(plotByVisit(alone))$counts[dimnames(cat$counts)[[1]], , dimnames(cat$counts)[[3]]])
 })
 
 test_that("plotByVisit agrees with the raw-data plotting functions", {
   d <- hb_fixture()
-  tbl <- summaryByVisit(d, vars = c("hb", "hb_cat"), group = "Arm",
+  tbl <- summaryByVisit(d, as_flex_table = FALSE, vars = c("hb", "hb_cat"), group = "Arm",
                         visit = "visit", digits_cont = 2)
 
   from_tbl <- draw_quietly(plotByVisit(tbl, var = "hb_cat"))
-  from_raw <- draw_quietly(stackedbarplotSCI(d, hb_cat, time = visit_nr,
-                                             time_labels = visit, group = Arm))
+  from_raw <- draw_quietly(stackedbarplotSCI(d, hb_cat, order = visit_nr,
+                                             visit = visit, group = Arm))
   dimnames(from_raw$counts)[[3]] <- unique(d$visit[order(d$visit_nr)])
   expect_equal(from_tbl$counts,
                from_raw$counts[dimnames(from_tbl$counts)[[1]], , dimnames(from_tbl$counts)[[3]]])
@@ -199,7 +199,7 @@ test_that("plotByVisit agrees with the raw-data plotting functions", {
 
 test_that("informative errors", {
   d <- hb_fixture()
-  tbl <- summaryByVisit(d, vars = c("hb", "hb_cat"), visit = "visit")
+  tbl <- summaryByVisit(d, as_flex_table = FALSE, vars = c("hb", "hb_cat"), visit = "visit")
   expect_error(plotByVisit(tbl), "several variables")
   expect_error(plotByVisit(tbl, var = "nope"), "not found")
   expect_error(plotByVisit(tbl, var = 3), "between 1 and 2")
@@ -207,6 +207,53 @@ test_that("informative errors", {
   flex <- summaryByVisit(d, vars = "hb", visit = "visit", as_flex_table = TRUE)
   expect_error(plotByVisit(flex), "as_flex_table = FALSE")
   expect_error(plotByVisit(data.frame()), "summaryByVisit")
+})
+
+test_that("label defaults apply even when their positions are set", {
+  d <- hb_fixture()
+  tbl <- summaryByVisit(d, as_flex_table = FALSE, vars = c("hb", "hb_cat"),
+                        group = "Arm", visit = "visit")
+  # capture the arguments handed to the drawing functions
+  local_mocked_bindings(lineplot_draw   = function(...) list(...),
+                        stackedbar_draw = function(...) list(...))
+
+  cont <- plotByVisit(tbl, var = "Hemoglobin", xlab_line = 4, ylab_line = 2)
+  expect_equal(cont[["xlab"]], "Visit")
+  expect_equal(cont[["ylab"]], "Hemoglobin")
+  expect_equal(cont[["xlab_line"]], 4)
+  cat <- plotByVisit(tbl, var = "hb_cat", xlab_line = 4)
+  expect_equal(cat[["xlab"]], "Visit")
+  expect_equal(cat[["legend_title"]], "hb_cat")
+
+  # explicit labels still win
+  own <- plotByVisit(tbl, var = "Hemoglobin", xlab = "Cycle", ylab = "Hb (g/L)")
+  expect_equal(own[["xlab"]], "Cycle")
+  expect_equal(own[["ylab"]], "Hb (g/L)")
+})
+
+test_that("the statistic is never guessed", {
+  d <- hb_fixture()
+  tbl <- summaryByVisit(d, as_flex_table = FALSE, vars = c("hb_cat", "hb"),
+                        group = "Arm", visit = "visit", stat_cont = "mean_sd")
+  # found even when the footnotes of several variables are joined with "; "
+  expect_equal(detect_stat_cont(tbl), "mean_sd")
+
+  # an unrecognised footnote stops for continuous rows ...
+  blank <- tbl
+  blank$table_styling$footnote_header$footnote <- "Something else"
+  expect_error(tidySummaryByVisit(blank), "set 'stat_cont'")
+  expect_error(draw_quietly(plotByVisit(blank, var = "Hemoglobin")),
+               "set 'stat_cont'")
+  # ... unless stat_cont is given, and categorical rows do not need it
+  res <- draw_quietly(plotByVisit(blank, var = "Hemoglobin", stat_cont = "mean_sd"))
+  expect_equal(res$centre, draw_quietly(plotByVisit(tbl, var = "Hemoglobin"))$centre)
+  expect_no_error(draw_quietly(plotByVisit(blank, var = "hb_cat")))
+
+  # a stat_cont that does not fit the printed cells is an error
+  expect_error(plotByVisit(tbl, var = "Hemoglobin", stat_cont = "median_range"),
+               "does not have the shape")
+  med <- summaryByVisit(d, as_flex_table = FALSE, vars = "hb", visit = "visit")
+  expect_error(plotByVisit(med, stat_cont = "mean_se"), "does not have the shape")
 })
 
 # --- Parsing helpers ---------------------------------------------------------

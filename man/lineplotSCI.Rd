@@ -8,7 +8,7 @@ lineplotSCI(
   data,
   var,
   order,
-  group,
+  group = NULL,
   visit = NULL,
   n_order = NULL,
   group_names = NULL,
@@ -61,12 +61,13 @@ are dropped.}
 
 \item{group}{Name of the column in \code{data} containing the grouping variable
 (e.g., treatment arms). Supports bare or quoted column names. Rows with a
-missing group are dropped.}
+missing group are dropped. Default is \code{NULL}, which draws a single line,
+labelled with \code{var} (or \code{group_names}).}
 
-\item{visit}{Descriptive labels for the time points. Either a character
-vector with one entry per tick position, or the name of a column in \code{data}
-containing the labels (in which case the first label observed at each time
-point is used). Default is \code{NULL}, which prints the time values themselves.}
+\item{visit}{Descriptive labels for the time points. Either the name of a
+column in \code{data} containing the labels (bare or quoted; the first label
+observed at each time point is used), or a character vector with one entry
+per tick position. Default is \code{NULL}, which prints the time values themselves.}
 
 \item{n_order}{A numeric value indicating the number of tick positions on the
 x-axis. Default is \code{NULL}, which places one tick at each distinct value of

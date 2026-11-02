@@ -191,19 +191,7 @@ boxplotSCI <- function(data,
   # SCI color palette
   palette_n <- if (color_time && group_number == 1) n_timepoints else group_number
 
-  if (is.null(col)) {
-    if (palette_n <= 5) {
-      col <- switch(as.character(palette_n),
-                    "1" = "#E4002B",
-                    "2" = c("#F4B9C2", "#E4002B"),
-                    "3" = c("#FFE3E3", "#F4B9C2", "#E4002B"),
-                    "4" = c("#FFE3E3", "#F4B9C2", "#E4002B", "#961D13"),
-                    "5" = c("#FFE3E3", "#F4B9C2", "#E4002B", "#961D13", "#401F28")
-      )
-    } else {
-      col <- colorRampPalette(c("#FFE3E3", "#F4B9C2", "#E4002B", "#961D13", "#401F28"))(palette_n)
-    }
-  }
+  if (is.null(col)) col <- sci_palette(palette_n)
 
   if (is.null(ylim)) {
     range_m <- range(data[[var]], na.rm = TRUE)

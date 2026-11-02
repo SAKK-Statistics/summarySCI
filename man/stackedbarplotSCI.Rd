@@ -7,8 +7,8 @@
 stackedbarplotSCI(
   data,
   var,
-  time = NULL,
-  time_labels = NULL,
+  order = NULL,
+  visit = NULL,
   group = NULL,
   id = NULL,
   group_names = NULL,
@@ -54,14 +54,14 @@ stackedbarplotSCI(
 supports bare or quoted names; several columns are given as a character
 vector.}
 
-\item{time}{Name of the column in \code{data} containing the time points of
+\item{order}{Name of the column in \code{data} containing the time points of
 interest. Numeric time points are sorted numerically; factors keep their
 level order; character values are sorted by the number they contain (e.g.
 \code{"Visit 2"} before \code{"Visit 10"}), or by order of appearance if they contain
 none. If left empty, a single time point is assumed and one bar is drawn per
 group. Rows with a missing time point are dropped.}
 
-\item{time_labels}{Name of the column in \code{data} containing descriptive labels
+\item{visit}{Name of the column in \code{data} containing descriptive labels
 for the time points (the first label observed at each time point is used).
 Optional.}
 
@@ -222,8 +222,8 @@ hemoglobin_data$hb_cat <- cut(hemoglobin_data$hb, c(-Inf, 120, 140, Inf),
                               labels = c("< 120", "120-140", "> 140"))
 stackedbarplotSCI(data = hemoglobin_data,
                   var = hb_cat,
-                  time = visit_nr,
-                  time_labels = visit,
+                  order = visit_nr,
+                  visit = visit,
                   group = Arm,
                   group_names_short = c("A", "B"),
                   legend_title = "Hemoglobin",

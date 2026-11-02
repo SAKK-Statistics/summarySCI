@@ -15,14 +15,18 @@ plotByVisit(
 }
 \arguments{
 \item{tbl}{A table returned by \code{\link[=summaryByVisit]{summaryByVisit()}} with
-\code{as_flex_table = FALSE}.}
+\code{as_flex_table = FALSE} (the default \code{TRUE} returns a flextable, from which
+the numbers cannot be read back).}
 
 \item{var}{The variable to be plotted, given as its label in the table (the
 bold header row, e.g. \code{"Hemoglobin"}) or its position among the variables of
 the table. May be omitted if the table holds a single variable.}
 
 \item{stat_cont}{The statistic of continuous variables, as passed to
-\code{\link[=summaryByVisit]{summaryByVisit()}}. Default is \code{NULL}, which reads it from the table footnote.}
+\code{\link[=summaryByVisit]{summaryByVisit()}}. Default is \code{NULL}, which reads it from the table
+footnote; if the footnote is not recognised, \code{plotByVisit()} stops and asks
+for \code{stat_cont} rather than guess. A \code{stat_cont} that does not fit the
+printed cells (e.g. \code{"mean_sd"} for a median (range) table) is an error too.}
 
 \item{missing}{A logical toggle switch adding the missing-value rows of a
 categorical variable as a segment of their own. Default is \code{FALSE}, which
@@ -76,7 +80,8 @@ data("hemoglobin_data")
 hemoglobin_data$hb_cat <- cut(hemoglobin_data$hb, c(-Inf, 120, 140, Inf),
                               labels = c("< 120", "120-140", "> 140"))
 tbl <- summaryByVisit(hemoglobin_data, vars = c("hb", "hb_cat"),
-                      group = "Arm", visit = "visit", stat_cont = "median_IQR")
+                      group = "Arm", visit = "visit", stat_cont = "median_IQR",
+                      as_flex_table = FALSE)
 plotByVisit(tbl, var = "Hemoglobin", risk_table = TRUE)
 plotByVisit(tbl, var = "hb_cat", legend_title = "Hemoglobin")
 

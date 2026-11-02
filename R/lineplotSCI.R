@@ -11,17 +11,18 @@
 #' The time points must be numeric or coercible to numeric, since they are used
 #' as the plotting coordinates on the x-axis. Rows with a missing time point
 #' are dropped.
-#' @param visit Descriptive labels for the time points. Either a character
-#' vector with one entry per tick position, or the name of a column in `data`
-#' containing the labels (in which case the first label observed at each time
-#' point is used). Default is `NULL`, which prints the time values themselves.
+#' @param visit Descriptive labels for the time points. Either the name of a
+#' column in `data` containing the labels (bare or quoted; the first label
+#' observed at each time point is used), or a character vector with one entry
+#' per tick position. Default is `NULL`, which prints the time values themselves.
 #' @param n_order A numeric value indicating the number of tick positions on the
 #' x-axis. Default is `NULL`, which places one tick at each distinct value of
 #' `order`. Set explicitly to reserve ticks for time points with no observed data,
 #' in which case ticks are drawn at `1:n_order`.
 #' @param group Name of the column in `data` containing the grouping variable
 #' (e.g., treatment arms). Supports bare or quoted column names. Rows with a
-#' missing group are dropped.
+#' missing group are dropped. Default is `NULL`, which draws a single line,
+#' labelled with `var` (or `group_names`).
 #' @param group_names A character vector containing the names of the groups
 #' to be displayed in the legend. The order must match `levels(factor(data$group))`.
 #' Default is `NULL`, which falls back to the group names found in the data.
@@ -117,7 +118,7 @@
 #' @importFrom graphics arrows box points polygon
 #' @importFrom grDevices adjustcolor col2rgb rgb
 #' @export
-lineplotSCI <- function(data, var, order, group,
+lineplotSCI <- function(data, var, order, group = NULL,
                       visit = NULL, n_order = NULL,
                       group_names = NULL, group_names_short = NULL,
                       stat = c("median", "mean"),
@@ -135,11 +136,20 @@ lineplotSCI <- function(data, var, order, group,
                       legend_offset = c(0, 0), legend_cex = 1, legend_bty = "n",
                       ...) {
 
-  # Accept both quoted ("x") and unquoted (x) column names
-  as_name <- function(expr) if (is.character(expr)) expr else deparse(expr)
-  var_name   <- as_name(substitute(var))
-  order_name <- as_name(substitute(order))
-  group_name <- as_name(substitute(group))
+  if (missing(data)) stop("'data' must be specified.")
+  if (missing(var) || missing(order)) stop("'var' and 'order' must be specified.")
+  data <- as.data.frame(data)
+
+  # Accept quoted ("x") and unquoted (x) column names; 'visit' may also be a
+  # vector of labels
+  var_name   <- col_names(substitute(var),   function() var)
+  order_name <- col_names(substitute(order), function() order)
+  group_name <- col_names(substitute(group), function() group)
+  visit      <- col_names(substitute(visit), function() visit)
+
+  missing_cols <- setdiff(c(var_name, order_name, group_name), names(data))
+  if (length(missing_cols) > 0)
+    stop("Column(s) not found in 'data': ", paste(missing_cols, collapse = ", "), ".")
 
   stat          <- match.arg(stat)
   interval      <- match.arg(interval)
@@ -147,8 +157,9 @@ lineplotSCI <- function(data, var, order, group,
   band          <- interval != "none"
 
   v <- data[[var_name]]
-  g <- data[[group_name]]
   o <- data[[order_name]]
+  # without a grouping variable, one line named after 'var'
+  g <- if (is.null(group_name)) rep(var_name, nrow(data)) else data[[group_name]]
 
   keep <- !is.na(g) & !is.na(o)
   v <- v[keep]; g <- factor(g[keep]); o <- as.numeric(o[keep])
@@ -207,8 +218,8 @@ lineplotSCI <- function(data, var, order, group,
     visit <- as.character(tapply(lab, o, function(z) z[1L]))
   }
   if (length(visit) != length(at_x))
-    stop("'visit' must have one entry per tick position (",
-         length(at_x), ").")
+    stop("'visit' must be a column of 'data' or have one entry per tick ",
+         "position (", length(at_x), ").")
 
   lineplot_draw(centre, lower, upper, obs, xs = xs, at_x = at_x, visit = visit,
                 band = band, interval_type = interval_type,
@@ -260,7 +271,7 @@ lineplot_draw <- function(centre, lower, upper, obs, xs, at_x = xs,
                           legend_offset = c(0, 0), legend_cex = 1,
                           legend_bty = "n", ...) {
 
-  if (is.null(col)) col <- c("#44087C", "#BA9CED")   # SCI palette
+  if (is.null(col)) col <- sci_palette(nrow(centre), lines = TRUE)   # SCI palette
 
   groups   <- rownames(centre)                 # sorted factor levels
   n_groups <- length(groups)

@@ -4,15 +4,15 @@ test_that("every type dispatches to its function", {
                                as_flex_table = FALSE),
                   "gtsummary")
   expect_no_error(draw_quietly(summarizeSCI("boxplot", data = d, var = hb,
-                                            time = visit_nr, group = Arm)))
+                                            order = visit_nr, group = Arm)))
   expect_equal(
     draw_quietly(summarizeSCI("lineplot", data = d, var = hb,
                               order = visit_nr, group = Arm)),
     draw_quietly(lineplotSCI(d, hb, visit_nr, Arm)))
   expect_equal(
     draw_quietly(summarizeSCI("barplot", data = d, var = hb_cat,
-                              time = visit_nr, group = Arm)),
-    draw_quietly(stackedbarplotSCI(d, hb_cat, time = visit_nr, group = Arm)))
+                              order = visit_nr, group = Arm)),
+    draw_quietly(stackedbarplotSCI(d, hb_cat, order = visit_nr, group = Arm)))
 })
 
 test_that("bare and quoted column names survive the pass through '...'", {

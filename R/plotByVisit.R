@@ -19,12 +19,16 @@
 #' of the table rows.
 #'
 #' @param tbl A table returned by [summaryByVisit()] with
-#' `as_flex_table = FALSE`.
+#' `as_flex_table = FALSE` (the default `TRUE` returns a flextable, from which
+#' the numbers cannot be read back).
 #' @param var The variable to be plotted, given as its label in the table (the
 #' bold header row, e.g. `"Hemoglobin"`) or its position among the variables of
 #' the table. May be omitted if the table holds a single variable.
 #' @param stat_cont The statistic of continuous variables, as passed to
-#' [summaryByVisit()]. Default is `NULL`, which reads it from the table footnote.
+#' [summaryByVisit()]. Default is `NULL`, which reads it from the table
+#' footnote; if the footnote is not recognised, `plotByVisit()` stops and asks
+#' for `stat_cont` rather than guess. A `stat_cont` that does not fit the
+#' printed cells (e.g. `"mean_sd"` for a median (range) table) is an error too.
 #' @param missing A logical toggle switch adding the missing-value rows of a
 #' categorical variable as a segment of their own. Default is `FALSE`, which
 #' leaves them out, so that percentages are relative to the non-missing
@@ -50,7 +54,8 @@
 #' hemoglobin_data$hb_cat <- cut(hemoglobin_data$hb, c(-Inf, 120, 140, Inf),
 #'                               labels = c("< 120", "120-140", "> 140"))
 #' tbl <- summaryByVisit(hemoglobin_data, vars = c("hb", "hb_cat"),
-#'                       group = "Arm", visit = "visit", stat_cont = "median_IQR")
+#'                       group = "Arm", visit = "visit", stat_cont = "median_IQR",
+#'                       as_flex_table = FALSE)
 #' plotByVisit(tbl, var = "Hemoglobin", risk_table = TRUE)
 #' plotByVisit(tbl, var = "hb_cat", legend_title = "Hemoglobin")
 #'
@@ -58,7 +63,7 @@
 plotByVisit <- function(tbl, var = NULL, stat_cont = NULL,
                         missing = FALSE, missing_text = "Missing", ...) {
 
-  sm   <- tidySummaryByVisit(tbl, stat_cont = stat_cont)
+  sm   <- parse_summary_by_visit(tbl, stat_cont = stat_cont, strict = FALSE)
   vars <- unique(sm$variable)
 
   if (is.null(var)) {
@@ -77,12 +82,14 @@ plotByVisit <- function(tbl, var = NULL, stat_cont = NULL,
 
   sm     <- sm[sm$variable == var, , drop = FALSE]
   type   <- sm$var_type[1]
+  if (type == "continuous" && is.na(detect_stat_cont(tbl, stat_cont)))
+    stop_unknown_stat()
   visits <- unique(sm$visit[order(sm$visit_id)])
   groups <- unique(sm$group)
   dims   <- list(groups, visits)
 
   args <- list(...)
-  if (is.null(args$xlab)) args$xlab <- "Visit"
+  if (is.null(args[["xlab"]])) args[["xlab"]] <- "Visit"
 
   if (type == "continuous") {
     centre <- lower <- upper <- matrix(NA_real_, length(groups), length(visits),
@@ -94,7 +101,7 @@ plotByVisit <- function(tbl, var = NULL, stat_cont = NULL,
     upper[idx]  <- sm$upper
     obs[idx]    <- sm$n
 
-    if (is.null(args$ylab)) args$ylab <- var
+    if (is.null(args[["ylab"]])) args[["ylab"]] <- var
     xs  <- seq_along(visits)
     res <- do.call(lineplot_draw,
                    c(list(centre = centre, lower = lower, upper = upper,
@@ -110,7 +117,7 @@ plotByVisit <- function(tbl, var = NULL, stat_cont = NULL,
     counts[is.na(counts)] <- 0
     n <- apply(counts, c(2, 3), sum)
 
-    if (is.null(args$legend_title)) args$legend_title <- var
+    if (is.null(args[["legend_title"]])) args[["legend_title"]] <- var
     res <- do.call(stackedbar_draw, c(list(counts = counts, n = n), args))
   }
 
@@ -134,6 +141,13 @@ plotByVisit <- function(tbl, var = NULL, stat_cont = NULL,
 #'
 #' @export
 tidySummaryByVisit <- function(tbl, stat_cont = NULL) {
+  parse_summary_by_visit(tbl, stat_cont = stat_cont, strict = TRUE)
+}
+
+# The parser. With strict = FALSE, continuous rows whose statistic cannot be
+# told are returned with NA numbers instead of stopping, so that plotByVisit()
+# can still plot the categorical variables of the same table.
+parse_summary_by_visit <- function(tbl, stat_cont = NULL, strict = TRUE) {
 
   if (inherits(tbl, "flextable"))
     stop("'tbl' is a flextable; create it with summaryByVisit(..., as_flex_table = FALSE).")
@@ -191,7 +205,12 @@ tidySummaryByVisit <- function(tbl, stat_cont = NULL) {
       cur_n     <- parse_number(unlist(tb[i, n_cols], use.names = FALSE))
       cur_type  <- if (all(is.na(vals))) "categorical" else "continuous"
       if (cur_type == "categorical") next
-      est   <- parse_continuous(vals, stat_type)
+      if (is.na(stat_type)) {
+        if (strict) stop_unknown_stat()
+        est <- list(centre = NA_real_, lower = NA_real_, upper = NA_real_)
+      } else {
+        est <- parse_continuous(vals, stat_type)
+      }
       level <- NA_character_
       count <- NA_real_
     } else {
@@ -236,6 +255,14 @@ parse_continuous <- function(x, stat_type) {
   first  <- parse_number(vapply(parts, `[`, "", 1L))
   second <- parse_number(vapply(parts, function(p) if (length(p) > 1) p[2] else NA_character_, ""))
 
+  # The cells must have the shape of the statistic: two values in brackets for
+  # median (range / IQR), one for mean (SD / SE) and geometric mean (SD)
+  expected <- if (stat_type %in% c("median_range", "median_IQR")) 2L else 1L
+  bad <- !is.na(inner) & lengths(parts) != expected
+  if (any(bad))
+    stop("Cell \"", x[bad][1], "\" does not have the shape of '", stat_type,
+         "'; set 'stat_cont' to the value passed to summaryByVisit().")
+
   switch(stat_type,
          median_range = ,
          median_IQR   = list(centre = centre, lower = first, upper = second),
@@ -244,6 +271,12 @@ parse_continuous <- function(x, stat_type) {
                              upper = centre + first),
          geomMean_sd  = list(centre = centre, lower = rep(NA_real_, length(x)),
                              upper = rep(NA_real_, length(x))))
+}
+
+stop_unknown_stat <- function() {
+  stop("Cannot tell from the table footnotes which statistic the continuous ",
+       "rows show; set 'stat_cont' to the value passed to summaryByVisit().",
+       call. = FALSE)
 }
 
 # The statistic of continuous variables, read from the footnotes gtsummary
@@ -255,8 +288,9 @@ detect_stat_cont <- function(tbl, stat_cont = NULL) {
       stop("'stat_cont' must be one of ", paste0('"', known, '"', collapse = ", "), ".")
     return(stat_cont)
   }
-  fn <- unique(tolower(tbl$table_styling$footnote_header$footnote))
-  fn <- fn[!is.na(fn)]
+  # summaryByVisit joins the footnotes of several variables with "; "
+  fn <- tolower(tbl$table_styling$footnote_header$footnote)
+  fn <- unique(trimws(unlist(strsplit(fn[!is.na(fn)], ";"))))
   found <- unique(c(
     if (any(grepl("geom", fn)))                                  "geomMean_sd",
     if (any(grepl("^median.*q1", fn)))                           "median_IQR",
@@ -266,5 +300,7 @@ detect_stat_cont <- function(tbl, stat_cont = NULL) {
   if (length(found) > 1L)
     stop("Several continuous statistics found in the table footnotes; ",
          "set 'stat_cont'.")
-  if (length(found) == 0L) "median_range" else found
+  # NA when not recognised: tidySummaryByVisit() stops at the first continuous
+  # row rather than guess, while tables of categorical variables still parse
+  if (length(found) == 0L) NA_character_ else found
 }

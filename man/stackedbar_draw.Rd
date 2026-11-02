@@ -7,7 +7,7 @@
 stackedbar_draw(
   counts,
   n,
-  time_labels = dimnames(counts)[[3]],
+  visit = dimnames(counts)[[3]],
   group_names = NULL,
   group_names_short = NULL,
   scale = "percent",
@@ -47,9 +47,8 @@ point, with dimnames.}
 
 \item{n}{Numeric group-by-time matrix of denominators for the percentages.}
 
-\item{time_labels}{Name of the column in \code{data} containing descriptive labels
-for the time points (the first label observed at each time point is used).
-Optional.}
+\item{visit}{Character vector of labels for the time points, one per
+column of the third dimension of \code{counts}.}
 
 \item{group_names}{A character vector containing the names of the groups
 to be displayed on the x-axis. The order must match \code{levels(factor(data$group))}.

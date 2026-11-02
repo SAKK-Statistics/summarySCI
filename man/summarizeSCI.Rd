@@ -87,18 +87,18 @@ converted to a flextable object. Useful when rendering to Word.}
     \item{\code{border}}{Logical. If TRUE, a border will be drawn around the table. Only
 available if flex_table = TRUE. Default is TRUE.}
     \item{\code{word_output}}{Logical. If TRUE, the table is also saved in a word document.}
-    \item{\code{file_name}}{Character string.
-Specify the name of the Word document containing the table.
+    \item{\code{file_path}}{Character string.
+Specify the path of the Word document containing the table.
 Only used when \code{word_output} is TRUE. Needs to end with ".docx".}
     \item{\code{var}}{Name of the column in \code{data} indicating the measurement to be
 plotted. Supports bare or quoted column names.}
-    \item{\code{time}}{Name of the column in \code{data} containing the time points of interest.
+    \item{\code{order}}{Name of the column in \code{data} containing the time points of interest.
 The time points can be either numeric, character, or a factor.
 If the time points are factors, the factor levels must be in the correct
 chronological order for plotting. If left empty, the function will assume
 a single time point. If character, they need to be able to be ordered by
 numerical logic.}
-    \item{\code{time_labels}}{Name of the column in \code{data} containing descriptive labels
+    \item{\code{visit}}{Name of the column in \code{data} containing descriptive labels
 for the time points. Optional.}
     \item{\code{group_names}}{A character vector containing the names of the groups
 to be displayed in the legend. The order must match \code{levels(factor(data$group))}.
@@ -155,14 +155,6 @@ sizes on the x-axis should be displayed. Default is \code{0}. Can also be set to
 legacy use, where, for a single timepoint, multiple groups were used as "timepoint" variable.
 If set to \code{TRUE}, it treats timepoints as individual categories,applying sequential coloring
 and rendering a matching tracking legend. Default is \code{FALSE}.}
-    \item{\code{order}}{Name of the column in \code{data} containing the time points of interest.
-The time points must be numeric or coercible to numeric, since they are used
-as the plotting coordinates on the x-axis. Rows with a missing time point
-are dropped.}
-    \item{\code{visit}}{Descriptive labels for the time points. Either a character
-vector with one entry per tick position, or the name of a column in \code{data}
-containing the labels (in which case the first label observed at each time
-point is used). Default is \code{NULL}, which prints the time values themselves.}
     \item{\code{n_order}}{A numeric value indicating the number of tick positions on the
 x-axis. Default is \code{NULL}, which places one tick at each distinct value of
 \code{order}. Set explicitly to reserve ticks for time points with no observed data,

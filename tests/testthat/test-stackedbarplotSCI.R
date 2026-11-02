@@ -1,6 +1,6 @@
 test_that("levels of one variable are counted per group and time point", {
   d <- hb_fixture()
-  res <- draw_quietly(stackedbarplotSCI(d, hb_cat, time = visit_nr, group = Arm))
+  res <- draw_quietly(stackedbarplotSCI(d, hb_cat, order = visit_nr, group = Arm))
   for (g in c("Arm A", "Arm B")) for (t in 1:9) {
     x <- d$hb_cat[d$Arm == g & d$visit_nr == t]
     truth <- table(factor(x, levels = c("High", "Low", "Normal")))
@@ -13,19 +13,19 @@ test_that("levels of one variable are counted per group and time point", {
 
 test_that("quoted and bare column names give the same result", {
   d <- hb_fixture()
-  a <- draw_quietly(stackedbarplotSCI(d, hb_cat, time = visit_nr, group = Arm))
-  b <- draw_quietly(stackedbarplotSCI(d, "hb_cat", time = "visit_nr", group = "Arm"))
+  a <- draw_quietly(stackedbarplotSCI(d, hb_cat, order = visit_nr, group = Arm))
+  b <- draw_quietly(stackedbarplotSCI(d, "hb_cat", order = "visit_nr", group = "Arm"))
   expect_equal(a, b)
 })
 
 test_that("time points are ordered numerically, factor levels are kept", {
   d <- three_arm_fixture()
   d$visit[d$visit == "Visit 4"] <- "Visit 10"
-  res <- draw_quietly(stackedbarplotSCI(d, grade, time = visit, group = arm))
+  res <- draw_quietly(stackedbarplotSCI(d, grade, order = visit, group = arm))
   expect_equal(dimnames(res$counts)[[3]],
                c("Visit 1", "Visit 2", "Visit 3", "Visit 10"))
   d$grade <- factor(d$grade, levels = c("G4", "G3", "G2", "G1"))
-  res <- draw_quietly(stackedbarplotSCI(d, grade, time = visit, group = arm))
+  res <- draw_quietly(stackedbarplotSCI(d, grade, order = visit, group = arm))
   expect_equal(dimnames(res$counts)[[1]], c("G4", "G3", "G2", "G1"))
 })
 

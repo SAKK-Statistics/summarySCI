@@ -180,3 +180,53 @@ check_no_dates <- function(data, vars, group = NULL) {
   invisible(TRUE)
 }
 
+
+
+
+#' Resolve a column-name argument
+#'
+#' Turns the argument of a plotting function into column name(s). Accepts
+#' quoted names (`"x"`, `c("x", "y")`), a variable holding such names, and
+#' bare names (`x`): a bare name does not evaluate to a character vector, so
+#' it is deparsed instead.
+#'
+#' @param sub The unevaluated argument, i.e. `substitute(arg)`.
+#' @param val_fun A function evaluating the argument, i.e. `function() arg`.
+#' @return A character vector, or `NULL` if the argument is `NULL`.
+#' @keywords internal
+col_names <- function(sub, val_fun) {
+  if (is.null(sub)) return(NULL)
+  val <- tryCatch(val_fun(), error = function(e) NULL)
+  if (is.character(val)) val else deparse(sub)
+}
+
+
+
+#' SCI color palette
+#'
+#' The default colors of all plotting functions of the package.
+#'
+#' @param n Number of colors.
+#' @param lines Logical. If `TRUE`, only the darker shades are used, since the
+#' light ones are hard to see as lines and points on a white background.
+#' Default is `FALSE`, for filled boxes and bars.
+#' @return A character vector of `n` hex colors, light to dark.
+#' @keywords internal
+sci_palette <- function(n, lines = FALSE) {
+  base <- c("#FFE3E3", "#F4B9C2", "#E4002B", "#961D13", "#401F28")
+  if (lines) {
+    dark <- base[3:5]
+    return(switch(as.character(n),
+                  "1" = dark[1],
+                  "2" = dark[c(1, 3)],
+                  "3" = dark,
+                  grDevices::colorRampPalette(dark)(n)))
+  }
+  switch(as.character(n),
+         "1" = base[3],
+         "2" = base[2:3],
+         "3" = base[1:3],
+         "4" = base[1:4],
+         "5" = base,
+         grDevices::colorRampPalette(base)(n))
+}

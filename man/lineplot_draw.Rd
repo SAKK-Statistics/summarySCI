@@ -58,10 +58,10 @@ group names.}
 
 \item{at_x}{The tick positions on the x-axis.}
 
-\item{visit}{Descriptive labels for the time points. Either a character
-vector with one entry per tick position, or the name of a column in \code{data}
-containing the labels (in which case the first label observed at each time
-point is used). Default is \code{NULL}, which prints the time values themselves.}
+\item{visit}{Descriptive labels for the time points. Either the name of a
+column in \code{data} containing the labels (bare or quoted; the first label
+observed at each time point is used), or a character vector with one entry
+per tick position. Default is \code{NULL}, which prints the time values themselves.}
 
 \item{band}{Logical; whether an error band is drawn at all.}
 

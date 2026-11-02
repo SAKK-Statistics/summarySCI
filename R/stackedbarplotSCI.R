@@ -21,13 +21,13 @@
 #' @param var Name of the column(s) in `data` to be stacked. A single column
 #' supports bare or quoted names; several columns are given as a character
 #' vector.
-#' @param time Name of the column in `data` containing the time points of
+#' @param order Name of the column in `data` containing the time points of
 #' interest. Numeric time points are sorted numerically; factors keep their
 #' level order; character values are sorted by the number they contain (e.g.
 #' `"Visit 2"` before `"Visit 10"`), or by order of appearance if they contain
 #' none. If left empty, a single time point is assumed and one bar is drawn per
 #' group. Rows with a missing time point are dropped.
-#' @param time_labels Name of the column in `data` containing descriptive labels
+#' @param visit Name of the column in `data` containing descriptive labels
 #' for the time points (the first label observed at each time point is used).
 #' Optional.
 #' @param group Name of the column in `data` containing the grouping variable
@@ -130,8 +130,8 @@
 #'                               labels = c("< 120", "120-140", "> 140"))
 #' stackedbarplotSCI(data = hemoglobin_data,
 #'                   var = hb_cat,
-#'                   time = visit_nr,
-#'                   time_labels = visit,
+#'                   order = visit_nr,
+#'                   visit = visit,
 #'                   group = Arm,
 #'                   group_names_short = c("A", "B"),
 #'                   legend_title = "Hemoglobin",
@@ -147,7 +147,7 @@
 #'                   scale = "count", legend_title = "Adverse events")
 #'
 #' @export
-stackedbarplotSCI <- function(data, var, time = NULL, time_labels = NULL,
+stackedbarplotSCI <- function(data, var, order = NULL, visit = NULL,
                               group = NULL, id = NULL,
                               group_names = NULL, group_names_short = NULL,
                               level_names = NULL,
@@ -171,46 +171,41 @@ stackedbarplotSCI <- function(data, var, time = NULL, time_labels = NULL,
   data <- as.data.frame(data)
   scale <- match.arg(scale)
 
-  # Accept quoted ("x", c("x", "y")) and unquoted (x) column names; a bare
-  # symbol errors on evaluation and is deparsed instead
-  as_names <- function(sub, val_fun) {
-    if (is.null(sub)) return(NULL)
-    val <- tryCatch(val_fun(), error = function(e) NULL)
-    if (is.character(val)) val else deparse(sub)
-  }
-  var_name   <- as_names(substitute(var),         function() var)
-  time_name  <- as_names(substitute(time),        function() time)
-  tlab_name  <- as_names(substitute(time_labels), function() time_labels)
-  group_name <- as_names(substitute(group),       function() group)
-  id_name    <- as_names(substitute(id),          function() id)
+  # Accept quoted ("x", c("x", "y")) and unquoted (x) column names
+  var_name   <- col_names(substitute(var),   function() var)
+  order_name <- col_names(substitute(order), function() order)
+  visit_name <- col_names(substitute(visit), function() visit)
+  group_name <- col_names(substitute(group), function() group)
+  id_name    <- col_names(substitute(id),    function() id)
 
-  missing_cols <- setdiff(c(var_name, time_name, tlab_name, group_name, id_name),
+  missing_cols <- setdiff(c(var_name, order_name, visit_name, group_name, id_name),
                           names(data))
   if (length(missing_cols) > 0)
     stop("Column(s) not found in 'data': ", paste(missing_cols, collapse = ", "), ".")
 
   keep <- rep(TRUE, nrow(data))
-  if (!is.null(time_name))  keep <- keep & !is.na(data[[time_name]])
+  if (!is.null(order_name)) keep <- keep & !is.na(data[[order_name]])
   if (!is.null(group_name)) keep <- keep & !is.na(data[[group_name]])
   data <- data[keep, , drop = FALSE]
 
   # --- Time points and groups as factors -------------------------------------
+  # base::order(), since the argument 'order' masks the function here
   as_time_factor <- function(x) {
     if (is.factor(x)) return(droplevels(x))
     if (is.numeric(x)) return(factor(x, levels = sort(unique(x))))
     x   <- as.character(x)
     u   <- unique(x)
     num <- suppressWarnings(as.numeric(gsub("[^0-9.]", "", u)))
-    factor(x, levels = if (anyNA(num)) u else u[order(num)])
+    factor(x, levels = if (anyNA(num)) u else u[base::order(num)])
   }
-  tt <- if (is.null(time_name)) factor(rep("1", nrow(data))) else
-    as_time_factor(data[[time_name]])
+  tt <- if (is.null(order_name)) factor(rep("1", nrow(data))) else
+    as_time_factor(data[[order_name]])
   gg <- if (is.null(group_name)) factor(rep("All", nrow(data))) else
     factor(data[[group_name]])
 
   t_labels <- levels(tt)
-  if (!is.null(tlab_name)) {
-    t_labels <- as.character(tapply(as.character(data[[tlab_name]]), tt,
+  if (!is.null(visit_name)) {
+    t_labels <- as.character(tapply(as.character(data[[visit_name]]), tt,
                                     function(z) z[1L]))
   }
 
@@ -253,7 +248,7 @@ stackedbarplotSCI <- function(data, var, time = NULL, time_labels = NULL,
     dimnames(counts)[[1]] <- level_names
   }
 
-  stackedbar_draw(counts, n, time_labels = t_labels,
+  stackedbar_draw(counts, n, visit = t_labels,
                   group_names = group_names, group_names_short = group_names_short,
                   scale = scale, main = main, xlab = xlab, ylab = ylab,
                   ylim = ylim, y_ticks = y_ticks, col = col, greyscale = greyscale,
@@ -278,10 +273,12 @@ stackedbarplotSCI <- function(data, var, time = NULL, time_labels = NULL,
 #' @param counts Numeric array of counts indexed by segment, group and time
 #' point, with dimnames.
 #' @param n Numeric group-by-time matrix of denominators for the percentages.
+#' @param visit Character vector of labels for the time points, one per
+#' column of the third dimension of `counts`.
 #'
 #' @return Invisibly, a list with `counts`, `n` and `percent`.
 #' @keywords internal
-stackedbar_draw <- function(counts, n, time_labels = dimnames(counts)[[3]],
+stackedbar_draw <- function(counts, n, visit = dimnames(counts)[[3]],
                             group_names = NULL, group_names_short = NULL,
                             scale = "percent", main = "", xlab = NULL,
                             ylab = NULL, ylim = NULL, y_ticks = NULL,
@@ -344,7 +341,7 @@ stackedbar_draw <- function(counts, n, time_labels = dimnames(counts)[[3]],
     offs   <- (seq_len(n_grp) - (n_grp + 1) / 2) * shift
     x_at   <- outer(offs, seq_len(n_time), "+")
     tick_at <- seq_len(n_time)
-    tick_labels <- time_labels
+    tick_labels <- visit
     if (is.null(bar_width)) bar_width <- 0.85 * shift
   }
 
@@ -507,20 +504,4 @@ stackedbar_draw <- function(counts, n, time_labels = dimnames(counts)[[3]],
   }
 
   invisible(list(counts = counts, n = n, percent = percent))
-}
-
-#' SCI color palette
-#'
-#' @param n Number of colors.
-#' @return A character vector of `n` hex colors, light to dark.
-#' @keywords internal
-sci_palette <- function(n) {
-  base <- c("#FFE3E3", "#F4B9C2", "#E4002B", "#961D13", "#401F28")
-  switch(as.character(n),
-         "1" = base[3],
-         "2" = base[2:3],
-         "3" = base[1:3],
-         "4" = base[1:4],
-         "5" = base,
-         grDevices::colorRampPalette(base)(n))
 }
