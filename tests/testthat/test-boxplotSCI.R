@@ -439,7 +439,7 @@ test_that("numeric legend position is shifted by legend_offset", {
 
 test_that("no legend for a single group at a single timepoint", {
   df <- data.frame(value = 1:5, arm = "A")
-  rec <- capture_boxplotSCI(data = df, var = "value", group = "arm")
+  rec <- capture_boxplotSCI(data = df, var = "value", group = "arm", risk_table = TRUE)
   expect_length(rec$legend, 0)
 })
 
@@ -474,4 +474,19 @@ test_that("column names are resolved like in the other plots", {
   # a misspelt column is an error instead of being silently ignored
   expect_error(boxplotSCI(d, v, group = nope), "not found in 'data': nope")
   expect_error(boxplotSCI(d, v, order = "nope"), "not found in 'data': nope")
+})
+
+test_that("risk_table = TRUE adds counts under each box for a single time point", {
+  df <- make_fixture()   # arm A: 15 values; arm B: 10 values, one missing
+  rec <- capture_boxplotSCI(data = df, var = "value", group = "arm", risk_table = TRUE)
+  expect_equal(n_rows(rec), list(c(15, 9)))
+  rec <- capture_boxplotSCI(data = df, var = "value", risk_table = TRUE)
+  expect_equal(n_rows(rec), list(24))
+
+  rec <- capture_boxplotSCI(data = df, var = "value", group = "arm",
+                            risk_table = FALSE)
+  expect_length(rec$mtext, 0)
+  rec <- capture_boxplotSCI(data = df, var = "value", order = "time",
+                            group = "arm", risk_table = FALSE)
+  expect_length(rec$mtext, 0)   # neither count rows nor their "# A" labels
 })

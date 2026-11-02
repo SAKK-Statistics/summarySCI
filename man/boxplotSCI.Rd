@@ -34,6 +34,7 @@ boxplotSCI(
   legend_offset = c(0, 0),
   legend_cex = 1,
   legend_bty = "n",
+  risk_table = NULL,
   missing_nr = 0,
   color_time = FALSE
 )
@@ -129,6 +130,12 @@ inside the legend box. Default is \code{1}.}
 
 \item{legend_bty}{The type of box border to be drawn around the legend.
 Allowed values are \code{"n"} (transparent/no border, the default) and \code{"o"} (standard box frame).}
+
+\item{risk_table}{A logical toggle switch enabling the patient numbers
+(non-missing observations of \code{var}) beneath the x-axis: one row per group
+over time, or one number under each box for a single time point.
+Default is \code{NULL}, which shows them over time but not for a single time
+point; \code{TRUE} shows them in both cases, \code{FALSE} in neither.}
 
 \item{missing_nr}{A numeric or character value indicating how zero-count patient
 sizes on the x-axis should be displayed. Default is \code{0}. Can also be set to \code{NA}.}

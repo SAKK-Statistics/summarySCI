@@ -64,6 +64,11 @@
 #' inside the legend box. Default is `1`.
 #' @param legend_bty The type of box border to be drawn around the legend.
 #' Allowed values are `"n"` (transparent/no border, the default) and `"o"` (standard box frame).
+#' @param risk_table A logical toggle switch enabling the patient numbers
+#' (non-missing observations of `var`) beneath the x-axis: one row per group
+#' over time, or one number under each box for a single time point.
+#' Default is `NULL`, which shows them over time but not for a single time
+#' point; `TRUE` shows them in both cases, `FALSE` in neither.
 #' @param missing_nr A numeric or character value indicating how zero-count patient
 #' sizes on the x-axis should be displayed. Default is `0`. Can also be set to `NA`.
 #' @param color_time A logical toggle switch enabling legacy timepoint colorization. Supports
@@ -131,6 +136,7 @@ boxplotSCI <- function(data,
                               legend_offset = c(0, 0),
                               legend_cex = 1,
                               legend_bty = "n",
+                              risk_table = NULL,
                               missing_nr = 0,
                               color_time = FALSE) {
 
@@ -172,13 +178,18 @@ boxplotSCI <- function(data,
   }
   n_timepoints <- length(master_timepoints)
 
+  # patient numbers: by default over time only (single time points: none)
+  if (is.null(risk_table)) risk_table <- !(is.null(order) || n_timepoints == 1)
+
   # Design and environment configurations
   if (is.null(xlab)) xlab <- ifelse(is.null(order) || n_timepoints == 1, "Group", "Time")
 
   # Dynamic layout tracking
   if (is.null(xlab_line)) {
-    if (is.null(order) || n_timepoints == 1) {
+    if (!risk_table) {
       xlab_line <- 3.0
+    } else if (is.null(order) || n_timepoints == 1) {
+      xlab_line <- 3.6
     } else {
       xlab_line <- 2 + (group_number - 1) * 0.65 + 1.2
     }
@@ -213,11 +224,12 @@ boxplotSCI <- function(data,
   # Dynamic Margins calculation
   if (is.null(mar_custom)) {
     if (is.null(order) || n_timepoints == 1) {
-      calculated_bottom <- 4.0
+      calculated_bottom <- if (risk_table) 4.6 else 4.0
       left_margin       <- 4.5
     } else {
       base_bottom       <- if (n_timepoints > 8) 6.5 else 5.0
-      calculated_bottom <- base_bottom + (group_number - 1) * 0.65
+      calculated_bottom <- if (risk_table) base_bottom + (group_number - 1) * 0.65
+                           else base_bottom - 1
       left_margin       <- if (n_timepoints > 8) 5.5 else 4.5
     }
     current_margins <- c(calculated_bottom, left_margin, 4, 2) + 0.1
@@ -242,6 +254,17 @@ boxplotSCI <- function(data,
 
     axis(side = 1, at = 1:group_number,
          labels = if (is.null(group)) "" else group_names, cex.axis = cex_axis)
+
+    # patient numbers: one under each box
+    if (risk_table) {
+      has_value <- !is.na(data[[var]])
+      n_counts <- if (is.null(group)) sum(has_value) else
+        table(factor(data[[group]][has_value], levels = group_levels))
+      n_counts <- as.vector(n_counts)
+      n_counts[n_counts == 0] <- missing_nr
+      mtext(text = n_counts, side = 1, line = 2, at = 1:group_number,
+            cex = cex_n_patients)
+    }
   } else {
     for (g in 1:group_number) {
       g_subset <- if (is.null(group)) data else data[data[[group]] == group_levels[g], ]
@@ -254,19 +277,21 @@ boxplotSCI <- function(data,
               xaxt = "n", yaxt = "n", xlab = "", ylab = "", ylim = ylim, boxwex = boxwex,
               xlim = c(0.5, n_timepoints + 0.5))
 
-      if (nrow(g_subset) > 0) {
-        n_counts <- table(factor(g_subset[[order]][!is.na(g_subset[[var]])], levels = master_timepoints))
-        n_counts[n_counts == 0] <- missing_nr
-      } else {
-        n_counts <- rep(missing_nr, n_timepoints)
-      }
+      if (risk_table) {
+        if (nrow(g_subset) > 0) {
+          n_counts <- table(factor(g_subset[[order]][!is.na(g_subset[[var]])], levels = master_timepoints))
+          n_counts[n_counts == 0] <- missing_nr
+        } else {
+          n_counts <- rep(missing_nr, n_timepoints)
+        }
 
-      current_line <- 2 + (g - 1) * 0.65
-      mtext(text = as.vector(n_counts), side = 1, line = current_line, at = 1:n_timepoints, cex = cex_n_patients)
+        current_line <- 2 + (g - 1) * 0.65
+        mtext(text = as.vector(n_counts), side = 1, line = current_line, at = 1:n_timepoints, cex = cex_n_patients)
 
-      if (group_number > 1) {
-        if (is.null(xlab_position)) xlab_position <- par("usr")[1] - 0.03 * (par("usr")[2] - par("usr")[1])
-        mtext(text = paste("#", group_names_short[g]), side = 1, line = current_line, at = xlab_position, cex = cex_n_patients, adj = 1)
+        if (group_number > 1) {
+          if (is.null(xlab_position)) xlab_position <- par("usr")[1] - 0.03 * (par("usr")[2] - par("usr")[1])
+          mtext(text = paste("#", group_names_short[g]), side = 1, line = current_line, at = xlab_position, cex = cex_n_patients, adj = 1)
+        }
       }
     }
 
