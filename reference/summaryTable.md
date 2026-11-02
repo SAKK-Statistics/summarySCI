@@ -118,7 +118,11 @@ summaryTable(
 
   Test type used to calculated the p-value for categorical variables.
   Only used if `test = TRUE`. Options include "fisher.test" (default),
-  "chisq.test", "chisq.test.no.correct". If NULL, the function decides
+  "chisq.test", "chisq.test.no.correct". For "fisher.test", if the exact
+  algorithm runs out of workspace (FEXACT error, e.g. for variables with
+  many levels), the workspace is increased and, if still insufficient, a
+  Monte Carlo p-value (B = 100,000, fixed seed) is reported instead;
+  this is indicated in the table footnote. If NULL, the function decides
   itself: "chisq.test.no.correct" for categorical variables with all
   expected cell counts \>=5, and "fisher.test" for categorical variables
   with any expected cell count \<5.
@@ -202,6 +206,15 @@ summaryTable(
 
 A table of class "`flextable`" or `c("tbl_summary", "gtsummary")`.
 Optionally returns a .docx file in the specified folder.
+
+## Details
+
+Character variables (and a character `group`) are converted to factors
+with natural level order: values starting with a number are sorted
+numerically (e.g. "3", "10", "more than 10"), other values
+alphabetically with embedded numbers compared numerically (e.g. "Arm 2"
+before "Arm 10"). To control the order fully, supply a factor with the
+desired levels.
 
 ## Examples
 
