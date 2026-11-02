@@ -15,6 +15,12 @@
 #' Summary statistics will be stratified according to this variable.
 #' Default to NULL.
 #'
+#' @details Character variables (and a character `group`) are converted to
+#' factors with natural level order: values starting with a number are sorted
+#' numerically (e.g. "3", "10", "more than 10"), other values alphabetically
+#' with embedded numbers compared numerically (e.g. "Arm 2" before "Arm 10").
+#' To control the order fully, supply a factor with the desired levels.
+#'
 #' @param labels A list containing the labels that should be used for the
 #' variables in the table. If NULL, labels are automatically taken from the
 #' dataset. If no label present, the variable name is taken.
@@ -38,6 +44,10 @@
 #' @param test_cat Test type used to calculated the p-value
 #' for categorical variables.  Only used if `test = TRUE`.
 #' Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".
+#' For "fisher.test", if the exact algorithm runs out of workspace (FEXACT
+#' error, e.g. for variables with many levels), the workspace is increased and,
+#' if still insufficient, a Monte Carlo p-value (B = 100,000, fixed seed) is
+#' reported instead; this is indicated in the table footnote.
 #' If NULL, the function decides itself: "chisq.test.no.correct" for categorical
 #' variables with all expected
 #' cell counts >=5, and "fisher.test" for categorical variables with
@@ -256,6 +266,12 @@ summaryTable <- function(data,
     x
   })
 
+  ## Character variables -> factors with natural level order -----
+  ## (otherwise "10" is sorted before "3"). Existing factors keep their order.
+  chr_vars <- unique(c(vars, group))
+  chr_vars <- chr_vars[vapply(data[chr_vars], is.character, logical(1))]
+  data[chr_vars] <- lapply(data[chr_vars], as_natural_factor)
+
   # NEW
   ## Drop variables that are entirely NA -----
   all_na <- vapply(data[vars], function(x) all(is.na(x)), logical(1))
@@ -332,7 +348,9 @@ summaryTable <- function(data,
   ## Test for categorical variables -----
 
     if (!is.null(test_cat)) {
-      test_list <- c(test_list, all_categorical() ~ test_cat)
+      # fisher.test can fail with FEXACT workspace errors -> use robust wrapper
+      test_cat_fun <- if (identical(test_cat, "fisher.test")) fisher_test_safe else test_cat
+      test_list <- c(test_list, all_categorical() ~ test_cat_fun)
     }
 
 
@@ -583,9 +601,9 @@ tbl_missing_percent <- data_missing_as_level|>
 
 
 
-# Table with (only) tests
+# Table with (only) tests (only computed when requested)
 
-if(group != "dummygroup"){
+if(group != "dummygroup" && isTRUE(test)){
   tbl_noMissing_short <- gtsummary::tbl_summary(data = data,
                                                       label = labels,
                                                       include = all_of(vars),

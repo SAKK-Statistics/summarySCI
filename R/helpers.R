@@ -160,6 +160,96 @@ is_dichotomous <- function(x) {
 }
 
 
+#' Natural ordering of levels for character variables
+#'
+#' Values starting with a number are sorted numerically by that number
+#' (e.g. "3" < "10", "2 doses" < "10 doses") and come first; all other values
+#' follow alphabetically, with embedded numbers compared numerically
+#' ("Arm 2" < "Arm 10"). NA is not a level.
+#'
+#' @param x A character vector.
+#' @return Character vector of levels in natural order.
+#' @keywords internal
+natural_levels <- function(x) {
+  u <- unique(as.character(x[!is.na(x)]))
+  pattern <- "^\\s*-?[0-9]+([.,][0-9]+)?"
+  has_num <- grepl(pattern, u)
+  num <- rep(NA_real_, length(u))
+  lead <- regmatches(u, regexpr(pattern, u))
+  num[has_num] <- as.numeric(sub(",", ".", trimws(lead), fixed = TRUE))
+  # key with zero-padded digit runs, so that "Arm 2" < "Arm 10"
+  key <- u
+  digit_runs <- gregexpr("[0-9]+", key)
+  regmatches(key, digit_runs) <- lapply(regmatches(key, digit_runs), function(d) {
+    formatC(d, width = 20, flag = "0")
+  })
+  u[order(!has_num, num, key, u)]
+}
+
+#' Convert a character vector to a factor with natural level order
+#'
+#' @param x A character vector.
+#' @return A factor; the "label" attribute is kept.
+#' @keywords internal
+as_natural_factor <- function(x) {
+  lab <- attr(x, "label")
+  x <- factor(x, levels = natural_levels(x))
+  if (!is.null(lab)) attr(x, "label") <- lab
+  x
+}
+
+
+#' Robust Fisher's exact test for gtsummary::add_p()
+#'
+#' Runs stats::fisher.test(); if it fails because the FEXACT workspace is too
+#' small (tables with many levels), retries with a larger workspace and finally
+#' falls back to a Monte Carlo p-value with a fixed seed (the user's RNG state
+#' is restored afterwards). Returns NA if the table is degenerate.
+#'
+#' @param data,variable,by Passed by gtsummary::add_p().
+#' @return A data frame with columns `p.value` and `method`.
+#' @keywords internal
+fisher_test_safe <- function(data, variable, by, ...) {
+  method <- "Fisher's exact test"
+
+  x <- droplevels(as.factor(data[[variable]]))
+  g <- droplevels(as.factor(data[[by]]))
+  tab <- table(x, g)
+  tab <- tab[rowSums(tab) > 0, colSums(tab) > 0, drop = FALSE]
+
+  if (nrow(tab) < 2 || ncol(tab) < 2) {
+    return(data.frame(p.value = NA_real_, method = method))
+  }
+
+  # 1. default workspace, 2. larger workspace
+  res <- tryCatch(stats::fisher.test(tab), error = function(e) NULL)
+  if (is.null(res)) {
+    res <- tryCatch(stats::fisher.test(tab, workspace = 2e7), error = function(e) NULL)
+  }
+  if (!is.null(res)) {
+    return(data.frame(p.value = res$p.value, method = method))
+  }
+
+  # 3. Monte Carlo p-value, reproducible, without touching the user's RNG state
+  B <- 1e5
+  if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
+    old_seed <- get(".Random.seed", envir = globalenv(), inherits = FALSE)
+    on.exit(assign(".Random.seed", old_seed, envir = globalenv()), add = TRUE)
+  } else {
+    on.exit(if (exists(".Random.seed", envir = globalenv(), inherits = FALSE))
+      rm(".Random.seed", envir = globalenv()), add = TRUE)
+  }
+  set.seed(42)
+  res <- stats::fisher.test(tab, simulate.p.value = TRUE, B = B)
+
+  data.frame(
+    p.value = res$p.value,
+    method = sprintf("Fisher's exact test (Monte Carlo p-value, B = %s)",
+                     format(B, big.mark = ",", scientific = FALSE))
+  )
+}
+
+
 
 # Function to detect dates variables
 
