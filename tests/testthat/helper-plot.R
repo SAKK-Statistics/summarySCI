@@ -45,6 +45,8 @@ cell <- function(d, var, group_col, group, visit) {
 expect_within_rounding <- function(parsed, truth, digits, k = 1) {
   ok <- !is.na(truth)
   testthat::expect_identical(is.na(parsed), is.na(truth))
-  testthat::expect_lte(max(abs(parsed[ok] - truth[ok])),
-                       k * 0.5 * 10^(-digits) + 1e-9)
+  # nothing left to compare when all are missing (e.g. no interval drawn)
+  if (any(ok))
+    testthat::expect_lte(max(abs(parsed[ok] - truth[ok])),
+                         k * 0.5 * 10^(-digits) + 1e-9)
 }
