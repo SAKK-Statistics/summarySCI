@@ -163,7 +163,9 @@ is_dichotomous <- function(x) {
 #' Natural ordering of levels for character variables
 #'
 #' Values starting with a number are sorted numerically by that number
-#' (e.g. "3" < "10", "2 doses" < "10 doses") and come first; all other values
+#' (e.g. "3" < "10", "2 doses" < "10 doses") and come first. A leading
+#' comparison operator is taken into account: "<10%" comes just before "10%",
+#' ">90%" just after "90%" (also "<=", ">=", and the symbols for these). All other values
 #' follow alphabetically, with embedded numbers compared numerically
 #' ("Arm 2" < "Arm 10"). NA is not a level.
 #'
@@ -172,18 +174,31 @@ is_dichotomous <- function(x) {
 #' @keywords internal
 natural_levels <- function(x) {
   u <- unique(as.character(x[!is.na(x)]))
-  pattern <- "^\\s*-?[0-9]+([.,][0-9]+)?"
-  has_num <- grepl(pattern, u)
+  u_trim <- trimws(u)
+
+  # optional leading comparison operator: "<", "<=", "\u2264", ">", ">=", "\u2265"
+  op_pattern <- "^(<=|>=|<|>|\u2264|\u2265)"
+  op <- regmatches(u_trim, regexpr(op_pattern, u_trim))
+  op_full <- rep("", length(u))
+  op_full[grepl(op_pattern, u_trim)] <- op
+  # "<" just before the number, "<=" next, then the number, ">=", ">"
+  op_rank <- c("<" = -2, "<=" = -1, "\u2264" = -1, ">=" = 1, "\u2265" = 1, ">" = 2)
+  rank <- ifelse(op_full == "", 0, op_rank[op_full])
+  rest <- sub(paste0(op_pattern, "\\s*"), "", u_trim)
+
+  pattern <- "^-?[0-9]+([.,][0-9]+)?"
+  has_num <- grepl(pattern, rest)
   num <- rep(NA_real_, length(u))
-  lead <- regmatches(u, regexpr(pattern, u))
-  num[has_num] <- as.numeric(sub(",", ".", trimws(lead), fixed = TRUE))
+  lead <- regmatches(rest, regexpr(pattern, rest))
+  num[has_num] <- as.numeric(sub(",", ".", lead, fixed = TRUE))
+  rank[!has_num] <- 0
   # key with zero-padded digit runs, so that "Arm 2" < "Arm 10"
   key <- u
   digit_runs <- gregexpr("[0-9]+", key)
   regmatches(key, digit_runs) <- lapply(regmatches(key, digit_runs), function(d) {
     formatC(d, width = 20, flag = "0")
   })
-  u[order(!has_num, num, key, u)]
+  u[order(!has_num, num, rank, key, u)]
 }
 
 #' Convert a character vector to a factor with natural level order
