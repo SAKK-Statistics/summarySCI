@@ -308,12 +308,15 @@ summaryTable <- function(data,
   ## Summary stat for continuous and categorical variables -----
   stat_cont <- format_lookup[[stat_cont]]
   stat_cat <- format_lookup_cat[[stat_cat]]
+  # digits per statistic: 0 for counts, digits_cat for percentages
+  digits_cat_vec <- cat_digits(stat_cat, digits_cat)
 
 
   ## Type of CI for cat variables -----
   # if(!is.null(ci_cat)){
 
-    if(ci_cat == "clopper.pearson"){
+    # Clopper-Pearson is called "exact" in gtsummary
+    if(ci_cat %in% c("clopper.pearson", "clopper-pearson")){
       ci_cat_gt <- "exact"
     } else if(ci_cat == "wilson" |
               ci_cat == "wilson.no.correct"|
@@ -507,7 +510,7 @@ n_before_overall <- function(tbl) {
                                                             all_categorical() ~ stat_cat),
                                            missing = var_missing,
                                            missing_text = missing_text,
-                                           digits = list(all_categorical() ~ c(0, digits_cat),
+                                           digits = list(all_categorical() ~ digits_cat_vec,
                                                          all_continuous() ~ digits_cont)) |>
   maybe_overall() |>
         add_ci(method = list(all_continuous() ~ ci_cont,
@@ -559,7 +562,7 @@ tbl_missing_percent <- data_missing_as_level|>
                          statistic = list(all_continuous() ~ stat_cont,
                                           all_categorical() ~ stat_cat),
                          missing_text = missing_text,
-                         digits = list(all_categorical() ~ c(0, digits_cat),
+                         digits = list(all_categorical() ~ digits_cat_vec,
                                        all_continuous() ~ digits_cont)) |>
   maybe_overall(use = missing_percent != "both") |>
   add_ci(method = list(all_continuous() ~ ci_cont,
@@ -614,7 +617,7 @@ if(group != "dummygroup" && isTRUE(test)){
                                                       missing_text = missing_text,
                                                       by = all_of(group),
                                                       statistic = list(all_categorical() ~ stat_cat),
-                                                      digits = list(all_categorical() ~ c(0, digits_cat))
+                                                      digits = list(all_categorical() ~ digits_cat_vec)
         ) |>
           add_p(pvalue_fun = label_style_pvalue(digits = 2),
                 test = test_list) |>

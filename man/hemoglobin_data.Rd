@@ -3,16 +3,16 @@
 \docType{data}
 \name{hemoglobin_data}
 \alias{hemoglobin_data}
-\title{Hemoglobin data (to illustrate \code{boxplot_over_time()})}
+\title{Hemoglobin data (to illustrate \code{boxplotSCI()} and \code{summaryByVisit()})}
 \format{
 \subsection{\code{hemoglobin_data}}{
 
 A data frame with 1307 rows and 5 columns:
 \describe{
 \item{ID}{Patient ID}
-\item{Arm}{Experimental arm}
-\item{visit}{Visit (factor)}
-\item{visit_nr}{Visit (numeric)}
+\item{Arm}{Experimental arm ("Arm A", "Arm B")}
+\item{visit}{Visit (character, "Cycle 1" to "Cycle 9")}
+\item{visit_nr}{Visit number (numeric, 1 to 9)}
 \item{hb}{Hemoglobin value (g/L)}
 }
 }

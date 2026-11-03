@@ -20,9 +20,11 @@ test_that("leading comparison operators are taken into account", {
     natural_levels(c(">= 5", "5", "<5", "<= 5", ">5")),
     c("<5", "<= 5", "5", ">= 5", ">5")
   )
+  le <- intToUtf8(0x2264)   # "less than or equal to" symbol
+  ge <- intToUtf8(0x2265)   # "greater than or equal to" symbol
   expect_equal(
-    natural_levels(c("≥ 65", "65", "< 65", "≤ 64")),
-    c("≤ 64", "< 65", "65", "≥ 65")
+    natural_levels(c(paste(ge, "65"), "65", "< 65", paste(le, "64"))),
+    c(paste(le, "64"), "< 65", "65", paste(ge, "65"))
   )
   expect_equal(
     natural_levels(c("unknown", ">= 65", "18-64", "< 18")),

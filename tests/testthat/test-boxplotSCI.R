@@ -465,3 +465,4 @@ test_that("reference lines are drawn at the requested heights and styles", {
   rec3 <- capture_boxplotSCI(data = df, var = "value", order = "time", group = "arm")
   expect_length(rec3$abline, 0)
 })
+

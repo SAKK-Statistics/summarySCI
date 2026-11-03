@@ -21,9 +21,9 @@
 #      ...
 #    }
 #
-#  Recommended: change the default `file_path = file_path` to `file_path = NULL`.
-#  The current default refers to itself and gives "promise already under
-#  evaluation" when word_output = TRUE and no file_path is given.
+#  The default of `file_path` is "SummaryByVisit_YYYYMMDD.docx", as in the
+#  other functions (previously `file_path = file_path`, which referred to
+#  itself and failed when word_output = TRUE and no file_path was given).
 #
 #  Each check below lists the tests from test_summaryByVisit.R it addresses.
 # ============================================================================ #
@@ -163,8 +163,8 @@ check_summaryByVisit_args <- function(data, vars, group, labels,
   # ("subscript out of bounds" / "attempt to replicate an object of type 'language'")
   if (!is.null(labels)) {
     if (!(is.character(labels) || is.list(labels)))
-      abort("`labels` must be a character vector or a list, e.g. ",
-            '`labels = c("Age (years)", "Sex")`.')
+      abort("`labels` must be a list, e.g. ",
+            '`labels = list(age = "Age (years)", sex = "Sex")`.')
     if (is.list(labels) && any(vapply(labels, inherits, logical(1), "formula")))
       abort("`labels` must not use formula syntax (age ~ \"Age\"). ",
             'Use `labels = list(age = "Age", ...)` instead.')
