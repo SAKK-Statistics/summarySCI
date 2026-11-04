@@ -200,6 +200,8 @@ summaryLevels <- function(data,
   stat_cat <- format_lookup_cat[[stat_cat]]
   # digits per statistic: 0 for counts, digits_cat for percentages
   digits_cat_vec <- cat_digits(stat_cat, digits_cat)
+  # CI limits are percentages: same number of digits (as in summaryTable())
+  ci_style <- purrr::partial(gtsummary::style_percent, digits = digits_cat)
 
   # if vars = NULL, take all the variables (except group if not NULL).
   if (is.null(vars)) {
@@ -335,6 +337,7 @@ summaryLevels <- function(data,
          assign(paste0("x", i), get(paste0("t", i))|>
             gtsummary::add_ci(method = list(gtsummary::all_categorical() ~ ci_cat_gt),
                    conf.level = conf_level,
+                   style_fun = list(gtsummary::all_categorical() ~ ci_style),
                    statistic = list(gtsummary::all_categorical() ~ "[{conf.low}%, {conf.high}%]")))
           tbl <- gtsummary::tbl_stack(list(tbl, get(paste0("x", i))))
         }
@@ -347,6 +350,7 @@ summaryLevels <- function(data,
             tbl <- t1|>
               gtsummary::add_ci(method = list(gtsummary::all_categorical() ~ ci_cat_gt),
                      conf.level = conf_level,
+                     style_fun = list(gtsummary::all_categorical() ~ ci_style),
                      statistic = list(gtsummary::all_categorical() ~ "[{conf.low}%, {conf.high}%]"))
           }
         }

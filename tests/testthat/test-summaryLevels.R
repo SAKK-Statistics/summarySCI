@@ -171,6 +171,12 @@ test_that("Clopper-Pearson is the default CI and matches binom.test", {
   expect_true(all(abs(nums - 100 * stats::binom.test(3, 10)$conf.int) < 1))
 })
 
+test_that("digits_cat is also used for the CI limits", {
+  d <- data.frame(x = c(1, 1, 1, 0, 0, 0, 0, 0, 0, 0))   # 3/10: exact CI 6.7% to 65.2%
+  expect_equal(ci_text(lv_tbl(d, vars = "x", ci = TRUE)), "[7%, 65%]")
+  expect_equal(ci_text(lv_tbl(d, vars = "x", ci = TRUE, digits_cat = 1)), "[6.7%, 65.2%]")
+})
+
 test_that("both spellings of Clopper-Pearson and other methods work", {
   for (m in c("clopper.pearson", "clopper-pearson", "wilson", "jeffreys")) {
     expect_no_error(lv_tbl(lv, vars = "nausea", group = "arm", ci = TRUE, ci_cat = m))
