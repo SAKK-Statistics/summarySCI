@@ -83,49 +83,49 @@ summaryByVisit(data = data,
 | Visit 10                  | 15  | 0.2 (-1.7, 2.6)  |
 | stage                     |     |                  |
 | Visit 1                   | 15  |                  |
-| I                         |     | 7.0 (46.7%)      |
-| II                        |     | 8.0 (53.3%)      |
+| I                         |     | 7 (47%)          |
+| II                        |     | 8 (53%)          |
 | Visit 2                   | 15  |                  |
-| I                         |     | 7.0 (46.7%)      |
-| II                        |     | 8.0 (53.3%)      |
+| I                         |     | 7 (47%)          |
+| II                        |     | 8 (53%)          |
 | Visit 3                   | 15  |                  |
-| I                         |     | 7.0 (46.7%)      |
-| II                        |     | 8.0 (53.3%)      |
+| I                         |     | 7 (47%)          |
+| II                        |     | 8 (53%)          |
 | Visit 4                   | 14  |                  |
-| I                         |     | 7.0 (46.7%)      |
-| II                        |     | 7.0 (46.7%)      |
-| Missing                   |     | 1.0 (6.7%)       |
+| I                         |     | 7 (47%)          |
+| II                        |     | 7 (47%)          |
+| Missing                   |     | 1 (7%)           |
 | Visit 5                   | 12  |                  |
-| I                         |     | 5.0 (33.3%)      |
-| II                        |     | 7.0 (46.7%)      |
-| Missing                   |     | 3.0 (20.0%)      |
+| I                         |     | 5 (33%)          |
+| II                        |     | 7 (47%)          |
+| Missing                   |     | 3 (20%)          |
 | Visit 6                   | 13  |                  |
-| I                         |     | 7.0 (46.7%)      |
-| II                        |     | 6.0 (40.0%)      |
-| Missing                   |     | 2.0 (13.3%)      |
+| I                         |     | 7 (47%)          |
+| II                        |     | 6 (40%)          |
+| Missing                   |     | 2 (13%)          |
 | Visit 7                   | 13  |                  |
-| I                         |     | 6.0 (40.0%)      |
-| II                        |     | 7.0 (46.7%)      |
-| Missing                   |     | 2.0 (13.3%)      |
+| I                         |     | 6 (40%)          |
+| II                        |     | 7 (47%)          |
+| Missing                   |     | 2 (13%)          |
 | Visit 8                   | 13  |                  |
-| I                         |     | 7.0 (46.7%)      |
-| II                        |     | 6.0 (40.0%)      |
-| Missing                   |     | 2.0 (13.3%)      |
+| I                         |     | 7 (47%)          |
+| II                        |     | 6 (40%)          |
+| Missing                   |     | 2 (13%)          |
 | Visit 9                   | 14  |                  |
-| I                         |     | 7.0 (46.7%)      |
-| II                        |     | 7.0 (46.7%)      |
-| Missing                   |     | 1.0 (6.7%)       |
+| I                         |     | 7 (47%)          |
+| II                        |     | 7 (47%)          |
+| Missing                   |     | 1 (7%)           |
 | Visit 10                  | 13  |                  |
-| I                         |     | 7.0 (46.7%)      |
-| II                        |     | 6.0 (40.0%)      |
-| Missing                   |     | 2.0 (13.3%)      |
+| I                         |     | 7 (47%)          |
+| II                        |     | 6 (40%)          |
+| Missing                   |     | 2 (13%)          |
 | 1N without missing values |     |                  |
 | 2Median (Min, Max); n (%) |     |                  |
 
 ### Add visit group
 
-We can the visit group to group visits accordingly. Visitgroup needs to
-be an ordered factor.
+We can add the visit group to group visits accordingly. Visitgroup needs
+to be an ordered factor.
 
 ``` r
 
@@ -135,84 +135,85 @@ summaryByVisit(data,
          visit = "visit")
 ```
 
-| Visit                     | N = 151          |
-|---------------------------|------------------|
-| LDH                       |                  |
-| Baseline                  |                  |
-| Visit 1                   | 0.1 (-1.9, 2.0)  |
-| Visit 2                   | 0.1 (-1.4, 1.3)  |
-| Treatment                 |                  |
-| Visit 3                   | 0.5 (-1.1, 1.9)  |
-| Visit 4                   | 0.0 (-1.3, 1.6)  |
-| Follow-up                 |                  |
-| Visit 5                   | 0.1 (-1.8, 1.3)  |
-| Visit 6                   | 0.5 (-1.0, 2.8)  |
-| Visit 7                   | -0.5 (-2.6, 1.1) |
-| Visit 8                   | -0.2 (-1.7, 2.7) |
-| Visit 9                   | 0.2 (-1.5, 1.3)  |
-| Visit 10                  | 0.2 (-1.9, 2.2)  |
-| Lymphocytes               |                  |
-| Baseline                  |                  |
-| Visit 1                   | -0.3 (-1.2, 1.1) |
-| Visit 2                   | -0.5 (-2.2, 1.4) |
-| Treatment                 |                  |
-| Visit 3                   | 0.0 (-1.7, 1.5)  |
-| Visit 4                   | 0.1 (-1.8, 1.5)  |
-| Follow-up                 |                  |
-| Visit 5                   | 0.4 (-2.4, 2.1)  |
-| Visit 6                   | 0.1 (-2.1, 2.0)  |
-| Visit 7                   | 0.3 (-1.4, 2.2)  |
-| Visit 8                   | 0.4 (-1.0, 2.6)  |
-| Visit 9                   | 0.6 (-2.1, 1.9)  |
-| Visit 10                  | 0.2 (-1.7, 2.6)  |
-| stage                     |                  |
-| Baseline                  |                  |
-| Visit 1                   |                  |
-| I                         | 7.0 (46.7%)      |
-| II                        | 8.0 (53.3%)      |
-| Visit 2                   |                  |
-| I                         | 7.0 (46.7%)      |
-| II                        | 8.0 (53.3%)      |
-| Treatment                 |                  |
-| Visit 3                   |                  |
-| I                         | 7.0 (46.7%)      |
-| II                        | 8.0 (53.3%)      |
-| Visit 4                   |                  |
-| I                         | 7.0 (46.7%)      |
-| II                        | 7.0 (46.7%)      |
-| Missing                   | 1.0 (6.7%)       |
-| Follow-up                 |                  |
-| Visit 5                   |                  |
-| I                         | 5.0 (33.3%)      |
-| II                        | 7.0 (46.7%)      |
-| Missing                   | 3.0 (20.0%)      |
-| Visit 6                   |                  |
-| I                         | 7.0 (46.7%)      |
-| II                        | 6.0 (40.0%)      |
-| Missing                   | 2.0 (13.3%)      |
-| Visit 7                   |                  |
-| I                         | 6.0 (40.0%)      |
-| II                        | 7.0 (46.7%)      |
-| Missing                   | 2.0 (13.3%)      |
-| Visit 8                   |                  |
-| I                         | 7.0 (46.7%)      |
-| II                        | 6.0 (40.0%)      |
-| Missing                   | 2.0 (13.3%)      |
-| Visit 9                   |                  |
-| I                         | 7.0 (46.7%)      |
-| II                        | 7.0 (46.7%)      |
-| Missing                   | 1.0 (6.7%)       |
-| Visit 10                  |                  |
-| I                         | 7.0 (46.7%)      |
-| II                        | 6.0 (40.0%)      |
-| Missing                   | 2.0 (13.3%)      |
-| 1Median (Min, Max); n (%) |                  |
+| Visit                     | N1  | N = 152          |
+|---------------------------|-----|------------------|
+| LDH                       |     |                  |
+| Baseline                  |     |                  |
+| Visit 1                   | 15  | 0.1 (-1.9, 2.0)  |
+| Visit 2                   | 15  | 0.1 (-1.4, 1.3)  |
+| Treatment                 |     |                  |
+| Visit 3                   | 14  | 0.5 (-1.1, 1.9)  |
+| Visit 4                   | 15  | 0.0 (-1.3, 1.6)  |
+| Follow-up                 |     |                  |
+| Visit 5                   | 15  | 0.1 (-1.8, 1.3)  |
+| Visit 6                   | 15  | 0.5 (-1.0, 2.8)  |
+| Visit 7                   | 15  | -0.5 (-2.6, 1.1) |
+| Visit 8                   | 15  | -0.2 (-1.7, 2.7) |
+| Visit 9                   | 15  | 0.2 (-1.5, 1.3)  |
+| Visit 10                  | 15  | 0.2 (-1.9, 2.2)  |
+| Lymphocytes               |     |                  |
+| Baseline                  |     |                  |
+| Visit 1                   | 15  | -0.3 (-1.2, 1.1) |
+| Visit 2                   | 15  | -0.5 (-2.2, 1.4) |
+| Treatment                 |     |                  |
+| Visit 3                   | 15  | 0.0 (-1.7, 1.5)  |
+| Visit 4                   | 15  | 0.1 (-1.8, 1.5)  |
+| Follow-up                 |     |                  |
+| Visit 5                   | 15  | 0.4 (-2.4, 2.1)  |
+| Visit 6                   | 15  | 0.1 (-2.1, 2.0)  |
+| Visit 7                   | 15  | 0.3 (-1.4, 2.2)  |
+| Visit 8                   | 15  | 0.4 (-1.0, 2.6)  |
+| Visit 9                   | 15  | 0.6 (-2.1, 1.9)  |
+| Visit 10                  | 15  | 0.2 (-1.7, 2.6)  |
+| stage                     |     |                  |
+| Baseline                  |     |                  |
+| Visit 1                   | 15  |                  |
+| I                         |     | 7 (47%)          |
+| II                        |     | 8 (53%)          |
+| Visit 2                   | 15  |                  |
+| I                         |     | 7 (47%)          |
+| II                        |     | 8 (53%)          |
+| Treatment                 |     |                  |
+| Visit 3                   | 15  |                  |
+| I                         |     | 7 (47%)          |
+| II                        |     | 8 (53%)          |
+| Visit 4                   | 14  |                  |
+| I                         |     | 7 (47%)          |
+| II                        |     | 7 (47%)          |
+| Missing                   |     | 1 (7%)           |
+| Follow-up                 |     |                  |
+| Visit 5                   | 12  |                  |
+| I                         |     | 5 (33%)          |
+| II                        |     | 7 (47%)          |
+| Missing                   |     | 3 (20%)          |
+| Visit 6                   | 13  |                  |
+| I                         |     | 7 (47%)          |
+| II                        |     | 6 (40%)          |
+| Missing                   |     | 2 (13%)          |
+| Visit 7                   | 13  |                  |
+| I                         |     | 6 (40%)          |
+| II                        |     | 7 (47%)          |
+| Missing                   |     | 2 (13%)          |
+| Visit 8                   | 13  |                  |
+| I                         |     | 7 (47%)          |
+| II                        |     | 6 (40%)          |
+| Missing                   |     | 2 (13%)          |
+| Visit 9                   | 14  |                  |
+| I                         |     | 7 (47%)          |
+| II                        |     | 7 (47%)          |
+| Missing                   |     | 1 (7%)           |
+| Visit 10                  | 13  |                  |
+| I                         |     | 7 (47%)          |
+| II                        |     | 6 (40%)          |
+| Missing                   |     | 2 (13%)          |
+| 1N without missing values |     |                  |
+| 2Median (Min, Max); n (%) |     |                  |
 
 ### By group
 
 We can stratify the table by groups via the `group` argument. The
 overall column can still be shown if desired, using the `overall = TRUE`
-argument. A maximum of 3 groups are supported.
+argument. A maximum of 3 groups are supported (for now).
 
 ``` r
 
@@ -239,8 +240,8 @@ summaryByVisit(data,
 
 ### Add N
 
-Sample size can be shown for each column, if the option `add_n` is set
-to `TRUE`.
+Sample size for each column can be hidden if the option `add_n` is set
+to `FALSE`.
 
 ``` r
 
@@ -250,7 +251,7 @@ summaryByVisit(data,
          overall = TRUE,
          visitgroup = "visitgroup",
          visit = "visit",
-         add_n = TRUE)
+         add_n = FALSE)
 ```
 
 [TABLE]

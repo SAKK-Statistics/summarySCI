@@ -8,7 +8,10 @@
 - [`hemoglobin_data`](https://sakk-statistics.github.io/summarySCI/reference/hemoglobin_data.md)
   :
 
-  Hemoglobin data (to illustrate `boxplot_over_time()`)
+  Hemoglobin data (to illustrate
+  [`boxplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/boxplotSCI.md)
+  and
+  [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md))
 
 - [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
   : Creates publication-ready summary tables for data grouped, by visit

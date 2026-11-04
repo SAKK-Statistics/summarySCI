@@ -15,11 +15,11 @@ summaryByVisitCategorical(
   visit = "visit",
   order = NULL,
   visitgroup = NULL,
-  digits_cat = 1,
+  digits_cat = 0,
   missing_percent = TRUE,
   missing = TRUE,
   missing_text = "Missing",
-  add_n = FALSE,
+  add_n = TRUE,
   overall = FALSE,
   as_flex_table = FALSE,
   border = TRUE,
@@ -75,7 +75,7 @@ summaryByVisitCategorical(
 
 - digits_cat:
 
-  Digits for summary statistics of categorical variables. Default to 1.
+  Digits for summary statistics of categorical variables. Default to 0.
 
 - missing_percent:
 
@@ -94,7 +94,7 @@ summaryByVisitCategorical(
 - add_n:
 
   Logical. If TRUE, an additional column with the total number of
-  non-missing observations for each variable is added.
+  non-missing observations for each variable is added. Default to TRUE.
 
 - overall:
 

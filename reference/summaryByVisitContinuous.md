@@ -16,7 +16,7 @@ summaryByVisitContinuous(
   order = NULL,
   visitgroup = NULL,
   digits_cont = 1,
-  add_n = FALSE,
+  add_n = TRUE,
   overall = FALSE,
   as_flex_table = FALSE,
   border = TRUE,
@@ -79,7 +79,7 @@ summaryByVisitContinuous(
 - add_n:
 
   Logical. If TRUE, an additional column with the total number of
-  non-missing observations for each variable is added.
+  non-missing observations for each variable is added. Default to TRUE.
 
 - overall:
 

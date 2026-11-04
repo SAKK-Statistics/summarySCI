@@ -45,13 +45,14 @@ summarySCI::summaryLevels(data=data,
                       levels= "present",)
 ```
 
-| Site of progression1          | N = 102 |
-|-------------------------------|---------|
-| liver                         | 4 (40%) |
-| lung                          | 1 (10%) |
-| brain                         | 9 (90%) |
-| 1More than one entry possible |         |
-| 2n (%)                        |         |
+| Site of progression1 | N2 | N = 103 |
+|----|----|----|
+| liver | 10 | 4 (40%) |
+| lung | 10 | 1 (10%) |
+| brain | 10 | 9 (90%) |
+| 1More than one entry possible |  |  |
+| 2N = number of patients in the group (missing values counted as absent) |  |  |
+| 3n (%) |  |  |
 
 The footnote emphazises that a patient may have more than one site of
 progression. Therefore, the column percentages do not neccessarily add

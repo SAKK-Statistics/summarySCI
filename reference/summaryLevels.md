@@ -16,10 +16,11 @@ summaryLevels(
   test = FALSE,
   test_cat = "fisher.test",
   ci = FALSE,
-  ci_cat = "wilson",
+  ci_cat = "clopper.pearson",
   conf_level = 0.95,
   digits_cat = 0,
   overall = FALSE,
+  add_n = TRUE,
   as_flex_table = TRUE,
   border = TRUE,
   word_output = FALSE,
@@ -43,7 +44,8 @@ summaryLevels(
 
   A single column from `data`. Need to be specified with quotes, e.g.
   `"treatment"`. Summary statistics will be stratified according to this
-  variable. Default to NULL.
+  variable. Any number of groups (at least two) is possible. Rows with a
+  missing value in `group` are removed. Default to NULL.
 
 - label:
 
@@ -53,7 +55,9 @@ summaryLevels(
 - levels:
 
   = A vector containing the values indicating presence of the factor
-  level. Included by default are "1", "yes", "Yes".
+  level. Included by default are "1", "yes", "Yes". All variables in
+  `vars` must be binary (e.g. 0/1, yes/no, TRUE/FALSE), unless `levels`
+  is given; otherwise an error is returned.
 
 - stat_cat:
 
@@ -82,7 +86,7 @@ summaryLevels(
 - ci_cat:
 
   Confidence interval method for categorical variables. Options include
-  "wilson" (default), "wilson.no.correct", "clopper.pearson", "wald",
+  "clopper.pearson" (default), "wilson", "wilson.no.correct", "wald",
   "wald.no.correct", "agresti.coull" and "jeffreys". If NULL, no CI will
   be displayed.
 
@@ -97,8 +101,15 @@ summaryLevels(
 
 - overall:
 
-  Logical. If TRUE, an additional column with the total is added to the
-  table. Default to FALSE.
+  Logical. If TRUE, an additional column with the total is added at the
+  end of the table. Default to FALSE.
+
+- add_n:
+
+  Logical. If TRUE (default), a column with the number of patients is
+  added before each group column (and before the Overall column). As
+  missing values are treated as absent, N is the number of patients in
+  each group.
 
 - as_flex_table:
 
@@ -124,3 +135,29 @@ summaryLevels(
 
 A table of class "`flextable`" or `c("tbl_stack", "gtsummary")`.
 Optionally returns a .docx file in the specified folder.
+
+## Examples
+
+``` r
+# Site of progression: one column per site, more than one site possible
+progression <- data.frame(
+  arm   = rep(c("A", "B"), each = 5),
+  liver = c("absent", "present", "absent", "present", "absent",
+            "absent", "present", "absent", "present", "absent"),
+  lung  = c("absent", "absent", "present", "absent", "absent",
+            "absent", "absent", "absent", "absent", "absent"),
+  brain = c("present", "absent", "present", "present", "present",
+            "present", "present", "present", "present", "present")
+)
+
+summaryLevels(data = progression,
+              vars = c("liver", "lung", "brain"),
+              label = "Site of progression",
+              levels = "present")
+
+
+.cl-d8bad469{}.cl-8a796ab5{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-56775354{font-family:'DejaVu Sans';font-size:6.6pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;vertical-align:super;}.cl-5430bca3{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-f4afa9ce{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2pt;padding-top:2pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-df282d82{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2pt;padding-top:2pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-c6655fef{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-03fa5271{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-6477613b{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-a2472f46{width:3.525in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(102, 102, 102, 1.00);border-top: 1pt solid rgba(102, 102, 102, 1.00);border-left: 1pt solid rgba(102, 102, 102, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d3d41b10{width:0.855in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(102, 102, 102, 1.00);border-top: 1pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bffbc2f1{width:1.62in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(102, 102, 102, 1.00);border-top: 1pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(102, 102, 102, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-63ae8e82{width:3.525in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(102, 102, 102, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-7a5c8b47{width:0.855in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-16fd77f0{width:1.62in;background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(102, 102, 102, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-187a98ef{width:3.525in;background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(102, 102, 102, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-32b17d58{width:0.855in;background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-06f07ebc{width:1.62in;background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(102, 102, 102, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2241085e{width:3.525in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8d3fb2d0{width:0.855in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-818a0cd4{width:1.62in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}
+
+
+Site of progression1
+```

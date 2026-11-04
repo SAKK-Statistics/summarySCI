@@ -1,4 +1,4 @@
-# Hemoglobin data (to illustrate `boxplot_over_time()`)
+# Hemoglobin data (to illustrate `boxplotSCI()` and `summaryByVisit()`)
 
 A dataset containing the hemoglobin value of 169 patients over 9 visits.
 Adapted from SAKK 08/14.
@@ -21,15 +21,15 @@ A data frame with 1307 rows and 5 columns:
 
 - Arm:
 
-  Experimental arm
+  Experimental arm ("Arm A", "Arm B")
 
 - visit:
 
-  Visit (factor)
+  Visit (character, "Cycle 1" to "Cycle 9")
 
 - visit_nr:
 
-  Visit (numeric)
+  Visit number (numeric, 1 to 9)
 
 - hb:
 
