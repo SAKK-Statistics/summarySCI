@@ -83,7 +83,7 @@ summaryByVisit(data = data,
          add_n = TRUE)
 ```
 ## Add visit group
-We can the visit group to group visits accordingly. Visitgroup needs to be an ordered factor.
+We can add the visit group to group visits accordingly. Visitgroup needs to be an ordered factor.
 
 ```{r}
 summaryByVisit(data,
@@ -93,7 +93,7 @@ summaryByVisit(data,
 ```
 
 ## By group 
-We can stratify the table by groups via the `group` argument. The overall column can still be shown if desired, using the `overall = TRUE` argument. A maximum of 3 groups are supported.
+We can stratify the table by groups via the `group` argument. The overall column can still be shown if desired, using the `overall = TRUE` argument. A maximum of 3 groups are supported (for now).
 
 ```{r}
 summaryByVisit(data = data,
@@ -114,7 +114,7 @@ summaryByVisit(data,
 
 ## Add N
 
-Sample size can be shown for each column, if the option `add_n` is set to `TRUE`.
+Sample size for each column can be hidden if the option `add_n` is set to `FALSE`.
 
 ```{r}
 summaryByVisit(data,
@@ -123,7 +123,7 @@ summaryByVisit(data,
          overall = TRUE,
          visitgroup = "visitgroup",
          visit = "visit",
-         add_n = TRUE)
+         add_n = FALSE)
 ```
 
 ## Change labels

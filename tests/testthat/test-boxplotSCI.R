@@ -502,3 +502,4 @@ test_that("further graphical parameters reach boxplot()", {
                             group = "arm", lwd = 3)
   expect_true(all(vapply(rec$boxplot, function(b) b$args$lwd, 0) == 3))
 })
+

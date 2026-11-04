@@ -28,7 +28,7 @@
 #' Typically, this would be a visit group such as e.g., baseline, follow-up etc.
 #'
 #' @param digits_cat Digits for summary statistics of categorical
-#' variables. Default to 1.
+#' variables. Default to 0.
 #'
 #' @param missing Logical. If TRUE (default), the missing values are shown.
 #'
@@ -42,6 +42,7 @@
 #'
 #' @param add_n Logical. If TRUE, an additional column with the total
 #' number of non-missing observations for each variable is added.
+#' Default to TRUE.
 #'
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Ignored, if no groups are defined. Default to FALSE.
@@ -74,11 +75,11 @@ summaryByVisitCategorical<- function(data,
                                      visit = "visit",
                                      order = NULL,
                                      visitgroup = NULL,
-                                     digits_cat=1,
+                                     digits_cat=0,
                                      missing_percent=TRUE,
                                      missing=TRUE,
                                      missing_text = "Missing",
-                                     add_n = FALSE,
+                                     add_n = TRUE,
                                      overall = FALSE,
                                      as_flex_table = FALSE,
                                      border = TRUE,
@@ -102,11 +103,12 @@ summaryByVisitCategorical<- function(data,
       dplyr::arrange(.data[[order]])|>
       as.data.frame()
   } else{
-    # order visit numbers not lexicographic
-    data <- data|>
-      dplyr::mutate(group_num = as.numeric(gsub("[^0-9]", "", visit)))|>
-      dplyr::arrange(group_num)|>
-      as.data.frame()
+    # natural visit order ("Visit 2" before "Visit 10");
+    # if visit is already a factor, its level order is kept
+    if (!is.factor(data[[visit]])) {
+      data[[visit]] <- factor(data[[visit]], levels = natural_levels(data[[visit]]))
+    }
+    data <- data[order(data[[visit]]), , drop = FALSE]
   }
 
   data[[visit]] <- factor(data[[visit]], levels = unique(data[[visit]]))
@@ -117,6 +119,8 @@ summaryByVisitCategorical<- function(data,
 
   # Summary stat for continuous variables
   stat_cat <- format_lookup_cat[[stat_cat]]
+  # digits per statistic: 0 for counts, digits_cat for percentages
+  digits_cat_vec <- cat_digits(stat_cat, digits_cat)
 
   # if vars = NULL, take all the variables (except group if not NULL).
   if (is.null(vars)) {
@@ -206,7 +210,7 @@ summaryByVisitCategorical<- function(data,
                    gtsummary::tbl_summary(missing=missing,
                                           statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                           type= vars[i] ~ "categorical",
-                                          digits = list(gtsummary::all_categorical() ~ digits_cat),
+                                          digits = list(gtsummary::all_categorical() ~ digits_cat_vec),
                                           missing_text = missing_text)|>
                    gtsummary::add_n(last=TRUE)|>
                    gtsummary::add_overall(last=TRUE)|>
@@ -246,7 +250,7 @@ summaryByVisitCategorical<- function(data,
                                             statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                             by=group,
                                             type= vars[i] ~ "categorical",
-                                            digits = list(gtsummary::all_categorical() ~ digits_cat),
+                                            digits = list(gtsummary::all_categorical() ~ digits_cat_vec),
                                             missing_text = missing_text)|>
                      gtsummary::add_n(last=TRUE)|>
                      gtsummary::add_overall(last=TRUE)|>
@@ -302,7 +306,7 @@ summaryByVisitCategorical<- function(data,
                                             statistic = list(gtsummary::all_categorical() ~ stat_cat),
                                             by=group,
                                             type= vars[i] ~ "categorical",
-                                            digits = list(gtsummary::all_categorical() ~ digits_cat),
+                                            digits = list(gtsummary::all_categorical() ~ digits_cat_vec),
                                             missing_text = missing_text)|>
                      gtsummary::add_n(last=TRUE)|>
                      gtsummary::add_overall(last=TRUE)|>

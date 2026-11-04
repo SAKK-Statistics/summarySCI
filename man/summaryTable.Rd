@@ -90,6 +90,10 @@ groups).}
 \item{test_cat}{Test type used to calculated the p-value
 for categorical variables.  Only used if \code{test = TRUE}.
 Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".
+For "fisher.test", if the exact algorithm runs out of workspace (FEXACT
+error, e.g. for variables with many levels), the workspace is increased and,
+if still insufficient, a Monte Carlo p-value (B = 100,000, fixed seed) is
+reported instead; this is indicated in the table footnote.
 If NULL, the function decides itself: "chisq.test.no.correct" for categorical
 variables with all expected
 cell counts >=5, and "fisher.test" for categorical variables with
@@ -150,6 +154,13 @@ Optionally returns a .docx file in the specified folder.
 \description{
 Creates publication-ready summary tables based on the gtsummary
 package.
+}
+\details{
+Character variables (and a character \code{group}) are converted to
+factors with natural level order: values starting with a number are sorted
+numerically (e.g. "3", "10", "more than 10"), other values alphabetically
+with embedded numbers compared numerically (e.g. "Arm 2" before "Arm 10").
+To control the order fully, supply a factor with the desired levels.
 }
 \examples{
 

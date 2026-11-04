@@ -13,11 +13,11 @@ summaryByVisitCategorical(
   visit = "visit",
   order = NULL,
   visitgroup = NULL,
-  digits_cat = 1,
+  digits_cat = 0,
   missing_percent = TRUE,
   missing = TRUE,
   missing_text = "Missing",
-  add_n = FALSE,
+  add_n = TRUE,
   overall = FALSE,
   as_flex_table = FALSE,
   border = TRUE,
@@ -54,7 +54,7 @@ statistics are displayed by line. Must be an ordered factor.
 Typically, this would be a visit group such as e.g., baseline, follow-up etc.}
 
 \item{digits_cat}{Digits for summary statistics of categorical
-variables. Default to 1.}
+variables. Default to 0.}
 
 \item{missing_percent}{Indicates whether percentages for missings are shown
 (TRUE, default)
@@ -67,7 +67,8 @@ If "both", then both options are displayed next to each other.}
 "Missing".}
 
 \item{add_n}{Logical. If TRUE, an additional column with the total
-number of non-missing observations for each variable is added.}
+number of non-missing observations for each variable is added.
+Default to TRUE.}
 
 \item{overall}{Logical. If TRUE, an additional column with the total is
 added to the table. Ignored, if no groups are defined. Default to FALSE.}
