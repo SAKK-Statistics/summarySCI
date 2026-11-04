@@ -1,3 +1,6 @@
+# Slow (several minutes): run locally and on GitHub, not on CRAN
+skip_on_cran()
+
 # The plotting wrapper reads its numbers off the printed summaryByVisit table.
 # These tests check every plotted number against the raw data, so that a
 # parsing error (or an error in the table itself) cannot go unnoticed.
@@ -148,7 +151,10 @@ test_that("missing values can be shown as a segment of their own", {
   idx <- cbind(match(res$summary$level, dimnames(res$counts)[[1]]),
                match(res$summary$group, dimnames(res$counts)[[2]]),
                match(res$summary$visit, dimnames(res$counts)[[3]]))
-  expect_within_rounding(res$percent[idx], printed, digits = 1)
+  # decimals as printed in the table (follows digits_cat, default 0)
+  dec <- sub("^.*\\(([0-9.]+)%\\).*$", "\\1", res$summary$stat)
+  dec <- max(ifelse(grepl(".", dec, fixed = TRUE), nchar(sub("^[^.]*\\.", "", dec)), 0L))
+  expect_within_rounding(res$percent[idx], printed, digits = dec)
 })
 
 # --- Tables with several variables and visit groups --------------------------

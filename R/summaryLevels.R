@@ -200,8 +200,9 @@ summaryLevels <- function(data,
   stat_cat <- format_lookup_cat[[stat_cat]]
   # digits per statistic: 0 for counts, digits_cat for percentages
   digits_cat_vec <- cat_digits(stat_cat, digits_cat)
-  # CI limits are percentages: same number of digits (as in summaryTable())
-  ci_style <- purrr::partial(gtsummary::style_percent, digits = digits_cat)
+  # CI limits in %, with exactly digits_cat decimals, like the n (%) cells
+  # (style_percent() would add one decimal below 10%)
+  ci_style <- purrr::partial(gtsummary::style_number, digits = digits_cat, scale = 100)
 
   # if vars = NULL, take all the variables (except group if not NULL).
   if (is.null(vars)) {

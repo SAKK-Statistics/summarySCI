@@ -66,3 +66,33 @@ test_that("informative errors", {
   expect_error(stackedbarplotSCI(d, hb_cat, level_names = c("a", "b")),
                "one entry per segment")
 })
+test_that("categories, time points and groups are in natural order", {
+  set.seed(5)
+  d <- data.frame(
+    id     = rep(1:24, each = 3),
+    visit  = rep(c("Cycle 2 Day 1", "Cycle 1 Day 15", "Cycle 1 Day 1"), 24),
+    arm    = rep(c("Arm 10", "Arm 2"), each = 36),
+    cycles = sample(1:12, 72, replace = TRUE),
+    pct    = sample(c("> 90%", "20-90%", "< 20%"), 72, replace = TRUE)
+  )
+  res <- draw_quietly(stackedbarplotSCI(d, cycles, order = visit, group = arm))
+  expect_equal(dimnames(res$counts)[[1]], as.character(sort(unique(d$cycles))))
+  expect_equal(dimnames(res$counts)[[3]],
+               c("Cycle 1 Day 1", "Cycle 1 Day 15", "Cycle 2 Day 1"))
+  expect_equal(dimnames(res$counts)[[2]], c("Arm 2", "Arm 10"))
+
+  res <- draw_quietly(stackedbarplotSCI(d, pct, group = arm))
+  expect_equal(dimnames(res$counts)[[1]], c("< 20%", "20-90%", "> 90%"))
+})
+
+test_that("factor categories, time points and groups keep their level order", {
+  d <- data.frame(
+    visit = factor(rep(c("B", "A"), 10), levels = c("B", "A")),
+    arm   = factor(rep(c("Arm 2", "Arm 10"), each = 10), levels = c("Arm 10", "Arm 2")),
+    grade = factor(rep(c("G1", "G2"), 10), levels = c("G2", "G1"))
+  )
+  res <- draw_quietly(stackedbarplotSCI(d, grade, order = visit, group = arm))
+  expect_equal(dimnames(res$counts)[[1]], c("G2", "G1"))
+  expect_equal(dimnames(res$counts)[[2]], c("Arm 10", "Arm 2"))
+  expect_equal(dimnames(res$counts)[[3]], c("B", "A"))
+})

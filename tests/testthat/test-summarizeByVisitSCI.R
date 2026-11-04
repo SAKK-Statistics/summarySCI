@@ -1,3 +1,6 @@
+# Slow (several minutes): run locally and on GitHub, not on CRAN
+skip_on_cran()
+
 # The plots of summarizeByVisitSCI() are drawn from the raw data. These tests
 # check that they show the numbers printed in the table: the table is read
 # back with tidySummaryByVisit(), and every plotted value is compared with it.
@@ -23,8 +26,15 @@ check_lines_match_table <- function(res, var, label, digits, k = 1) {
   expect_equal(as.numeric(num$n[idx]), sm$n)
 }
 
+# Number of decimals of a printed percentage, e.g. "12 (40.0%)" -> 1
+pct_decimals <- function(stat) {
+  x <- sub("^.*\\(([0-9.]+)%\\).*$", "\\1", stat)
+  ifelse(grepl(".", x, fixed = TRUE), nchar(sub("^[^.]*\\.", "", x)), 0L)
+}
+
 # Stacked bars: every count and percentage equals the table's
-check_bars_match_table <- function(res, var, label, digits = 1,
+# (digits = NULL: taken from the printed table, so the check follows digits_cat)
+check_bars_match_table <- function(res, var, label, digits = NULL,
                                    missing_text = "Missing") {
   sm  <- tidySummaryByVisit(res$table)
   sm  <- sm[sm$variable == label, ]
@@ -42,7 +52,8 @@ check_bars_match_table <- function(res, var, label, digits = 1,
                  label = paste(var, lev, g, sm$visit[i]))
     if (grepl("%", sm$stat[i])) {
       printed <- as.numeric(sub("^.*\\(([0-9.]+)%\\).*$", "\\1", sm$stat[i]))
-      expect_within_rounding(num$percent[lev, g, t], printed, digits)
+      d <- if (is.null(digits)) pct_decimals(sm$stat[i]) else digits
+      expect_within_rounding(num$percent[lev, g, t], printed, d)
     }
   }
 }

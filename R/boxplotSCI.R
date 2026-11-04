@@ -107,7 +107,6 @@
 #'                   lty = c(2, 3, 2)
 #' )
 #'
-#' @import stringr
 #' @export
 
 boxplotSCI <- function(data,
@@ -228,7 +227,9 @@ boxplotSCI <- function(data,
   } else {
     current_margins <- mar_custom
   }
-  par(mar = current_margins)
+  # restore the user's graphical parameters when the function exits
+  op <- par(mar = current_margins)
+  on.exit(par(op), add = TRUE)
 
   group_offsets <- (1:group_number - (group_number + 1) / 2) * shift
 

@@ -74,7 +74,7 @@ summarySCI::summaryLevels(data=data,
                       levels= "present",)
 ```
 
-The footnote emphazises that a patient may have more than one site of progression. Therefore, the column percentages do not neccessarily add up to 100%.
+The footnote emphasizes that a patient may have more than one site of progression. Therefore, the column percentages do not necessarily add up to 100%.
 
 ## By group 
 We can stratify the table by groups via the `group` argument. The overall column can still be shown if desired, using the `overall = TRUE` argument.

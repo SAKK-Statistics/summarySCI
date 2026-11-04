@@ -18,10 +18,12 @@ test_that("non-binary variables give an informative error", {
 })
 
 test_that("binary variables (0/1, yes/no with NA) are accepted", {
+  skip_on_cran()
   expect_no_error(lv_tbl(lv, vars = c("nausea", "fatigue"), group = "arm"))
 })
 
 test_that("a non-binary variable is accepted when levels is given", {
+  skip_on_cran()
   expect_no_error(lv_tbl(lv, vars = "ecog", group = "arm", levels = c(2, 3)))
 })
 
@@ -29,6 +31,7 @@ test_that("a non-binary variable is accepted when levels is given", {
 # levels -----------------------------------------------------------------------
 
 test_that("several values in levels are all counted as present", {
+  skip_on_cran()
   d <- data.frame(x = c("yes", "1", "Yes", "no", "0", "no"))
   tbl <- lv_tbl(d, vars = "x", levels = c("1", "yes", "Yes"))
   expect_equal(tbl$table_body$stat_0[tbl$table_body$variable == "x"], "3 (50%)")
@@ -38,12 +41,14 @@ test_that("several values in levels are all counted as present", {
 # Column order -----------------------------------------------------------------
 
 test_that("Overall column is the last column", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = c("nausea", "fatigue"), group = "arm", overall = TRUE)
   cols <- names(tbl$table_body)
   expect_gt(match("stat_0", cols), match("stat_2", cols))
 })
 
 test_that("p-value comes before the Overall column", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = c("nausea", "fatigue"), group = "arm",
                 overall = TRUE, test = TRUE)
   cols <- names(tbl$table_body)
@@ -65,6 +70,7 @@ test_that("with CIs, the p-value still comes before N and the Overall column", {
 })
 
 test_that("with CIs but without test, Overall and its CI are last", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = "nausea", group = "arm", overall = TRUE, ci = TRUE)
   cols <- names(tbl$table_body)
   expect_equal(utils::tail(cols, 2), c("stat_0", "ci_stat_0"))
@@ -72,6 +78,7 @@ test_that("with CIs but without test, Overall and its CI are last", {
 
 
 test_that("N columns are correctly placed in all combinations of options", {
+  skip_on_cran()
   for (grp in list(NULL, "arm")) for (ov in c(FALSE, TRUE)) for (te in c(FALSE, TRUE))
     for (ci in c(FALSE, TRUE)) for (an in c(FALSE, TRUE)) {
       if (is.null(grp) && (te || ov)) next
@@ -115,6 +122,7 @@ test_that("each N belongs to its own group, also for mixed upper/lower case grou
 # add_n ------------------------------------------------------------------------
 
 test_that("add_n adds an N column before each group column", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = c("nausea", "fatigue"), group = "arm")
   cols <- names(tbl$table_body)
   expect_equal(match("add_n_stat_1", cols) + 1, match("stat_1", cols))
@@ -124,6 +132,7 @@ test_that("add_n adds an N column before each group column", {
 })
 
 test_that("with overall, total N is just before Overall and after the p-value", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = c("nausea", "fatigue"), group = "arm",
                 overall = TRUE, test = TRUE)
   cols <- names(tbl$table_body)
@@ -133,17 +142,20 @@ test_that("with overall, total N is just before Overall and after the p-value", 
 })
 
 test_that("without group, an N column is added", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = c("nausea", "fatigue"))
   expect_true("n" %in% names(tbl$table_body))
 })
 
 test_that("N columns have a footnote explaining N", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = c("nausea", "fatigue"), group = "arm", overall = TRUE)
   expect_true(any(grepl("missing values counted as absent",
                         unlist(tbl$table_styling), fixed = TRUE)))
 })
 
 test_that("add_n = FALSE adds no N columns", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = c("nausea", "fatigue"), group = "arm",
                 overall = TRUE, add_n = FALSE)
   cols <- names(tbl$table_body)
@@ -154,11 +166,12 @@ test_that("add_n = FALSE adds no N columns", {
 # Confidence intervals ---------------------------------------------------------
 
 ci_text <- function(tbl) {
-  x <- unlist(tbl$table_body[grepl("^ci_stat", names(tbl$table_body))])
+  x <- unname(unlist(tbl$table_body[grepl("^ci_stat", names(tbl$table_body))]))
   x[!is.na(x) & nzchar(x)]
 }
 
 test_that("Clopper-Pearson is the default CI and matches binom.test", {
+  skip_on_cran()
   d <- data.frame(x = c(1, 1, 1, 0, 0, 0, 0, 0, 0, 0))
   ci_default <- ci_text(lv_tbl(d, vars = "x", ci = TRUE))
   expect_equal(ci_default,
@@ -178,6 +191,7 @@ test_that("digits_cat is also used for the CI limits", {
 })
 
 test_that("both spellings of Clopper-Pearson and other methods work", {
+  skip_on_cran()
   for (m in c("clopper.pearson", "clopper-pearson", "wilson", "jeffreys")) {
     expect_no_error(lv_tbl(lv, vars = "nausea", group = "arm", ci = TRUE, ci_cat = m))
   }
@@ -225,12 +239,14 @@ test_that("yes/no, Yes/No, TRUE/FALSE and 1/0 give the same counts", {
 })
 
 test_that("levels with a numeric code (1 = yes, 2 = no) works", {
+  skip_on_cran()
   d <- data.frame(x = c(1, 2, 2, 1, 2))
   expect_error(lv_tbl(d, vars = "x"), "Not binary")
   expect_equal(lv_cell(lv_tbl(d, vars = "x", levels = 1), "x", "stat_0"), "2 (40%)")
 })
 
 test_that("stat_cat = 'n' and 'n_N' are correct", {
+  skip_on_cran()
   expect_equal(lv_cell(lv_tbl(lv, vars = "nausea", group = "arm", stat_cat = "n"),
                        "nausea", "stat_1"), "3")
   expect_equal(lv_cell(lv_tbl(lv, vars = "nausea", group = "arm", stat_cat = "n_N"),
@@ -238,6 +254,7 @@ test_that("stat_cat = 'n' and 'n_N' are correct", {
 })
 
 test_that("digits_cat is used for the percentages, not for the counts", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = "nausea", group = "arm", digits_cat = 1)
   expect_equal(lv_cell(tbl, "nausea", "stat_1"), "3 (75.0%)")
   tbl <- lv_tbl(lv, vars = "nausea", group = "arm", stat_cat = "n_N", digits_cat = 1)
@@ -245,6 +262,7 @@ test_that("digits_cat is used for the percentages, not for the counts", {
 })
 
 test_that("works with three groups", {
+  skip_on_cran()
   d <- data.frame(x   = c(1, 0, 1, 1, 0, 1, 0, 0, 1),
                   arm = rep(c("A", "B", "C"), 3))
   # A: 1, 1, 0   B: 0, 0, 0   C: 1, 1, 1
@@ -256,6 +274,7 @@ test_that("works with three groups", {
 })
 
 test_that("a variable that is never present shows 0", {
+  skip_on_cran()
   d <- data.frame(x = c(0, 0, 0, 0), arm = c("A", "B", "A", "B"))
   tbl <- lv_tbl(d, vars = "x", group = "arm")
   expect_match(lv_cell(tbl, "x", "stat_1"), "^0")
@@ -265,6 +284,7 @@ test_that("a variable that is never present shows 0", {
 # Groups -------------------------------------------------------------------------
 
 test_that("any number of groups works (here 6)", {
+  skip_on_cran()
   d <- data.frame(x = rep(c(1, 0), 6), arm = rep(paste("Arm", 1:6), each = 2))
   tbl <- lv_tbl(d, vars = "x", group = "arm", overall = TRUE)
   for (k in 1:6) expect_equal(lv_cell(tbl, "x", paste0("stat_", k)), "1 (50%)",
@@ -273,6 +293,7 @@ test_that("any number of groups works (here 6)", {
 })
 
 test_that("a variable never present shows 0 in every group, also with 5 groups", {
+  skip_on_cran()
   d <- data.frame(x = rep(0, 10), arm = rep(LETTERS[1:5], 2))
   tbl <- lv_tbl(d, vars = "x", group = "arm", overall = TRUE)
   for (k in 0:5) expect_match(lv_cell(tbl, "x", paste0("stat_", k)), "^0",
@@ -280,6 +301,7 @@ test_that("a variable never present shows 0 in every group, also with 5 groups",
 })
 
 test_that("rows with a missing group are removed with a message", {
+  skip_on_cran()
   d <- data.frame(x = c(1, 1, 0, 0, 1), arm = c("A", "A", "B", "B", NA))
   expect_message(tbl <- lv_tbl(d, vars = "x", group = "arm", overall = TRUE),
                  "1 row\\(s\\) with missing 'arm' were removed")
@@ -303,6 +325,7 @@ test_that("group must be a single existing column name", {
 })
 
 test_that("group given in vars is removed with a message", {
+  skip_on_cran()
   expect_message(lv_tbl(lv, vars = c("nausea", "arm"), group = "arm"),
                  "removed from 'vars'")
 })
@@ -325,28 +348,33 @@ test_that("p-value per variable equals Fisher's exact test", {
 # Layout ----------------------------------------------------------------------------
 
 test_that("variables are shown in the order given", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = c("fatigue", "nausea"))
   expect_equal(tbl$table_body$variable, c("fatigue", "nausea"))
 })
 
 test_that("one row per variable", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = c("nausea", "fatigue"), group = "arm")
   expect_equal(nrow(tbl$table_body), 2)
 })
 
 test_that("`label` is used as column header", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = c("nausea", "fatigue"), label = "Symptoms")
   hdr <- tbl$table_styling$header
   expect_match(hdr$label[hdr$column == "label"], "Symptoms", fixed = TRUE)
 })
 
 test_that("footnote says that more than one entry is possible", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = c("nausea", "fatigue"))
   expect_true(any(grepl("More than one entry possible", unlist(tbl$table_styling),
                         fixed = TRUE)))
 })
 
 test_that("no N footnote when add_n = FALSE", {
+  skip_on_cran()
   tbl <- lv_tbl(lv, vars = "nausea", group = "arm", add_n = FALSE)
   expect_false(any(grepl("counted as absent", unlist(tbl$table_styling), fixed = TRUE)))
 })
@@ -355,12 +383,14 @@ test_that("no N footnote when add_n = FALSE", {
 # Output ----------------------------------------------------------------------------
 
 test_that("return class depends on as_flex_table", {
+  skip_on_cran()
   expect_s3_class(summaryLevels(lv, vars = "nausea"), "flextable")
   expect_s3_class(summaryLevels(lv, vars = "nausea", border = FALSE), "flextable")
   expect_s3_class(lv_tbl(lv, vars = "nausea"), "gtsummary")
 })
 
 test_that("Word file is written", {
+  skip_on_cran()
   f <- tempfile(fileext = ".docx")
   expect_message(summaryLevels(lv, vars = "nausea", word_output = TRUE, file_path = f),
                  "Table saved to")

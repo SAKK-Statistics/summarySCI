@@ -34,9 +34,10 @@
 #' @examples
 #' library(summarySCI)
 #' data("hemoglobin_data")
-#' hemoglobin_data$hb_cat <- cut(hemoglobin_data$hb, c(-Inf, 120, 140, Inf),
-#'                               labels = c("< 120", "120-140", "> 140"))
-#' res <- summarizeByVisitSCI(hemoglobin_data, vars = c("hb", "hb_cat"),
+#' hb <- subset(hemoglobin_data, visit_nr <= 3)   # first 3 cycles, to keep it short
+#' hb$hb_cat <- cut(hb$hb, c(-Inf, 120, 140, Inf),
+#'                  labels = c("< 120", "120-140", "> 140"))
+#' res <- summarizeByVisitSCI(hb, vars = c("hb", "hb_cat"),
 #'                            group = "Arm", visit = "visit", order = "visit_nr",
 #'                            stat_cont = "median_IQR")
 #' res$plots$hb

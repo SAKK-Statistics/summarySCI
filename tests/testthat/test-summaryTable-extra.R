@@ -58,18 +58,21 @@ st_levels <- function(tbl, var) {
 # P-values for variables with many categories -----------------------------------
 
 test_that("no Fisher error for a variable with many categories when test = FALSE", {
+  skip_on_cran()
   d <- st_fexact()
   expect_no_error(tbl <- st(d, vars = "met_cat", group = "arm"))
   expect_length(grep("^p.value", names(tbl$table_body)), 0)
 })
 
 test_that("no Fisher error for many categories with overall, add_n and missing", {
+  skip_on_cran()
   d <- st_fexact()
   expect_no_error(st(d, vars = "met_cat", group = "arm", overall = TRUE,
                      add_n = TRUE, missing = TRUE))
 })
 
 test_that("test = TRUE gives the exact Fisher p-value for many categories", {
+  skip_on_cran()
   d   <- st_fexact()
   tbl <- st(d, vars = "met_cat", group = "arm", test = TRUE)
   dd  <- d[!is.na(d$met_cat), ]
@@ -78,6 +81,7 @@ test_that("test = TRUE gives the exact Fisher p-value for many categories", {
 })
 
 test_that("test = TRUE with 3 groups and many categories gives a Monte Carlo p-value", {
+  skip_on_cran()
   d   <- st_mc()
   expect_no_error(tbl <- st(d, vars = "v_cat", group = "arm", test = TRUE))
   p <- st_p(tbl, "v_cat")
@@ -86,12 +90,14 @@ test_that("test = TRUE with 3 groups and many categories gives a Monte Carlo p-v
 })
 
 test_that("Monte Carlo p-value in summaryTable is reproducible", {
+  skip_on_cran()
   d <- st_mc()
   expect_equal(st_p(st(d, vars = "v_cat", group = "arm", test = TRUE), "v_cat"),
                st_p(st(d, vars = "v_cat", group = "arm", test = TRUE), "v_cat"))
 })
 
 test_that("normal Fisher p-values are unchanged by the safe wrapper", {
+  skip_on_cran()
   d   <- st_small()
   tbl <- st(d, vars = "stage", group = "sex", test = TRUE)
   ref <- stats::fisher.test(table(d$stage, d$sex))$p.value
@@ -99,6 +105,7 @@ test_that("normal Fisher p-values are unchanged by the safe wrapper", {
 })
 
 test_that("other categorical tests are not replaced by the Fisher wrapper", {
+  skip_on_cran()
   d   <- st_small()
   tbl <- st(d, vars = "stage", group = "sex", test = TRUE, test_cat = "chisq.test")
   ref <- suppressWarnings(stats::chisq.test(table(d$stage, d$sex))$p.value)
@@ -109,12 +116,14 @@ test_that("other categorical tests are not replaced by the Fisher wrapper", {
 # Natural ordering of groups ------------------------------------------------------
 
 test_that("a character group is ordered naturally ('Arm 2' before 'Arm 10')", {
+  skip_on_cran()
   tbl <- st(st_small(), vars = "age", group = "arm")
   expect_match(st_header(tbl, "^stat_1"), "Arm 2", fixed = TRUE)
   expect_match(st_header(tbl, "^stat_2"), "Arm 10", fixed = TRUE)
 })
 
 test_that("a numeric-text group is ordered numerically", {
+  skip_on_cran()
   d <- st_small()
   d$cycles <- rep(c("10", "2"), 5)
   tbl <- st(d, vars = "age", group = "cycles")
@@ -123,6 +132,7 @@ test_that("a numeric-text group is ordered numerically", {
 })
 
 test_that("a factor group keeps its level order", {
+  skip_on_cran()
   d <- st_small()
   d$arm <- factor(d$arm, levels = c("Arm 10", "Arm 2"))
   tbl <- st(d, vars = "age", group = "arm")
@@ -142,6 +152,7 @@ test_that("natural order is the same with overall, test and missing_percent = 'b
 })
 
 test_that("character variable keeps its label after natural ordering", {
+  skip_on_cran()
   d <- st_small()
   attr(d$stage, "label") <- "Tumour stage"
   tbl <- st(d, vars = "stage")
@@ -150,6 +161,7 @@ test_that("character variable keeps its label after natural ordering", {
 })
 
 test_that("Roman numerals are not reordered numerically (stay alphabetical)", {
+  skip_on_cran()
   tbl <- st(st_small(), vars = "stage")
   expect_equal(st_levels(tbl, "stage"), c("II", "III", "IV"))
 })
@@ -158,39 +170,46 @@ test_that("Roman numerals are not reordered numerically (stay alphabetical)", {
 # Defaults -----------------------------------------------------------------------
 
 test_that("default: percentages without decimals (digits_cat = 0)", {
+  skip_on_cran()
   tbl   <- st(st_small(), vars = "stage", group = "sex")
   cells <- tbl$table_body$stat_1[tbl$table_body$row_type == "level"]
   expect_true(all(grepl("^[0-9]+ \\([0-9]+%\\)$", cells)))
 })
 
 test_that("digits_cat = 1: one decimal for %, none for n", {
+  skip_on_cran()
   tbl   <- st(st_small(), vars = "stage", group = "sex", digits_cat = 1)
   cells <- tbl$table_body$stat_1[tbl$table_body$row_type == "level"]
   expect_true(all(grepl("^[0-9]+ \\([0-9]+\\.[0-9]%\\)$", cells)))
 })
 
 test_that("stat_cat = 'n_N' shows whole numbers, also with digits_cat = 1", {
+  skip_on_cran()
   tbl   <- st(st_small(), vars = "stage", group = "sex", stat_cat = "n_N", digits_cat = 1)
   cells <- tbl$table_body$stat_1[tbl$table_body$row_type == "level"]
   expect_true(all(grepl("^[0-9]+/[0-9]+$", cells)))
 })
 
 test_that("default: N columns are shown (add_n = TRUE)", {
+  skip_on_cran()
   tbl <- st(st_small(), vars = "age", group = "sex")
   expect_true(any(grepl("^add_n_stat_1", st_visible_cols(tbl))))
 })
 
 test_that("default: no Overall column (overall = FALSE)", {
+  skip_on_cran()
   tbl <- st(st_small(), vars = "age", group = "sex")
   expect_length(grep("^stat_0", st_visible_cols(tbl)), 0)
 })
 
 test_that("add_n = FALSE hides all N columns", {
+  skip_on_cran()
   tbl <- st(st_small(), vars = "age", group = "sex", overall = TRUE, add_n = FALSE)
   expect_length(grep("^(add_n_stat|n$|n_)", st_visible_cols(tbl)), 0)
 })
 
 test_that("vars = NULL summarises all variables except group", {
+  skip_on_cran()
   tbl <- st(st_small(), group = "arm")
   expect_setequal(unique(tbl$table_body$variable), c("age", "sex", "stage"))
 })
@@ -200,20 +219,30 @@ test_that("vars = NULL summarises all variables except group", {
 
 st_ci <- function(tbl) {
   tb <- tbl$table_body
-  x  <- unlist(tb[grepl("^ci_stat", names(tb))])
+  x  <- unname(unlist(tb[grepl("^ci_stat", names(tb))]))
   x[!is.na(x) & nzchar(x)]
 }
 
 test_that("both spellings of Clopper-Pearson give the same CI", {
+  skip_on_cran()
   d <- st_small()
   expect_equal(st_ci(st(d, vars = "sex", ci = TRUE, ci_cat = "clopper.pearson")),
                st_ci(st(d, vars = "sex", ci = TRUE, ci_cat = "clopper-pearson")))
 })
 
 test_that("Clopper-Pearson is the default CI", {
+  skip_on_cran()
   d <- st_small()
   expect_equal(st_ci(st(d, vars = "sex", ci = TRUE)),
                st_ci(st(d, vars = "sex", ci = TRUE, ci_cat = "clopper.pearson")))
+})
+
+test_that("CI limits have exactly digits_cat decimals, also below 10%", {
+  skip_on_cran()
+  d <- data.frame(x = c(rep("yes", 3), rep("no", 7)))   # 3/10: exact CI 6.7% to 65.2%
+  expect_equal(st_ci(st(d, vars = "x", ci = TRUE, missing = FALSE)), "[7%, 65%]")
+  expect_equal(st_ci(st(d, vars = "x", ci = TRUE, missing = FALSE, digits_cat = 1)),
+               "[6.7%, 65.2%]")
 })
 
 test_that("an unknown CI method gives an error", {
@@ -224,11 +253,13 @@ test_that("an unknown CI method gives an error", {
 # Input checks and messages ------------------------------------------------------------
 
 test_that("group given in vars is removed with a message", {
+  skip_on_cran()
   expect_message(st(st_small(), vars = c("age", "arm"), group = "arm"),
                  "removed from 'vars'")
 })
 
 test_that("a variable with only NA is dropped with a message", {
+  skip_on_cran()
   d <- st_small()
   d$empty <- NA_real_
   expect_message(tbl <- st(d, vars = c("age", "empty")), "only contains NA")
@@ -236,6 +267,7 @@ test_that("a variable with only NA is dropped with a message", {
 })
 
 test_that("empty levels of group are dropped with a message", {
+  skip_on_cran()
   d <- st_small()
   d$sex <- factor(d$sex, levels = c("F", "M", "X"))
   expect_message(st(d, vars = "age", group = "sex"), "Empty level")
@@ -269,11 +301,13 @@ test_that("unknown variables are named in the error", {
 # Output ----------------------------------------------------------------------------
 
 test_that("flextable is returned with and without border", {
+  skip_on_cran()
   expect_s3_class(summaryTable(st_small(), vars = "age"), "flextable")
   expect_s3_class(summaryTable(st_small(), vars = "age", border = FALSE), "flextable")
 })
 
 test_that("default file_path is used when word_output = TRUE", {
+  skip_on_cran()
   old_wd <- setwd(tempdir())
   on.exit(setwd(old_wd), add = TRUE)
   f <- paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx")

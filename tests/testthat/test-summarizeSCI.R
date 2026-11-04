@@ -1,3 +1,6 @@
+# Slow (several minutes): run locally and on GitHub, not on CRAN
+skip_on_cran()
+
 # One time point of the hemoglobin data, with a categorical and a Yes/No
 # version of hb (both missing where hb is missing)
 visit_fixture <- function(v = 2) {

@@ -1,31 +1,10 @@
 # ============================================================================ #
 #  Early input checks for summaryByVisit()
 #
-#  Put this file in summarySCI/R/ and call the checker at the very top of
-#  summaryByVisit(), BEFORE any computation:
-#
-#    summaryByVisit <- function(data, vars = NULL, ..., file_path = NULL) {
-#      chk <- check_summaryByVisit_args(
-#        data = data, vars = vars, group = group, labels = labels,
-#        stat_cont = stat_cont, stat_cat = stat_cat, visit = visit,
-#        order = order, visitgroup = visitgroup,
-#        digits_cont = digits_cont, digits_cat = digits_cat,
-#        missing_percent = missing_percent, missing = missing,
-#        missing_text = missing_text, add_n = add_n, overall = overall,
-#        continuous_as_categorical = continuous_as_categorical,
-#        as_flex_table = as_flex_table, border = border,
-#        word_output = word_output,
-#        file_path = if (missing(file_path)) NULL else file_path)
-#      vars   <- chk$vars     # resolved (default = all columns except group/visit/...)
-#      labels <- chk$labels   # NULL or labels in the same order as vars
-#      ...
-#    }
-#
-#  The default of `file_path` is "SummaryByVisit_YYYYMMDD.docx", as in the
-#  other functions (previously `file_path = file_path`, which referred to
-#  itself and failed when word_output = TRUE and no file_path was given).
-#
-#  Each check below lists the tests from test_summaryByVisit.R it addresses.
+#  check_summaryByVisit_args() is called at the top of summaryByVisit(),
+#  before any computation, and stops with a clear message for invalid input.
+#  It returns the resolved `vars` and the `labels` named by `vars`.
+#  Each check lists the tests from test-summaryByVisit.R it addresses.
 # ============================================================================ #
 
 #' Check the arguments of summaryByVisit() and stop early with a clear message
@@ -33,9 +12,6 @@
 #' @return Invisibly, a list with the resolved `vars` and `labels`.
 #' @importFrom utils head
 #' @noRd
-check_summaryByVisit_args <- function(data, vars, group, labels, ...) {
-  ...
-}
 check_summaryByVisit_args <- function(data, vars, group, labels,
                                       stat_cont, stat_cat,
                                       visit, order, visitgroup,

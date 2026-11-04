@@ -36,11 +36,15 @@ all variables present in the data except \code{group}.}
 \item{group}{A single column from \code{data}.
 Need to be specified with quotes, e.g. \code{"treatment"}.
 Summary statistics will be stratified according to this variable.
-Default to NULL. A maximum of 3 groups are currently supported.}
+Default to NULL. A maximum of 3 groups are currently supported.
+Character variables and a character group are shown in natural order
+(e.g. "2" before "10"); factors keep their level order.}
 
-\item{labels}{A list, containing the labels that should be used for the
-variables in the table. If NULL, labels are automatically taken from the
-dataset. If no label present, the variable name is taken.}
+\item{labels}{A list containing the labels that should be used for the
+variables in the table, either named by variable
+(e.g. \code{list(age = "Age (years)")}) or unnamed in the order of \code{vars}.
+If NULL, labels are automatically taken from the dataset. If no label
+present, the variable name is taken.}
 
 \item{stat_cont}{Summary statistic to display for continuous variables.
 Options include "median_IQR", "median_range" (default), "mean_sd",
@@ -52,7 +56,9 @@ Options include "n", "n_N" and "n_percent" (default).}
 \item{visit}{Name of the stratum for which summary statistics are
 displayed by line. Typically, this would be \code{"visit"}.}
 
-\item{order}{A numerical variable defining the visit order.}
+\item{order}{A numerical variable defining the visit order. If NULL
+(default), visits are sorted naturally (e.g. "Visit 2" before "Visit 10");
+if \code{visit} is a factor, its level order is used instead.}
 
 \item{visitgroup}{A grouping variable for the stratum for which summary
 statistics are displayed by line. Must be an ordered factor.
@@ -124,9 +130,10 @@ also set the spacing of the visits in the line plots.
 \examples{
 library(summarySCI)
 data("hemoglobin_data")
-hemoglobin_data$hb_cat <- cut(hemoglobin_data$hb, c(-Inf, 120, 140, Inf),
-                              labels = c("< 120", "120-140", "> 140"))
-res <- summarizeByVisitSCI(hemoglobin_data, vars = c("hb", "hb_cat"),
+hb <- subset(hemoglobin_data, visit_nr <= 3)   # first 3 cycles, to keep it short
+hb$hb_cat <- cut(hb$hb, c(-Inf, 120, 140, Inf),
+                 labels = c("< 120", "120-140", "> 140"))
+res <- summarizeByVisitSCI(hb, vars = c("hb", "hb_cat"),
                            group = "Arm", visit = "visit", order = "visit_nr",
                            stat_cont = "median_IQR")
 res$plots$hb

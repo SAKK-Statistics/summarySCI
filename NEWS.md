@@ -48,8 +48,12 @@
   with 4 or more groups). Rows with a missing group are removed with a
   message instead of being shown as an extra group "0".
 
-- Character variables are now shown in natural order in `summaryTable()`
-  (e.g. "3" before "10", "< 10%" before "20%"). Factors keep their level order.
+- CI limits of categorical variables now have exactly `digits_cat` decimals
+  in `summaryTable()` and `summaryLevels()` (before, one more below 10%).
+
+- Character variables are now shown in natural order in `summaryTable()`,
+  `summaryByVisit()` and `stackedbarplotSCI()` (e.g. "3" before "10",
+  "< 10%" before "20%", "Arm 2" before "Arm 10"). Factors keep their level order.
 
 - Visits in `summaryByVisit()` are now sorted naturally (e.g. "Visit 2" before
   "Visit 10") when `order` is not given, whatever the name of the visit column.

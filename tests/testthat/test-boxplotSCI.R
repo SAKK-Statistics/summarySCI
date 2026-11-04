@@ -503,3 +503,15 @@ test_that("further graphical parameters reach boxplot()", {
   expect_true(all(vapply(rec$boxplot, function(b) b$args$lwd, 0) == 3))
 })
 
+
+test_that("boxplotSCI restores the user's margins", {
+  grDevices::pdf(NULL)
+  on.exit(grDevices::dev.off(), add = TRUE)
+  par(mar = c(1, 2, 3, 4))
+  df <- make_fixture()
+  boxplotSCI(data = df, var = "value", group = "arm")
+  expect_equal(par("mar"), c(1, 2, 3, 4))
+  boxplotSCI(data = df, var = "value", order = "time", group = "arm",
+             mar_custom = c(8, 8, 8, 8))
+  expect_equal(par("mar"), c(1, 2, 3, 4))
+})

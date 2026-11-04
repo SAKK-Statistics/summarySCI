@@ -77,9 +77,11 @@ of the table rows.
 \examples{
 library(summarySCI)
 data("hemoglobin_data")
-hemoglobin_data$hb_cat <- cut(hemoglobin_data$hb, c(-Inf, 120, 140, Inf),
-                              labels = c("< 120", "120-140", "> 140"))
-tbl <- summaryByVisit(hemoglobin_data, vars = c("hb", "hb_cat"),
+hb <- subset(hemoglobin_data, visit_nr <= 3)   # first 3 cycles, to keep it short
+attr(hb$hb, "label") <- "Hemoglobin"           # subset() drops the label
+hb$hb_cat <- cut(hb$hb, c(-Inf, 120, 140, Inf),
+                 labels = c("< 120", "120-140", "> 140"))
+tbl <- summaryByVisit(hb, vars = c("hb", "hb_cat"),
                       group = "Arm", visit = "visit", stat_cont = "median_IQR",
                       as_flex_table = FALSE)
 plotByVisit(tbl, var = "Hemoglobin", risk_table = TRUE)

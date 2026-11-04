@@ -519,7 +519,7 @@ n_before_overall <- function(tbl) {
 
                style_fun = list(
                  all_continuous() ~ purrr::partial(style_number, digits = digits_cont),
-                 all_categorical() ~ purrr::partial(style_percent, digits = digits_cat)
+                 all_categorical() ~ purrr::partial(style_number, digits = digits_cat, scale = 100)
                ),
 
 
@@ -569,7 +569,7 @@ tbl_missing_percent <- data_missing_as_level|>
                        all_categorical() ~ ci_cat_gt),
          style_fun = list(
            all_continuous() ~ purrr::partial(style_number, digits = digits_cont),
-           all_categorical() ~ purrr::partial(style_percent, digits = digits_cat)),
+           all_categorical() ~ purrr::partial(style_number, digits = digits_cat, scale = 100)),
          conf.level = conf_level,
          statistic = list(all_continuous() ~ "[{conf.low}, {conf.high}]",
                                 (all_categorical() ~ "[{conf.low}%, {conf.high}%]")))  %>%

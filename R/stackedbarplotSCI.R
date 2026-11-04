@@ -193,15 +193,17 @@ stackedbarplotSCI <- function(data, var, order = NULL, visit = NULL,
   as_time_factor <- function(x) {
     if (is.factor(x)) return(droplevels(x))
     if (is.numeric(x)) return(factor(x, levels = sort(unique(x))))
-    x   <- as.character(x)
-    u   <- unique(x)
-    num <- suppressWarnings(as.numeric(gsub("[^0-9.]", "", u)))
-    factor(x, levels = if (anyNA(num)) u else u[base::order(num)])
+    # text time points in natural order, as in summaryByVisit():
+    # "Visit 2" before "Visit 10", "Cycle 1 Day 15" before "Cycle 2 Day 1"
+    factor(as.character(x), levels = natural_levels(x))
   }
   tt <- if (is.null(order_name)) factor(rep("1", nrow(data))) else
     as_time_factor(data[[order_name]])
+  # groups in natural order ("Arm 2" before "Arm 10"), as in the tables;
+  # factor levels are kept
   gg <- if (is.null(group_name)) factor(rep("All", nrow(data))) else
-    factor(data[[group_name]])
+    if (is.factor(data[[group_name]])) factor(data[[group_name]]) else
+      as_natural_factor(as.character(data[[group_name]]))
 
   t_labels <- levels(tt)
   if (!is.null(visit_name)) {
@@ -212,7 +214,9 @@ stackedbarplotSCI <- function(data, var, order = NULL, visit = NULL,
   # --- Counts per segment, group and time point ------------------------------
   if (length(var_name) == 1L) {
     x   <- data[[var_name]]
-    lev <- if (is.factor(x)) levels(x) else sort(unique(as.character(x[!is.na(x)])))
+    # categories in natural order (1, 2, ..., 10; "< 10%", "20%", ">90%"),
+    # as in summaryTable(); factor levels are kept
+    lev <- if (is.factor(x)) levels(x) else natural_levels(x)
     x   <- factor(as.character(x), levels = lev)
     if (isTRUE(missing) && anyNA(x)) {
       lev <- c(lev, missing_text)
