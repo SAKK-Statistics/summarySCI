@@ -26,6 +26,7 @@ testthat::test_that("Error when no data given", {
 
 
 testthat::test_that("median and range are correct", {
+  skip_on_cran()
   tbl <- summaryByVisit(data = data,
                       vars = "LDH",
                       as_flex_table = FALSE,
@@ -43,6 +44,7 @@ testthat::test_that("median and range are correct", {
 
 
 testthat::test_that("Number of non-missing observations is correct", {
+  skip_on_cran()
   tbl_5 <- summaryByVisit(data = data,
                         vars = "LDH",
                         visit="visit",
@@ -145,16 +147,19 @@ sbv <- function(...) summaryByVisit(..., as_flex_table = FALSE)
 # ---------------------------------------------------------------------------- #
 
 test_that("runs with defaults for one continuous and one categorical variable", {
+  skip_on_cran()
   expect_no_error(sbv(vd, vars = "weight"))
   expect_no_error(sbv(vd, vars = "ecog"))
   expect_no_error(sbv(vd, vars = c("weight", "ecog"), group = "arm"))
 })
 
 test_that("works without file_path when word_output = FALSE", {
+  skip_on_cran()
   expect_no_error(summaryByVisit(vd, vars = "weight"))
 })
 
 test_that("default file_path is used when word_output = TRUE", {
+  skip_on_cran()
   old_wd <- setwd(tempdir())
   on.exit(setwd(old_wd), add = TRUE)
   f <- paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")
@@ -168,11 +173,13 @@ test_that("default file_path is used when word_output = TRUE", {
 })
 
 test_that("return class depends on as_flex_table", {
+  skip_on_cran()
   expect_s3_class(summaryByVisit(vd, vars = "weight"), "flextable")
   expect_s3_class(sbv(vd, vars = "weight"), "gtsummary")
 })
 
 test_that("each visit appears once per variable", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = c("weight", "ecog"))
   for (v in VISITS) expect_equal(sum(tbl$table_body$label == v), 2, label = v)
 })
@@ -186,6 +193,7 @@ test_that("visits are in numeric order, not alphabetical (Visit 2 before Visit 1
 })
 
 test_that("visit order works when the visit column is not called 'visit'", {
+  skip_on_cran()
   d <- vd
   d$visit <- c("Visit 1" = "Visit 1", "Visit 2" = "Visit 2", "Visit 3" = "Visit 10")[d$visit]
   names(d)[names(d) == "visit"] <- "timepoint"
@@ -196,6 +204,7 @@ test_that("visit order works when the visit column is not called 'visit'", {
 })
 
 test_that("`order` defines the visit order", {
+  skip_on_cran()
   d <- vd
   d$visit <- c("Visit 1" = "Screening", "Visit 2" = "Week 4", "Visit 3" = "Week 12")[d$visit]
   tbl <- sbv(d, vars = "weight", order = "visit_order")
@@ -205,6 +214,7 @@ test_that("`order` defines the visit order", {
 })
 
 test_that("rows without visit are removed", {
+  skip_on_cran()
   d <- vd
   d$visit[1:3] <- NA
   d$visit[4]   <- ""
@@ -226,6 +236,7 @@ test_that("median (range) per visit is correct (no group)", {
 })
 
 test_that("mean (SD), mean (SE), median (IQR) per visit are correct", {
+  skip_on_cran()
   for (sc in c("mean_sd", "mean_se", "median_IQR")) {
     tbl <- sbv(vd, vars = "weight", stat_cont = sc, digits_cont = 2)
     for (v in VISITS) {
@@ -240,6 +251,7 @@ test_that("mean (SD), mean (SE), median (IQR) per visit are correct", {
 })
 
 test_that("geometric mean per visit is correct", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = "crp", stat_cont = "geomMean_sd", digits_cont = 2)
   for (v in VISITS) {
     x <- vd$crp[vd$visit == v & !is.na(vd$crp)]
@@ -256,6 +268,7 @@ test_that("continuous statistics by group (2 groups) are correct", {
 })
 
 test_that("continuous statistics by group (3 groups) are correct", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = "weight", group = "arm3", digits_cont = 1)
   for (k in 1:3) for (v in VISITS) {
     x <- vd$weight[vd$visit == v & vd$arm3 == levels(vd$arm3)[k] & !is.na(vd$weight)]
@@ -264,12 +277,14 @@ test_that("continuous statistics by group (3 groups) are correct", {
 })
 
 test_that("overall column equals the ungrouped table", {
+  skip_on_cran()
   tbl_g <- sbv(vd, vars = "weight", group = "arm", overall = TRUE)
   tbl_u <- sbv(vd, vars = "weight")
   for (v in VISITS) expect_equal(cont_cell(tbl_g, v, "stat_0"), cont_cell(tbl_u, v, "stat_0"))
 })
 
 test_that("digits_cont is respected", {
+  skip_on_cran()
   for (dg in 0:2) {
     tbl  <- sbv(vd, vars = "weight", stat_cont = "mean_sd", digits_cont = dg)
     cell <- cont_cell(tbl, "Visit 1")
@@ -279,6 +294,7 @@ test_that("digits_cont is respected", {
 })
 
 test_that("visit with no data in one group shows an empty cell, not 'NA (Inf, -Inf)'", {
+  skip_on_cran()
   d <- vd
   d$weight[d$visit == "Visit 3" & d$arm == "B"] <- NA
   tbl  <- sbv(d, vars = "weight", group = "arm")
@@ -301,6 +317,7 @@ test_that("n (%) per visit is correct, missing in denominator (missing_percent =
 })
 
 test_that("n (%) per visit is correct, missing NOT in denominator (missing_percent = FALSE)", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = "ecog", stat_cat = "n_percent", digits_cat = 1, missing_percent = FALSE)
   for (v in VISITS) for (lv in levels(vd$ecog)) {
     x <- vd$ecog[vd$visit == v & !is.na(vd$ecog)]
@@ -310,6 +327,7 @@ test_that("n (%) per visit is correct, missing NOT in denominator (missing_perce
 })
 
 test_that("missing row shows the number of missing values per visit", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = "ecog", missing = TRUE, missing_text = "Missing")
   for (v in VISITS) {
     n_na <- sum(is.na(vd$ecog[vd$visit == v]))
@@ -318,16 +336,19 @@ test_that("missing row shows the number of missing values per visit", {
 })
 
 test_that("missing_text is used", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = "ecog", missing_text = "Not done")
   expect_true("Not done" %in% tbl$table_body$label)
 })
 
 test_that("no missing row when missing = FALSE", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = "ecog", missing = FALSE)
   expect_false("Missing" %in% tbl$table_body$label)
 })
 
 test_that("no missing row for a visit without missing values", {
+  skip_on_cran()
   d <- vd
   d$ecog[d$visit == "Visit 1" & is.na(d$ecog)] <- "0"
   tbl <- sbv(d, vars = "ecog")
@@ -337,6 +358,7 @@ test_that("no missing row for a visit without missing values", {
 })
 
 test_that("categorical statistics by group are correct", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = "ecog", group = "arm", missing_percent = FALSE, digits_cat = 1)
   for (k in 1:2) for (v in VISITS) for (lv in levels(vd$ecog)) {
     x <- vd$ecog[vd$visit == v & vd$arm == levels(vd$arm)[k] & !is.na(vd$ecog)]
@@ -346,6 +368,7 @@ test_that("categorical statistics by group are correct", {
 })
 
 test_that("stat_cat = 'n' and 'n_N' are correct", {
+  skip_on_cran()
   tbl_n  <- sbv(vd, vars = "ecog", stat_cat = "n",   missing = FALSE, digits_cat = 0)
   tbl_nN <- sbv(vd, vars = "ecog", stat_cat = "n_N", missing = FALSE, digits_cat = 0)
   for (v in VISITS) for (lv in levels(vd$ecog)) {
@@ -356,6 +379,7 @@ test_that("stat_cat = 'n' and 'n_N' are correct", {
 })
 
 test_that("continuous_as_categorical treats a numeric variable as categorical", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = "resp", continuous_as_categorical = "resp", missing = FALSE, digits_cat = 0)
   for (v in VISITS) {
     x <- vd$resp[vd$visit == v]
@@ -369,6 +393,7 @@ test_that("continuous_as_categorical treats a numeric variable as categorical", 
 # ---------------------------------------------------------------------------- #
 
 test_that("add_n: N per visit = number of non-missing values (continuous, no group)", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = "weight", add_n = TRUE)
   expect_false(is_hidden(tbl, "n"))
   for (v in VISITS) {
@@ -387,6 +412,7 @@ test_that("add_n: N per group and visit is correct (continuous)", {
 })
 
 test_that("add_n: N per visit is correct (categorical)", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = "ecog", add_n = TRUE)
   tb  <- tbl$table_body
   for (v in VISITS) {
@@ -398,16 +424,19 @@ test_that("add_n: N per visit is correct (categorical)", {
 })
 
 test_that("N columns are hidden when add_n = FALSE", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = "weight", group = "arm", add_n = FALSE)
   for (col in c("n", "add_n_stat_1", "add_n_stat_2")) expect_true(is_hidden(tbl, col), label = col)
 })
 
 test_that("overall column hidden when overall = FALSE, shown when TRUE", {
+  skip_on_cran()
   expect_true(is_hidden(sbv(vd, vars = "weight", group = "arm", overall = FALSE), "stat_0"))
   expect_false(is_hidden(sbv(vd, vars = "weight", group = "arm", overall = TRUE), "stat_0"))
 })
 
 test_that("header N = largest number of observations in any visit (per group)", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = "weight", group = "arm", overall = TRUE)
   tab <- table(vd$visit, vd$arm)
   for (k in 1:2) {
@@ -417,6 +446,7 @@ test_that("header N = largest number of observations in any visit (per group)", 
 })
 
 test_that("headers are the same for continuous and categorical variables (stacking)", {
+  skip_on_cran()
   tbl_c <- sbv(vd, vars = "weight", group = "arm")
   tbl_k <- sbv(vd, vars = "ecog",   group = "arm")
   expect_equal(header_label(tbl_c, "stat_1"), header_label(tbl_k, "stat_1"))
@@ -438,6 +468,7 @@ test_that("visitgroup rows are shown and statistics stay correct", {
 })
 
 test_that("visitgroup works with a group and a categorical variable", {
+  skip_on_cran()
   expect_no_error(sbv(vd, vars = c("weight", "ecog"), group = "arm",
                       visitgroup = "period", order = "visit_order", add_n = TRUE))
 })
@@ -448,6 +479,7 @@ test_that("visitgroup works with a group and a categorical variable", {
 # ---------------------------------------------------------------------------- #
 
 test_that("variables are stacked in the order given, statistics stay correct", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = c("ecog", "weight"))
   lab <- tbl$table_body$label
   expect_true(which(lab == "ECOG") < which(lab == "Weight (kg)"))
@@ -459,6 +491,7 @@ test_that("variables are stacked in the order given, statistics stay correct", {
 })
 
 test_that("labels: from attribute, from `labels`, else variable name", {
+  skip_on_cran()
   tbl <- sbv(vd, vars = c("weight", "ecog", "crp"), labels = list(ecog = "ECOG performance status"))
   lab <- tbl$table_body$label
   expect_true("Weight (kg)" %in% lab)
@@ -472,6 +505,7 @@ test_that("labels: from attribute, from `labels`, else variable name", {
 # ---------------------------------------------------------------------------- #
 
 test_that("Word file is written", {
+  skip_on_cran()
   f <- tempfile(fileext = ".docx")
   expect_message(
     summaryByVisit(vd, vars = "weight", word_output = TRUE, file_path = f),

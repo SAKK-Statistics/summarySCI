@@ -9,7 +9,6 @@
 library(testthat)
 library(summarySCI)
 library(gtsummary)
-library(stringr)
 
 
 testthat::test_check("summarySCI")

@@ -11,7 +11,7 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Depends: R (>= 4.1)
-Imports: Hmisc, cardx, dplyr, gtsummary (>= 2.3.0), forcats, labelled, purrr, rlang, tidyr, flextable, officer, stringr, graphics, grDevices, stats, utils
+Imports: Hmisc, cardx, dplyr, gtsummary (>= 2.3.0), forcats, labelled, purrr, rlang, tidyr, flextable, officer, graphics, grDevices, stats, utils, tools
 Suggests: 
     knitr,
     tidyverse,

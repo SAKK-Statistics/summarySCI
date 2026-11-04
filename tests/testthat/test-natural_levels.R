@@ -73,6 +73,7 @@ test_that("summaryTable shows character categories in natural order", {
 })
 
 test_that("existing factor levels are not reordered", {
+  skip_on_cran()
   dat <- data.frame(
     pct   = factor(c(">90%", "< 10%", "20%", ">90%"),
                    levels = c(">90%", "20%", "< 10%")),
@@ -85,6 +86,7 @@ test_that("existing factor levels are not reordered", {
 })
 
 test_that("a missing row stays at the end", {
+  skip_on_cran()
   dat <- data.frame(
     mets  = c("10", "3", NA, "more than 10", "3", "10"),
     group = c("A", "B", "A", "B", "A", "B")

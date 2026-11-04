@@ -34,8 +34,10 @@ boxplotSCI(
   legend_offset = c(0, 0),
   legend_cex = 1,
   legend_bty = "n",
+  risk_table = NULL,
   missing_nr = 0,
-  color_time = FALSE
+  color_time = FALSE,
+  ...
 )
 }
 \arguments{
@@ -76,7 +78,8 @@ time points, otherwise defaults to \code{"Group"}.}
 Default is \code{NULL}, which adds a 10\% padding buffer above and below the data range.}
 
 \item{y_ticks}{A numeric vector specifying the explicit tick positions on the
-y-axis. Default is \code{NULL}, which calculates 5 evenly spaced ticks across the data range.}
+y-axis. Default is \code{NULL}, which places about 5 ticks at round values within
+the y-axis limits, as in the other plots of the package.}
 
 \item{col}{A character vector of hex colors or color names to use for the boxes.
 Default is \code{NULL}, which automatically applies the SCI color palette.}
@@ -130,6 +133,12 @@ inside the legend box. Default is \code{1}.}
 \item{legend_bty}{The type of box border to be drawn around the legend.
 Allowed values are \code{"n"} (transparent/no border, the default) and \code{"o"} (standard box frame).}
 
+\item{risk_table}{A logical toggle switch enabling the patient numbers
+(non-missing observations of \code{var}) beneath the x-axis: one row per group
+over time, or one number under each box for a single time point.
+Default is \code{NULL}, which shows them over time but not for a single time
+point; \code{TRUE} shows them in both cases, \code{FALSE} in neither.}
+
 \item{missing_nr}{A numeric or character value indicating how zero-count patient
 sizes on the x-axis should be displayed. Default is \code{0}. Can also be set to \code{NA}.}
 
@@ -137,6 +146,9 @@ sizes on the x-axis should be displayed. Default is \code{0}. Can also be set to
 legacy use, where, for a single timepoint, multiple groups were used as "timepoint" variable.
 If set to \code{TRUE}, it treats timepoints as individual categories,applying sequential coloring
 and rendering a matching tracking legend. Default is \code{FALSE}.}
+
+\item{...}{Further graphical parameters passed on to \code{boxplot()}, e.g.
+\code{lwd}, \code{border} or \code{outline = FALSE} (no points for outliers).}
 }
 \description{
 Generates boxplots over time for one or multiple sub-groups.

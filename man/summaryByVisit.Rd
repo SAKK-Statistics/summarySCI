@@ -38,7 +38,9 @@ all variables present in the data except \code{group}.}
 \item{group}{A single column from \code{data}.
 Need to be specified with quotes, e.g. \code{"treatment"}.
 Summary statistics will be stratified according to this variable.
-Default to NULL. A maximum of 3 groups are currently supported.}
+Default to NULL. A maximum of 3 groups are currently supported.
+Character variables and a character group are shown in natural order
+(e.g. "2" before "10"); factors keep their level order.}
 
 \item{labels}{A list containing the labels that should be used for the
 variables in the table, either named by variable
@@ -114,13 +116,10 @@ Creates publication-ready summary tables for data grouped, by visit
 }
 \examples{
 data("hemoglobin_data")
+hb <- subset(hemoglobin_data, visit_nr <= 3)   # first 3 cycles, to keep it short
 
-# Hemoglobin by visit
-summaryByVisit(data = hemoglobin_data, vars = "hb", visit = "visit",
-               labels = list(hb = "Hemoglobin (g/L)"))
-
-# By arm, with an overall column
-summaryByVisit(data = hemoglobin_data, vars = "hb", visit = "visit",
+# Hemoglobin by visit and arm, with an overall column
+summaryByVisit(data = hb, vars = "hb", visit = "visit",
                group = "Arm", overall = TRUE,
                labels = list(hb = "Hemoglobin (g/L)"))
 

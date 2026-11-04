@@ -28,7 +28,8 @@
 #' @param ylim The y-axis limits of the plot as a numeric vector of length 2.
 #' Default is `NULL`, which adds a 10% padding buffer above and below the data range.
 #' @param y_ticks A numeric vector specifying the explicit tick positions on the
-#' y-axis. Default is `NULL`, which calculates 5 evenly spaced ticks across the data range.
+#' y-axis. Default is `NULL`, which places about 5 ticks at round values within
+#' the y-axis limits, as in the other plots of the package.
 #' @param col A character vector of hex colors or color names to use for the boxes.
 #' Default is `NULL`, which automatically applies the SCI color palette.
 #' @param cex_lab A numeric value specifying the font size of the main axis labels. Default is `1`.
@@ -64,12 +65,19 @@
 #' inside the legend box. Default is `1`.
 #' @param legend_bty The type of box border to be drawn around the legend.
 #' Allowed values are `"n"` (transparent/no border, the default) and `"o"` (standard box frame).
+#' @param risk_table A logical toggle switch enabling the patient numbers
+#' (non-missing observations of `var`) beneath the x-axis: one row per group
+#' over time, or one number under each box for a single time point.
+#' Default is `NULL`, which shows them over time but not for a single time
+#' point; `TRUE` shows them in both cases, `FALSE` in neither.
 #' @param missing_nr A numeric or character value indicating how zero-count patient
 #' sizes on the x-axis should be displayed. Default is `0`. Can also be set to `NA`.
 #' @param color_time A logical toggle switch enabling legacy timepoint colorization. Supports
 #' legacy use, where, for a single timepoint, multiple groups were used as "timepoint" variable.
 #' If set to `TRUE`, it treats timepoints as individual categories,applying sequential coloring
 #' and rendering a matching tracking legend. Default is `FALSE`.
+#' @param ... Further graphical parameters passed on to `boxplot()`, e.g.
+#' `lwd`, `border` or `outline = FALSE` (no points for outliers).
 #' @importFrom graphics par boxplot axis mtext title legend abline
 #' @importFrom grDevices colorRampPalette
 #'
@@ -99,7 +107,6 @@
 #'                   lty = c(2, 3, 2)
 #' )
 #'
-#' @import stringr
 #' @export
 
 boxplotSCI <- function(data,
@@ -131,28 +138,26 @@ boxplotSCI <- function(data,
                               legend_offset = c(0, 0),
                               legend_cex = 1,
                               legend_bty = "n",
+                              risk_table = NULL,
                               missing_nr = 0,
-                              color_time = FALSE) {
+                              color_time = FALSE,
+                              ...) {
 
   # 1. Checks, input validation and graphical parameters
   if (missing(data)) stop("'data' must be specified.")
   data <- as.data.frame(data)
 
-  # Unified parser
-  get_col_name <- function(x_expr) {
-    if (is.null(x_expr)) return(NULL)
-    name <- deparse(x_expr)
-    name <- gsub('^"|"$', '', name)
-    if (name %in% colnames(data)) return(name)
-    return(NULL)
-  }
+  # Accept quoted ("x") and unquoted (x) column names, like the other plots
+  var   <- col_names(substitute(var),   function() var)
+  group <- col_names(substitute(group), function() group)
+  order <- col_names(substitute(order), function() order)
+  visit <- col_names(substitute(visit), function() visit)
 
-  var         <- get_col_name(substitute(var))
-  group       <- get_col_name(substitute(group))
-  order        <- get_col_name(substitute(order))
-  visit <- get_col_name(substitute(visit))
-
-  if (is.null(var)) stop("Specified target variable 'var' column not found.")
+  if (length(var) != 1L || !var %in% colnames(data))
+    stop("Specified target variable 'var' column not found.")
+  missing_cols <- setdiff(c(group, order, visit), colnames(data))
+  if (length(missing_cols) > 0)
+    stop("Column(s) not found in 'data': ", paste(missing_cols, collapse = ", "), ".")
 
   group_number <- 1
   group_levels <- NULL
@@ -176,40 +181,30 @@ boxplotSCI <- function(data,
   }
   n_timepoints <- length(master_timepoints)
 
+  # patient numbers: by default over time only (single time points: none)
+  if (is.null(risk_table)) risk_table <- !(is.null(order) || n_timepoints == 1)
+
   # Design and environment configurations
   if (is.null(xlab)) xlab <- ifelse(is.null(order) || n_timepoints == 1, "Group", "Time")
 
-  # Dynamic layout tracking
-  if (is.null(xlab_line)) {
-    if (is.null(order) || n_timepoints == 1) {
-      xlab_line <- 3.0
-    } else {
-      xlab_line <- 2 + (group_number - 1) * 0.65 + 1.2
-    }
-  }
+  # Dynamic layout tracking, shared with lineplotSCI() and stackedbarplotSCI()
+  lay <- sci_layout(n_timepoints, group_number, risk_table)
+  if (is.null(xlab_line)) xlab_line <- lay$xlab_line
 
   # SCI color palette
   palette_n <- if (color_time && group_number == 1) n_timepoints else group_number
 
-  if (is.null(col)) {
-    if (palette_n <= 5) {
-      col <- switch(as.character(palette_n),
-                    "1" = "#E4002B",
-                    "2" = c("#F4B9C2", "#E4002B"),
-                    "3" = c("#FFE3E3", "#F4B9C2", "#E4002B"),
-                    "4" = c("#FFE3E3", "#F4B9C2", "#E4002B", "#961D13"),
-                    "5" = c("#FFE3E3", "#F4B9C2", "#E4002B", "#961D13", "#401F28")
-      )
-    } else {
-      col <- colorRampPalette(c("#FFE3E3", "#F4B9C2", "#E4002B", "#961D13", "#401F28"))(palette_n)
-    }
-  }
+  if (is.null(col)) col <- sci_palette(palette_n)
 
   if (is.null(ylim)) {
     range_m <- range(data[[var]], na.rm = TRUE)
     ylim <- c(range_m[1] - 0.1 * abs(range_m[1]), range_m[2] + 0.1 * abs(range_m[2]))
   }
-  if (is.null(y_ticks)) y_ticks <- seq(floor(ylim[1]), ceiling(ylim[2]), length.out = 5)
+  # round tick values within the limits, as lineplotSCI() and stackedbarplotSCI()
+  if (is.null(y_ticks)) {
+    y_ticks <- pretty(ylim, n = 5)
+    y_ticks <- y_ticks[y_ticks >= ylim[1] & y_ticks <= ylim[2]]
+  }
 
   # Flexible Boxwex calculation
   if (is.null(boxwex)) {
@@ -228,29 +223,39 @@ boxplotSCI <- function(data,
 
   # Dynamic Margins calculation
   if (is.null(mar_custom)) {
-    if (is.null(order) || n_timepoints == 1) {
-      calculated_bottom <- 4.0
-      left_margin       <- 4.5
-    } else {
-      base_bottom       <- if (n_timepoints > 8) 6.5 else 5.0
-      calculated_bottom <- base_bottom + (group_number - 1) * 0.65
-      left_margin       <- if (n_timepoints > 8) 5.5 else 4.5
-    }
-    current_margins <- c(calculated_bottom, left_margin, 4, 2) + 0.1
+    current_margins <- lay$mar
   } else {
     current_margins <- mar_custom
   }
-  par(mar = current_margins)
+  # restore the user's graphical parameters when the function exits
+  op <- par(mar = current_margins)
+  on.exit(par(op), add = TRUE)
 
   group_offsets <- (1:group_number - (group_number + 1) / 2) * shift
 
   # 2. Rendering loop
 
   if (is.null(order) || n_timepoints == 1) {
-    boxplot(data[[var]] ~ data[[group]], xlab = "", ylab = "", col = col,
-            xaxt = "n", yaxt = "n", ylim = ylim, boxwex = boxwex)
+    # without a grouping variable, a single box of all observations
+    if (is.null(group)) {
+      boxplot(data[[var]], xlab = "", ylab = "", col = col,
+              xaxt = "n", yaxt = "n", ylim = ylim, boxwex = boxwex, ...)
+    } else {
+      boxplot(data[[var]] ~ data[[group]], xlab = "", ylab = "", col = col,
+              xaxt = "n", yaxt = "n", ylim = ylim, boxwex = boxwex, ...)
+    }
 
-    axis(side = 1, at = 1:group_number, labels = group_names, cex.axis = cex_axis)
+    axis(side = 1, at = 1:group_number,
+         labels = if (is.null(group)) "" else group_names, cex.axis = cex_axis)
+
+    # patient numbers: one under each box
+    if (risk_table) {
+      has_value <- !is.na(data[[var]])
+      n_counts <- if (is.null(group)) sum(has_value) else
+        table(factor(data[[group]][has_value], levels = group_levels))
+      risk_row(n_counts, line = lay$rows, at = 1:group_number,
+               cex = cex_n_patients, missing_nr = missing_nr)
+    }
   } else {
     for (g in 1:group_number) {
       g_subset <- if (is.null(group)) data else data[data[[group]] == group_levels[g], ]
@@ -261,21 +266,19 @@ boxplotSCI <- function(data,
       boxplot(g_subset[[var]] ~ factor(g_subset[[order]], levels = master_timepoints),
               col = current_box_col, at = at_positions, add = (g > 1),
               xaxt = "n", yaxt = "n", xlab = "", ylab = "", ylim = ylim, boxwex = boxwex,
-              xlim = c(0.5, n_timepoints + 0.5))
+              xlim = c(0.5, n_timepoints + 0.5), ...)
 
-      if (nrow(g_subset) > 0) {
-        n_counts <- table(factor(g_subset[[order]][!is.na(g_subset[[var]])], levels = master_timepoints))
-        n_counts[n_counts == 0] <- missing_nr
-      } else {
-        n_counts <- rep(missing_nr, n_timepoints)
-      }
-
-      current_line <- 2 + (g - 1) * 0.65
-      mtext(text = as.vector(n_counts), side = 1, line = current_line, at = 1:n_timepoints, cex = cex_n_patients)
-
-      if (group_number > 1) {
+      if (risk_table) {
+        n_counts <- if (nrow(g_subset) > 0) {
+          table(factor(g_subset[[order]][!is.na(g_subset[[var]])], levels = master_timepoints))
+        } else {
+          rep(0, n_timepoints)
+        }
         if (is.null(xlab_position)) xlab_position <- par("usr")[1] - 0.03 * (par("usr")[2] - par("usr")[1])
-        mtext(text = paste("#", group_names_short[g]), side = 1, line = current_line, at = xlab_position, cex = cex_n_patients, adj = 1)
+        risk_row(n_counts, line = lay$rows[g], at = 1:n_timepoints,
+                 label = if (group_number > 1) group_names_short[g],
+                 label_at = xlab_position, cex = cex_n_patients,
+                 missing_nr = missing_nr)
       }
     }
 
@@ -284,7 +287,7 @@ boxplotSCI <- function(data,
   }
 
   # 3. Margin texts, annotations and legend
-  axis(2, at = y_ticks, labels = y_ticks, cex.axis = cex_axis)
+  axis(2, at = y_ticks, labels = y_ticks, las = 1, cex.axis = cex_axis)
 
   title(main = main)
   title(xlab = xlab, line = xlab_line, cex.lab = cex_lab)

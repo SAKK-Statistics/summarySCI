@@ -10,6 +10,8 @@
 #' Need to be specified with quotes, e.g. `"treatment"`.
 #' Summary statistics will be stratified according to this variable.
 #' Default to NULL. A maximum of 3 groups are currently supported.
+#' Character variables and a character group are shown in natural order
+#' (e.g. "2" before "10"); factors keep their level order.
 #'
 #' @param labels A list containing the labels that should be used for the
 #' variables in the table, either named by variable
@@ -81,13 +83,10 @@
 #'
 #' @examples
 #' data("hemoglobin_data")
+#' hb <- subset(hemoglobin_data, visit_nr <= 3)   # first 3 cycles, to keep it short
 #'
-#' # Hemoglobin by visit
-#' summaryByVisit(data = hemoglobin_data, vars = "hb", visit = "visit",
-#'                labels = list(hb = "Hemoglobin (g/L)"))
-#'
-#' # By arm, with an overall column
-#' summaryByVisit(data = hemoglobin_data, vars = "hb", visit = "visit",
+#' # Hemoglobin by visit and arm, with an overall column
+#' summaryByVisit(data = hb, vars = "hb", visit = "visit",
 #'                group = "Arm", overall = TRUE,
 #'                labels = list(hb = "Hemoglobin (g/L)"))
 #'
@@ -141,6 +140,13 @@ summaryByVisit<- function(data,
   if (is.null(vars)) {
     vars <- setdiff(names(data), c(group, visit))
   }
+
+  # character variables (and a character group) as factors in natural order
+  # ("2" before "10", "Arm 2" before "Arm 10"), as in summaryTable();
+  # factors keep their level order
+  chr_cols <- unique(c(vars, group))
+  chr_cols <- chr_cols[vapply(data[chr_cols], is.character, logical(1))]
+  data[chr_cols] <- lapply(data[chr_cols], as_natural_factor)
 
   # labels
   labels <- chk$labels

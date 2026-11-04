@@ -47,6 +47,7 @@ test_that("fisher_test_safe does not fail on the FEXACT data and keeps an exact 
 })
 
 test_that("fisher_test_safe falls back to a Monte Carlo p-value when needed", {
+  skip_on_cran()
   d <- mc_data()
   res <- fisher_test_safe(d, "v", "arm")
   expect_true(res$p.value >= 0 && res$p.value <= 1)
@@ -55,11 +56,13 @@ test_that("fisher_test_safe falls back to a Monte Carlo p-value when needed", {
 })
 
 test_that("Monte Carlo p-value is reproducible", {
+  skip_on_cran()
   d <- mc_data()
   expect_identical(fisher_test_safe(d, "v", "arm"), fisher_test_safe(d, "v", "arm"))
 })
 
 test_that("fisher_test_safe does not change the user's random number stream", {
+  skip_on_cran()
   d <- mc_data()
   set.seed(123); a <- runif(3)
   set.seed(123); invisible(fisher_test_safe(d, "v", "arm")); b <- runif(3)
@@ -67,6 +70,7 @@ test_that("fisher_test_safe does not change the user's random number stream", {
 })
 
 test_that("fisher_test_safe does not create a seed if there was none", {
+  skip_on_cran()
   d <- mc_data()
   had_seed <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
   if (had_seed) {

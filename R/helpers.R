@@ -305,3 +305,135 @@ check_no_dates <- function(data, vars, group = NULL) {
   invisible(TRUE)
 }
 
+
+
+
+#' Resolve a column-name argument
+#'
+#' Turns the argument of a plotting function into column name(s). Accepts
+#' quoted names (`"x"`, `c("x", "y")`), a variable holding such names, and
+#' bare names (`x`): a bare name does not evaluate to a character vector, so
+#' it is deparsed instead.
+#'
+#' @param sub The unevaluated argument, i.e. `substitute(arg)`.
+#' @param val_fun A function evaluating the argument, i.e. `function() arg`.
+#' @return A character vector, or `NULL` if the argument is `NULL`.
+#' @keywords internal
+col_names <- function(sub, val_fun) {
+  if (is.null(sub)) return(NULL)
+  val <- tryCatch(val_fun(), error = function(e) NULL)
+  if (is.character(val)) val else deparse(sub)
+}
+
+
+
+#' SCI color palette
+#'
+#' The default colors of all plotting functions of the package.
+#'
+#' @param n Number of colors.
+#' @param lines Logical. If `TRUE`, only the darker shades are used, since the
+#' light ones are hard to see as lines and points on a white background.
+#' Default is `FALSE`, for filled boxes and bars.
+#' @return A character vector of `n` hex colors, light to dark.
+#' @keywords internal
+sci_palette <- function(n, lines = FALSE) {
+  base <- c("#FFE3E3", "#F4B9C2", "#E4002B", "#961D13", "#401F28")
+  if (lines) {
+    dark <- base[3:5]
+    return(switch(as.character(n),
+                  "1" = dark[1],
+                  "2" = dark[c(1, 3)],
+                  "3" = dark,
+                  grDevices::colorRampPalette(dark)(n)))
+  }
+  switch(as.character(n),
+         "1" = base[3],
+         "2" = base[2:3],
+         "3" = base[1:3],
+         "4" = base[1:4],
+         "5" = base,
+         grDevices::colorRampPalette(base)(n))
+}
+
+
+
+#' Convert a gtsummary table to a flextable
+#'
+#' The conversion [summaryTable()] applies when `as_flex_table = TRUE`: a
+#' flextable fitted to the page width, with an outer border if requested.
+#'
+#' @param tbl A gtsummary table.
+#' @param border Logical. Draw a border around header and body.
+#' @return A flextable.
+#' @keywords internal
+to_flextable <- function(tbl, border = TRUE) {
+  ft <- gtsummary::as_flex_table(tbl)
+  if (isTRUE(border)) {
+    ft <- ft |>
+      flextable::border_outer(part = "header") |>
+      flextable::border_outer(part = "body")
+  }
+  FitFlextableToPage(ft)
+}
+
+
+
+#' Layout of the plots
+#'
+#' Margins, lines of the patient numbers and of the x-axis title shared by
+#' [boxplotSCI()], [lineplotSCI()] and [stackedbarplotSCI()], so that plots used
+#' together line up. The blueprint is the layout of [boxplotSCI()].
+#'
+#' @param n_time Number of time points; `1` for a single time point.
+#' @param n_groups Number of groups.
+#' @param risk_table Logical. Are patient numbers drawn beneath the x-axis?
+#' @param offset Lines taken by extra labels beneath the x-axis (e.g. group
+#' labels under bars, or rotated labels), by which the numbers and the x-axis
+#' title move down.
+#' @return A list with `mar` (for `par(mar = )`), `rows` (margin lines of the
+#' rows of patient numbers, one per group over time, one for a single time
+#' point) and `xlab_line`.
+#' @keywords internal
+sci_layout <- function(n_time, n_groups, risk_table, offset = 0) {
+  if (n_time == 1L) {
+    bottom    <- if (risk_table) 4.6 else 4.0
+    left      <- 4.5
+    rows      <- 2
+    xlab_line <- if (risk_table) 3.6 else 3.0
+  } else {
+    base      <- if (n_time > 8) 6.5 else 5.0
+    bottom    <- if (risk_table) base + (n_groups - 1) * 0.65 else base - 1
+    left      <- if (n_time > 8) 5.5 else 4.5
+    rows      <- 2 + (seq_len(n_groups) - 1) * 0.65
+    xlab_line <- if (risk_table) 2 + (n_groups - 1) * 0.65 + 1.2 else 3.0
+  }
+  list(mar = c(bottom + offset, left, 4, 2) + 0.1,
+       rows = rows + offset, xlab_line = xlab_line + offset)
+}
+
+
+
+#' One row of patient numbers beneath the x-axis
+#'
+#' Draws the numbers `n` at the x positions `at` on margin line `line`, zero
+#' counts shown as `missing_nr`, and optionally the row label `"# <label>"`
+#' left of the plot, as in [boxplotSCI()].
+#'
+#' @param n Numbers of patients.
+#' @param line Margin line of the row.
+#' @param at x positions of the numbers.
+#' @param label Group label of the row, or `NULL` for none.
+#' @param label_at x position of the right end of the label.
+#' @param cex Font size.
+#' @param missing_nr Shown instead of zero counts.
+#' @keywords internal
+risk_row <- function(n, line, at, label = NULL, label_at = NULL, cex = 0.7,
+                     missing_nr = 0) {
+  n <- as.vector(n)
+  n[n == 0] <- missing_nr
+  mtext(text = n, side = 1, line = line, at = at, cex = cex)
+  if (!is.null(label))
+    mtext(text = paste("#", label), side = 1, line = line, at = label_at,
+          cex = cex, adj = 1)
+}

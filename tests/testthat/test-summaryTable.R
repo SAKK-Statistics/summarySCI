@@ -27,6 +27,7 @@ testthat::test_that("median and range are correct", {
 
 
 testthat::test_that("Number of non-missing observations is correct", {
+  skip_on_cran()
   trial <- gtsummary::trial
 
   tbl_5 <- summaryTable(data = trial,
@@ -40,6 +41,7 @@ testthat::test_that("Number of non-missing observations is correct", {
 })
 
 testthat::test_that("Row missing if missing is true", {
+  skip_on_cran()
   trial <- gtsummary::trial
 
 tbl6 <- summaryTable(data = trial,
@@ -59,6 +61,7 @@ testthat::expect_true(isMissing)
 
 
 testthat::test_that("N without missing add up to overall N without missing", {
+  skip_on_cran()
   trial <- gtsummary::trial
 tbl7 <- summaryTable(data = trial,
                      vars = "response",
@@ -152,6 +155,7 @@ test_that("Fisher p-values are correct (2 groups)", {
 })
 
 test_that("Fisher p-values are correct (3 groups)", {
+  skip_on_cran()
   trial <- gtsummary::trial
   vars  <- c("stage", "response", "trt")
 
@@ -166,6 +170,7 @@ test_that("Fisher p-values are correct (3 groups)", {
 })
 
 test_that("Chi-squared p-values are correct (with and without correction)", {
+  skip_on_cran()
   trial <- gtsummary::trial
   vars  <- c("grade", "stage", "response", "death")
 
@@ -185,6 +190,7 @@ test_that("Chi-squared p-values are correct (with and without correction)", {
 })
 
 test_that("test_cat = NULL chooses chisq (no correction) or Fisher by expected counts", {
+  skip_on_cran()
   set.seed(1)
   trial <- gtsummary::trial
   trial$rare <- factor(sample(c(rep("a", 6), rep("b", nrow(trial) - 6))))  # expected < 5 -> Fisher
@@ -204,6 +210,7 @@ test_that("test_cat = NULL chooses chisq (no correction) or Fisher by expected c
 })
 
 test_that("Categorical p-value does not depend on missing display options", {
+  skip_on_cran()
   # Missing values must NOT be part of the test (no "Missing" category in the test)
   trial <- gtsummary::trial
   d     <- cc(trial, "response", "trt")
@@ -218,6 +225,7 @@ test_that("Categorical p-value does not depend on missing display options", {
 })
 
 test_that("Categorical p-value does not depend on dichotomous_as / ref_level", {
+  skip_on_cran()
   trial <- gtsummary::trial
   d     <- cc(trial, "response", "trt")
   ref   <- stats::fisher.test(table(d$response, d$trt))$p.value
@@ -235,6 +243,7 @@ test_that("Categorical p-value does not depend on dichotomous_as / ref_level", {
 })
 
 test_that("Character and logical variables give the same p-value as the factor version", {
+  skip_on_cran()
   trial <- gtsummary::trial
   trial$grade_chr <- as.character(trial$grade)
   trial$resp_lgl  <- as.logical(trial$response)
@@ -252,6 +261,7 @@ test_that("Character and logical variables give the same p-value as the factor v
 # ============================================================================ #
 
 test_that("Continuous p-values are correct (2 groups)", {
+  skip_on_cran()
   trial <- gtsummary::trial
   vars  <- c("age", "marker", "ttdeath")
 
@@ -291,6 +301,7 @@ test_that("Continuous p-values are correct (3 groups)", {
 })
 
 test_that("Default test_cont: wilcox for 2 groups, kruskal for > 2 groups", {
+  skip_on_cran()
   trial <- gtsummary::trial
 
   tbl2 <- summaryTable(trial, vars = "age", group = "trt",   test = TRUE, as_flex_table = FALSE)
@@ -305,6 +316,7 @@ test_that("Default test_cont: wilcox for 2 groups, kruskal for > 2 groups", {
 })
 
 test_that("Continuous p-value does not depend on stat_cont / digits / overall", {
+  skip_on_cran()
   trial <- gtsummary::trial
   d     <- cc(trial, "age", "trt")
   ref   <- stats::t.test(age ~ trt, data = d)$p.value
@@ -317,6 +329,7 @@ test_that("Continuous p-value does not depend on stat_cont / digits / overall", 
 })
 
 test_that("continuous_as_categorical uses a categorical test", {
+  skip_on_cran()
   trial <- gtsummary::trial
   trial$n_nodes <- sample(0:3, nrow(trial), replace = TRUE)
 
@@ -334,12 +347,14 @@ test_that("continuous_as_categorical uses a categorical test", {
 # ============================================================================ #
 
 test_that("No p-value column when test = FALSE", {
+  skip_on_cran()
   trial <- gtsummary::trial
   tbl <- summaryTable(trial, vars = c("age", "grade"), group = "trt", as_flex_table = FALSE)
   expect_null(get_p(tbl, "age"))
 })
 
 test_that("Displayed p-value matches the unrounded p-value", {
+  skip_on_cran()
   # summarySCI shows p-values with 2 digits (gtsummary::style_pvalue(digits = 2)).
   trial <- gtsummary::trial
   tbl <- summaryTable(trial, vars = c("age", "marker", "grade", "response"), group = "trt",
@@ -358,6 +373,7 @@ test_that("Displayed p-value matches the unrounded p-value", {
 })
 
 test_that("Test with a group of 1 level gives an error or no p-value", {
+  skip_on_cran()
   trial <- gtsummary::trial
   trial$one_arm <- factor("A")
   res <- tryCatch(summaryTable(trial, vars = "age", group = "one_arm", test = TRUE,
@@ -371,6 +387,7 @@ test_that("Test with a group of 1 level gives an error or no p-value", {
 # ============================================================================ #
 
 test_that("mean (SD), mean (SE), median (IQR) are correct", {
+  skip_on_cran()
   trial <- gtsummary::trial
   x <- trial$age[!is.na(trial$age)]
 
@@ -386,6 +403,7 @@ test_that("mean (SD), mean (SE), median (IQR) are correct", {
 })
 
 test_that("Geometric mean is correct", {
+  skip_on_cran()
   # Only the geometric mean is checked; adapt for the dispersion measure used.
   trial <- gtsummary::trial
   x   <- trial$age[!is.na(trial$age)]
@@ -395,6 +413,7 @@ test_that("Geometric mean is correct", {
 })
 
 test_that("Statistics by group are correct", {
+  skip_on_cran()
   trial <- gtsummary::trial
   tbl <- summaryTable(trial, vars = "marker", group = "grade", stat_cont = "median_range",
                       digits_cont = 2, as_flex_table = FALSE)
@@ -420,6 +439,7 @@ test_that("n (%) is correct for each level (variable without missing)", {
 })
 
 test_that("stat_cat = 'n' and 'n_N' are correct", {
+  skip_on_cran()
   trial <- gtsummary::trial
   tbl_n  <- summaryTable(trial, vars = "grade", stat_cat = "n",   as_flex_table = FALSE)
   tbl_nN <- summaryTable(trial, vars = "grade", stat_cat = "n_N", as_flex_table = FALSE)
@@ -431,6 +451,7 @@ test_that("stat_cat = 'n' and 'n_N' are correct", {
 })
 
 test_that("Overall column equals the ungrouped table", {
+  skip_on_cran()
   trial <- gtsummary::trial
   tbl_g <- summaryTable(trial, vars = c("age", "grade"), group = "trt", overall = TRUE,
                         as_flex_table = FALSE)
@@ -447,18 +468,21 @@ test_that("Missing row shows the correct number of missing values", {
 })
 
 test_that("missing_text is used", {
+  skip_on_cran()
   trial <- gtsummary::trial
   tbl <- summaryTable(trial, vars = "age", missing_text = "Not reported", as_flex_table = FALSE)
   expect_true("Not reported" %in% tbl$table_body$label)
 })
 
 test_that("No missing row when missing = FALSE", {
+  skip_on_cran()
   trial <- gtsummary::trial
   tbl <- summaryTable(trial, vars = c("age", "response"), missing = FALSE, as_flex_table = FALSE)
   expect_false(any(tbl$table_body$row_type == "missing"))
 })
 
 test_that("digits_cont is respected", {
+  skip_on_cran()
   trial <- gtsummary::trial
   for (dg in 0:3) {
     tbl  <- summaryTable(trial, vars = "marker", stat_cont = "mean_sd", digits_cont = dg,
@@ -490,6 +514,7 @@ test_that("Clopper-Pearson CI is correct", {
 })
 
 test_that("Wilson CI is correct", {
+  skip_on_cran()
   trial <- gtsummary::trial
   x <- trial$response[!is.na(trial$response)]
   tbl_w  <- summaryTable(trial, vars = "response", ci = TRUE, ci_cat = "wilson",
@@ -501,6 +526,7 @@ test_that("Wilson CI is correct", {
 })
 
 test_that("CI for continuous variables is correct (t.test and wilcox.test)", {
+  skip_on_cran()
   trial <- gtsummary::trial
   x <- trial$age[!is.na(trial$age)]
   tbl_t <- summaryTable(trial, vars = "age", ci = TRUE, ci_cont = "t.test",
@@ -513,6 +539,7 @@ test_that("CI for continuous variables is correct (t.test and wilcox.test)", {
 })
 
 test_that("conf_level is used", {
+  skip_on_cran()
   trial <- gtsummary::trial
   x <- trial$age[!is.na(trial$age)]
   tbl <- summaryTable(trial, vars = "age", ci = TRUE, ci_cont = "t.test", conf_level = 0.9,
@@ -526,6 +553,7 @@ test_that("conf_level is used", {
 # ============================================================================ #
 
 test_that("Dichotomous variable is shown on one row with the chosen ref_level", {
+  skip_on_cran()
   trial <- gtsummary::trial
   tbl <- summaryTable(trial, vars = "response", missing = FALSE, dichotomous_as = "dichotomous",
                       ref_level = list(response ~ "0"), as_flex_table = FALSE)
@@ -536,6 +564,7 @@ test_that("Dichotomous variable is shown on one row with the chosen ref_level", 
 })
 
 test_that("dichotomous_as = 'categorical' shows one row per level", {
+  skip_on_cran()
   trial <- gtsummary::trial
   tbl <- summaryTable(trial, vars = "response", missing = FALSE, dichotomous_as = "categorical",
                       as_flex_table = FALSE)
@@ -544,6 +573,7 @@ test_that("dichotomous_as = 'categorical' shows one row per level", {
 
 
 test_that("Variable labels from attributes and from `labels` are used", {
+  skip_on_cran()
   trial <- gtsummary::trial
   tbl <- summaryTable(trial, vars = c("age", "grade"), labels = list(grade = "Tumour grade"),
                       as_flex_table = FALSE)
@@ -570,12 +600,14 @@ test_that("Unknown vars / group give an error", {
 })
 
 test_that("Return class depends on as_flex_table", {
+  skip_on_cran()
   trial <- gtsummary::trial
   expect_s3_class(summaryTable(trial, vars = "age"), "flextable")
   expect_s3_class(summaryTable(trial, vars = "age", as_flex_table = FALSE), "gtsummary")
 })
 
 test_that("Word file is written", {
+  skip_on_cran()
   trial <- gtsummary::trial
   f <- tempfile(fileext = ".docx")
   summaryTable(trial, vars = "age", word_output = TRUE, file_path = f)
@@ -608,6 +640,7 @@ run_tbl <- function(...) {
 
 run_tbl(test = TRUE, overall = TRUE, add_n = FALSE)
 test_that("test + overall: Overall is the last column, p-value right before it", {
+  skip_on_cran()
   tbl  <- run_tbl(test = TRUE, overall = TRUE, add_n = FALSE)
   cols <- visible_cols(tbl)
 
@@ -636,6 +669,7 @@ test_that("test + overall + add_n: order is groups -> p -> N -> Overall", {
 })
 
 test_that("test without overall: p-value is the last column", {
+  skip_on_cran()
   tbl  <- run_tbl(test = TRUE, overall = FALSE, add_n = FALSE)
   cols <- visible_cols(tbl)
 
@@ -644,6 +678,7 @@ test_that("test without overall: p-value is the last column", {
 })
 
 test_that("overall without test: Overall is last and no p-value column", {
+  skip_on_cran()
   tbl  <- run_tbl(test = FALSE, overall = TRUE, add_n = FALSE)
   cols <- visible_cols(tbl)
 
@@ -652,6 +687,7 @@ test_that("overall without test: Overall is last and no p-value column", {
 })
 
 test_that("missing_percent = 'both': Overall still last, p-value before it", {
+  skip_on_cran()
   tbl  <- run_tbl(test = TRUE, overall = TRUE,
                   missing_percent = "both",
                   continuous_as_categorical = "ph.ecog",

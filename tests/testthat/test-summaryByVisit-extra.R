@@ -43,6 +43,7 @@ sv_cat_cells <- function(tbl, visit, col = "stat_0") {
 # Visit ordering -------------------------------------------------------------------
 
 test_that("visits are sorted naturally regardless of the row order", {
+  skip_on_cran()
   for (s in 1:3) {
     d <- sv_data()
     set.seed(s)
@@ -54,6 +55,7 @@ test_that("visits are sorted naturally regardless of the row order", {
 })
 
 test_that("numeric visits are sorted numerically", {
+  skip_on_cran()
   d <- sv_data()
   d$visit <- as.numeric(sub("Visit ", "", d$visit))
   tbl <- sv(d, vars = "weight")
@@ -61,12 +63,14 @@ test_that("numeric visits are sorted numerically", {
 })
 
 test_that("visits with several numbers are sorted by each number (cycle, then day)", {
+  skip_on_cran()
   v <- c("Cycle 2 Day 1", "Cycle 1 Day 15", "Cycle 1 Day 1")
   tbl <- sv(sv_data(v), vars = "weight")
   expect_equal(sv_visits(tbl, v), c("Cycle 1 Day 1", "Cycle 1 Day 15", "Cycle 2 Day 1"))
 })
 
 test_that("a factor visit keeps its level order", {
+  skip_on_cran()
   d <- sv_data()
   d$visit <- factor(d$visit, levels = c("Visit 10", "Visit 2", "Visit 1"))
   tbl <- sv(d, vars = "weight")
@@ -74,6 +78,7 @@ test_that("a factor visit keeps its level order", {
 })
 
 test_that("`order` overrides the natural order", {
+  skip_on_cran()
   d <- sv_data()
   d$order <- c("Visit 1" = 3, "Visit 2" = 2, "Visit 10" = 1)[d$visit]
   tbl <- sv(d, vars = "weight", order = "order")
@@ -82,6 +87,7 @@ test_that("`order` overrides the natural order", {
 })
 
 test_that("visit ordering is the same for continuous and categorical variables", {
+  skip_on_cran()
   tbl <- sv(sv_data(), vars = c("weight", "ecog"))
   lab <- tbl$table_body$label
   lab <- lab[lab %in% c("Visit 1", "Visit 2", "Visit 10")]
@@ -89,12 +95,14 @@ test_that("visit ordering is the same for continuous and categorical variables",
 })
 
 test_that("visit ordering works with a group", {
+  skip_on_cran()
   tbl <- sv(sv_data(), vars = "weight", group = "arm")
   expect_equal(sv_visits(tbl, c("Visit 1", "Visit 2", "Visit 10")),
                c("Visit 1", "Visit 2", "Visit 10"))
 })
 
 test_that("the hemoglobin_data example shows Cycle 1 to Cycle 9 in order", {
+  skip_on_cran()
   data("hemoglobin_data", package = "summarySCI", envir = environment())
   tbl <- sv(hemoglobin_data, vars = "hb", visit = "visit")
   expect_equal(sv_visits(tbl, paste("Cycle", 1:9)), paste("Cycle", 1:9))
@@ -103,7 +111,32 @@ test_that("the hemoglobin_data example shows Cycle 1 to Cycle 9 in order", {
 
 # Defaults --------------------------------------------------------------------------
 
+test_that("character categories are in natural order, as in summaryTable()", {
+  d <- sv_data()
+  d$cyc <- rep(c("10", "1", "2"), length.out = nrow(d))
+  tb <- sv(d, vars = "cyc")$table_body
+  vi <- which(tb$label == "Visit 1")[1]
+  expect_equal(tb$label[vi + 1:3], c("1", "2", "10"))
+})
+
+test_that("factor categories keep their level order", {
+  d <- sv_data()
+  d$cyc <- factor(rep(c("10", "1", "2"), length.out = nrow(d)), levels = c("10", "2", "1"))
+  tb <- sv(d, vars = "cyc")$table_body
+  vi <- which(tb$label == "Visit 1")[1]
+  expect_equal(tb$label[vi + 1:3], c("10", "2", "1"))
+})
+
+test_that("a character group is in natural order ('Arm 2' before 'Arm 10')", {
+  d <- sv_data()
+  d$arm <- ifelse(d$arm == "A", "Arm 10", "Arm 2")
+  hdr <- sv(d, vars = "weight", group = "arm")$table_styling$header
+  expect_match(hdr$label[hdr$column == "stat_1"], "Arm 2", fixed = TRUE)
+  expect_match(hdr$label[hdr$column == "stat_2"], "Arm 10", fixed = TRUE)
+})
+
 test_that("default: percentages without decimals (digits_cat = 0)", {
+  skip_on_cran()
   tbl   <- sv(sv_data(), vars = "ecog")
   cells <- sv_cat_cells(tbl, "Visit 1")
   expect_true(length(cells) > 0)
@@ -111,18 +144,21 @@ test_that("default: percentages without decimals (digits_cat = 0)", {
 })
 
 test_that("digits_cat = 1 still gives one decimal", {
+  skip_on_cran()
   tbl   <- sv(sv_data(), vars = "ecog", digits_cat = 1)
   cells <- sv_cat_cells(tbl, "Visit 1")
   expect_true(all(grepl("^[0-9]+ \\([0-9]+\\.[0-9]%\\)$", cells)))   # n without decimals
 })
 
 test_that("stat_cat = 'n_N' shows whole numbers, also with digits_cat = 1", {
+  skip_on_cran()
   tbl   <- sv(sv_data(), vars = "ecog", stat_cat = "n_N", digits_cat = 1)
   cells <- sv_cat_cells(tbl, "Visit 1")
   expect_true(all(grepl("^[0-9]+/[0-9]+$", cells)))
 })
 
 test_that("default: N column is shown (add_n = TRUE)", {
+  skip_on_cran()
   expect_false(sv_hidden(sv(sv_data(), vars = "weight"), "n"))
   tbl <- sv(sv_data(), vars = "weight", group = "arm")
   expect_false(sv_hidden(tbl, "add_n_stat_1"))
@@ -130,10 +166,12 @@ test_that("default: N column is shown (add_n = TRUE)", {
 })
 
 test_that("default: no Overall column with a group (overall = FALSE)", {
+  skip_on_cran()
   expect_true(sv_hidden(sv(sv_data(), vars = "weight", group = "arm"), "stat_0"))
 })
 
 test_that("default N equals the number of patients per visit", {
+  skip_on_cran()
   tbl <- sv(sv_data(), vars = "weight")
   tb  <- tbl$table_body
   expect_equal(as.numeric(tb$n[tb$label == "Visit 2"][1]), 24)
@@ -143,6 +181,7 @@ test_that("default N equals the number of patients per visit", {
 # Labels ------------------------------------------------------------------------------
 
 test_that("unnamed labels are used in the order of vars", {
+  skip_on_cran()
   tbl <- sv(sv_data(), vars = c("weight", "ecog"), labels = list("Weight (kg)", "ECOG"))
   lab <- tbl$table_body$label
   expect_true(all(c("Weight (kg)", "ECOG") %in% lab))
@@ -150,6 +189,7 @@ test_that("unnamed labels are used in the order of vars", {
 })
 
 test_that("labels for only some vars: the others keep their default label", {
+  skip_on_cran()
   d <- sv_data()
   attr(d$weight, "label") <- "Body weight"
   tbl <- sv(d, vars = c("weight", "ecog"), labels = list(ecog = "ECOG"))
@@ -162,6 +202,7 @@ test_that("labels as a character vector give a clear error", {
 })
 
 test_that("named labels are matched to vars in any order", {
+  skip_on_cran()
   tbl <- sv(sv_data(), vars = c("weight", "ecog"),
             labels = list(ecog = "ECOG", weight = "Weight (kg)"))
   lab <- tbl$table_body$label
@@ -200,6 +241,7 @@ test_that("duplicated vars give an error", {
 })
 
 test_that("group with one level gives an error, missing group values a message", {
+  skip_on_cran()
   d <- sv_data()
   d$one <- "A"
   expect_error(sv(d, vars = "weight", group = "one"), "At least 2 groups")

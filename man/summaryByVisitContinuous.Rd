@@ -61,8 +61,8 @@ Default to TRUE.}
 \item{overall}{Logical. If TRUE, an additional column with the total is
 added to the table. Ignored, if no groups are defined. Default to FALSE.}
 
-\item{as_flex_table}{Logical. If TRUE (default) the gtsummary object is
-converted to a flextable object. Useful when rendering to Word.}
+\item{as_flex_table}{Logical. If TRUE, the gtsummary object is
+converted to a flextable object. Useful when rendering to Word. Default to FALSE.}
 
 \item{border}{Logical. If TRUE, a border will be drawn around the table. Only
 available if flex_table = TRUE. Default is TRUE.}
