@@ -52,6 +52,66 @@ test_that("p-value comes before the Overall column", {
 })
 
 
+test_that("with CIs, the p-value still comes before N and the Overall column", {
+  tbl <- lv_tbl(lv, vars = c("nausea", "fatigue"), group = "arm",
+                overall = TRUE, test = TRUE, ci = TRUE)
+  cols <- names(tbl$table_body)
+  expect_equal(match("ci_stat_1", cols), match("stat_1", cols) + 1)  # CI next to its group
+  expect_equal(match("ci_stat_2", cols), match("stat_2", cols) + 1)
+  expect_gt(match("p.value", cols), match("ci_stat_2", cols))        # p after the groups
+  expect_equal(match("n", cols), match("p.value", cols) + 1)         # then N
+  expect_equal(match("stat_0", cols), match("n", cols) + 1)          # then Overall
+  expect_equal(match("ci_stat_0", cols), match("stat_0", cols) + 1)  # then its CI
+})
+
+test_that("with CIs but without test, Overall and its CI are last", {
+  tbl <- lv_tbl(lv, vars = "nausea", group = "arm", overall = TRUE, ci = TRUE)
+  cols <- names(tbl$table_body)
+  expect_equal(utils::tail(cols, 2), c("stat_0", "ci_stat_0"))
+})
+
+
+test_that("N columns are correctly placed in all combinations of options", {
+  for (grp in list(NULL, "arm")) for (ov in c(FALSE, TRUE)) for (te in c(FALSE, TRUE))
+    for (ci in c(FALSE, TRUE)) for (an in c(FALSE, TRUE)) {
+      if (is.null(grp) && (te || ov)) next
+      lab <- paste("group", !is.null(grp), "overall", ov, "test", te, "ci", ci, "add_n", an)
+      tbl <- lv_tbl(lv, vars = c("nausea", "fatigue"), group = grp, overall = ov,
+                    test = te, ci = ci, add_n = an)
+      cols <- names(tbl$table_body)
+      pos  <- function(x) match(x, cols)
+      grp_cols <- grep("^stat_[1-9]", cols, value = TRUE)
+      for (sc in grp_cols) {
+        k <- sub("stat_", "", sc)
+        if (an) expect_equal(pos(paste0("add_n_stat_", k)), pos(sc) - 1, label = lab)
+        if (ci) expect_equal(pos(paste0("ci_stat_", k)), pos(sc) + 1, label = lab)
+      }
+      if ("stat_0" %in% cols) {
+        last_grp <- max(c(0, pos(grp_cols), pos(grep("^ci_stat_[1-9]", cols, value = TRUE))))
+        expect_gt(pos("stat_0"), last_grp, label = lab)                  # Overall after groups
+        if (an) expect_equal(pos("n"), pos("stat_0") - 1, label = lab)   # N right before it
+        if (ci) expect_equal(pos("ci_stat_0"), pos("stat_0") + 1, label = lab)
+        if (te) expect_lt(pos("p.value"), pos(if (an) "n" else "stat_0"), label = lab)
+      }
+      if (!an) expect_false(any(c("n", "add_n_stat_1") %in% cols), label = lab)
+    }
+})
+
+test_that("each N belongs to its own group, also for mixed upper/lower case groups", {
+  # "B" sorts before "a" in the C locale (dplyr) but after it in most others
+  d <- data.frame(x   = c(1, 0, 1, 1, 0, 1),
+                  arm = c("B", "a", "a", "a", "B", "a"))
+  tbl <- lv_tbl(d, vars = "x", group = "arm")
+  hdr <- tbl$table_styling$header
+  for (k in 1:2) {
+    h <- hdr$label[hdr$column == paste0("stat_", k)]
+    n_header <- as.numeric(sub(".*N = ([0-9]+).*", "\\1", h))
+    expect_equal(as.numeric(tbl$table_body[[paste0("add_n_stat_", k)]][1]), n_header,
+                 label = h)
+  }
+})
+
+
 # add_n ------------------------------------------------------------------------
 
 test_that("add_n adds an N column before each group column", {

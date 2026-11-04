@@ -165,6 +165,14 @@ summaryLevels <- function(data,
       stop("'group' must have at least two groups; '", group, "' has ", n_groups, ".",
            call. = FALSE)
     }
+    # group as factor (natural order, as in summaryTable()); the N columns and
+    # the group columns then use the same level order (character groups were
+    # sorted differently by dplyr and gtsummary, e.g. for mixed upper/lower case)
+    if (!is.factor(data[[group]])) {
+      data[[group]] <- as_natural_factor(data[[group]])
+    } else {
+      data[[group]] <- droplevels(data[[group]])
+    }
   }
 
   # NA should be ignored (treated as absent). Thus, replace any NA with 0
@@ -349,6 +357,19 @@ summaryLevels <- function(data,
     tbl$table_body[[sc]] <- ifelse(is.na(tbl$table_body[[sc]]), "0", tbl$table_body[[sc]])
   }
   tbl$table_body <- tbl$table_body[(tbl$table_body$row_type=="label"),]
+  # ---------------------------- final column order ------------------------- #
+  # Set once at the end, after N, p-value and CI columns exist (add_ci() is
+  # applied after add_p() and would otherwise move the p-value to the end):
+  # per group N, n (%), CI; then p-value; then N, Overall, CI (as in summaryTable)
+  tbl <- gtsummary::modify_table_body(tbl, function(tb) {
+    cols <- names(tb)
+    grp  <- grep("^stat_[1-9][0-9]*$", cols, value = TRUE)
+    grp  <- grp[base::order(as.integer(sub("stat_", "", grp, fixed = TRUE)))]
+    k    <- sub("stat_", "", grp, fixed = TRUE)
+    per_group <- as.vector(rbind(paste0("add_n_stat_", k), grp, paste0("ci_stat_", k)))
+    wanted <- intersect(c(per_group, "p.value", "n", "stat_0", "ci_stat_0"), cols)
+    dplyr::relocate(tb, dplyr::all_of(wanted), .after = dplyr::last_col())
+  })
   # ---------------------------- add label if any --------------------------- #
   if (!is.null(label)){
     tbl<-tbl|>
