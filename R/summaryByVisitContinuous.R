@@ -33,6 +33,7 @@
 #'
 #' @param add_n Logical. If TRUE, an additional column with the total
 #' number of non-missing observations for each variable is added.
+#' Default to TRUE.
 #'
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Ignored, if no groups are defined. Default to FALSE.
@@ -66,7 +67,7 @@ summaryByVisitContinuous<- function(data,
                           order = NULL,
                           visitgroup = NULL,
                           digits_cont=1,
-                          add_n = FALSE,
+                          add_n = TRUE,
                           overall = FALSE,
                           as_flex_table = FALSE,
                           border = TRUE,
@@ -91,11 +92,12 @@ summaryByVisitContinuous<- function(data,
       dplyr::arrange(.data[[order]])|>
       as.data.frame()
   } else{
-    # order visit numbers not lexicographic
-    data <- data|>
-      dplyr::mutate(group_num = as.numeric(gsub("[^0-9]", "", visit)))|>
-      dplyr::arrange(group_num)|>
-      as.data.frame()
+    # natural visit order ("Visit 2" before "Visit 10");
+    # if visit is already a factor, its level order is kept
+    if (!is.factor(data[[visit]])) {
+      data[[visit]] <- factor(data[[visit]], levels = natural_levels(data[[visit]]))
+    }
+    data <- data[order(data[[visit]]), , drop = FALSE]
   }
 
   data[[visit]] <- factor(data[[visit]], levels = unique(data[[visit]]))

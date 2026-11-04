@@ -97,6 +97,22 @@ format_lookup_cat <-
     n_N = "{n}/{N}"
   )
 
+#' Digits for the categorical statistics
+#'
+#' Counts (n, N) are shown without decimals; `digits_cat` is used for the
+#' percentages only. The digits are returned in the order of the statistics
+#' in `stat_fmt`, as gtsummary expects.
+#'
+#' @param stat_fmt Statistic string, e.g. `"{n} ({p}%)"`.
+#' @param digits_cat Digits for percentages.
+#' @return Integer vector, one value per statistic.
+#' @keywords internal
+cat_digits <- function(stat_fmt, digits_cat) {
+  stats <- regmatches(stat_fmt, gregexpr("\\{[A-Za-z_.]+\\}", stat_fmt))[[1]]
+  ifelse(stats %in% c("{p}", "{p_miss}", "{p_nonmiss}"), digits_cat, 0)
+}
+
+
 
 add_by_n <- function(data, variable, by, ...) {
     data |>
@@ -176,13 +192,17 @@ natural_levels <- function(x) {
   u <- unique(as.character(x[!is.na(x)]))
   u_trim <- trimws(u)
 
-  # optional leading comparison operator: "<", "<=", "\u2264", ">", ">=", "\u2265"
-  op_pattern <- "^(<=|>=|<|>|\u2264|\u2265)"
+  # optional leading comparison operator: <, <=, >, >= and the symbols for
+  # "less/greater than or equal to" (created here, so that the source file
+  # contains no non-ASCII strings; avoids encoding warnings when parsing)
+  le <- intToUtf8(0x2264)
+  ge <- intToUtf8(0x2265)
+  op_pattern <- paste0("^(<=|>=|<|>|", le, "|", ge, ")")
   op <- regmatches(u_trim, regexpr(op_pattern, u_trim))
   op_full <- rep("", length(u))
   op_full[grepl(op_pattern, u_trim)] <- op
   # "<" just before the number, "<=" next, then the number, ">=", ">"
-  op_rank <- c("<" = -2, "<=" = -1, "\u2264" = -1, ">=" = 1, "\u2265" = 1, ">" = 2)
+  op_rank <- stats::setNames(c(-2, -1, -1, 1, 1, 2), c("<", "<=", le, ">=", ge, ">"))
   rank <- ifelse(op_full == "", 0, op_rank[op_full])
   rest <- sub(paste0(op_pattern, "\\s*"), "", u_trim)
 

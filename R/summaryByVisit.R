@@ -11,9 +11,11 @@
 #' Summary statistics will be stratified according to this variable.
 #' Default to NULL. A maximum of 3 groups are currently supported.
 #'
-#' @param labels A list, containing the labels that should be used for the
-#' variables in the table. If NULL, labels are automatically taken from the
-#' dataset. If no label present, the variable name is taken.
+#' @param labels A list containing the labels that should be used for the
+#' variables in the table, either named by variable
+#' (e.g. `list(age = "Age (years)")`) or unnamed in the order of `vars`.
+#' If NULL, labels are automatically taken from the dataset. If no label
+#' present, the variable name is taken.
 #'
 #' @param stat_cont Summary statistic to display for continuous variables.
 #' Options include "median_IQR", "median_range" (default), "mean_sd",
@@ -25,7 +27,9 @@
 #' @param visit Name of the stratum for which summary statistics are
 #' displayed by line. Typically, this would be `"visit"`.
 #'
-#' @param order A numerical variable defining the visit order.
+#' @param order A numerical variable defining the visit order. If NULL
+#' (default), visits are sorted naturally (e.g. "Visit 2" before "Visit 10");
+#' if `visit` is a factor, its level order is used instead.
 #'
 #' @param visitgroup A grouping variable for the stratum for which summary
 #' statistics are displayed by line. Must be an ordered factor.
@@ -35,7 +39,7 @@
 #' variables. Default to 1.
 #'
 #' @param digits_cat Digits for summary statistics and CI of categorical
-#' variables. Default to 1.
+#' variables. Default to 0.
 #'
 #' @param missing Logical. If TRUE (default), the missing values are shown
 #' (only for categorical variables).
@@ -50,6 +54,7 @@
 #'
 #' @param add_n Logical. If TRUE, an additional column with the total
 #' number of non-missing observations for each variable is added.
+#' Default to TRUE.
 #'
 #' @param overall Logical. If TRUE, an additional column with the total is
 #' added to the table. Ignored, if no groups are defined. Default to FALSE.
@@ -68,9 +73,23 @@
 #' @param file_path Character string.
 #' Specify the path of the Word document containing the table.
 #' Only used when `word_output` is TRUE. Needs to end with ".docx".
+#' Default to "SummaryByVisit_YYYYMMDD.docx" (today's date) in the working
+#' directory.
 #'
 #' @return A table of class "`flextable`" or `c("tbl_strata_nested_stack", "tbl_stack", "gtsummary")`.
 #' Optionally returns a .docx file in the specified folder.
+#'
+#' @examples
+#' data("hemoglobin_data")
+#'
+#' # Hemoglobin by visit
+#' summaryByVisit(data = hemoglobin_data, vars = "hb", visit = "visit",
+#'                labels = list(hb = "Hemoglobin (g/L)"))
+#'
+#' # By arm, with an overall column
+#' summaryByVisit(data = hemoglobin_data, vars = "hb", visit = "visit",
+#'                group = "Arm", overall = TRUE,
+#'                labels = list(hb = "Hemoglobin (g/L)"))
 #'
 #' @import cardx dplyr gtsummary forcats purrr
 #' @importFrom Hmisc label
@@ -88,20 +107,20 @@ summaryByVisit<- function(data,
                           order = NULL,
                           visitgroup = NULL,
                           digits_cont=1,
-                          digits_cat=1,
+                          digits_cat=0,
                           missing_percent=TRUE,
                           missing=TRUE,
                           missing_text = "Missing",
-                          add_n = FALSE,
+                          add_n = TRUE,
                           overall = FALSE,
                           continuous_as_categorical = NULL,
                           as_flex_table = TRUE,
                           border = TRUE,
                           word_output = FALSE,
-                          file_path = file_path){
+                          file_path = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")){
 
-  #initial checks
-  check_summaryByVisit_args(
+  #initial checks (returns the labels named by vars, also for unnamed labels)
+  chk <- check_summaryByVisit_args(
     data = data, vars = vars, group = group, labels = labels,
     stat_cont = stat_cont, stat_cat = stat_cat,
     visit = visit, order = order, visitgroup = visitgroup,
@@ -124,9 +143,14 @@ summaryByVisit<- function(data,
   }
 
   # labels
+  labels <- chk$labels
   labels <- vapply(
     vars,
-    function(v) labels[[v]] %||% attr(data[[v]], "label") %||% v,
+    function(v) {
+      l <- if (!is.null(labels) && v %in% names(labels)) labels[[v]] else NULL
+      if (is.null(l) || is.na(l)) l <- attr(data[[v]], "label")
+      l %||% v
+    },
     character(1),
     USE.NAMES = FALSE
   )

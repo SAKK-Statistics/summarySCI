@@ -14,10 +14,11 @@ summaryLevels(
   test = FALSE,
   test_cat = "fisher.test",
   ci = FALSE,
-  ci_cat = "wilson",
+  ci_cat = "clopper.pearson",
   conf_level = 0.95,
   digits_cat = 0,
   overall = FALSE,
+  add_n = TRUE,
   as_flex_table = TRUE,
   border = TRUE,
   word_output = FALSE,
@@ -35,13 +36,16 @@ all variables present in the data except \code{group}.}
 \item{group}{A single column from \code{data}.
 Need to be specified with quotes, e.g. \code{"treatment"}.
 Summary statistics will be stratified according to this variable.
-Default to NULL.}
+Any number of groups (at least two) is possible. Rows with a missing
+value in \code{group} are removed. Default to NULL.}
 
 \item{label}{A label for the new variable to be created.
 If no label present, the variable name is taken.}
 
 \item{levels}{= A vector containing the values indicating presence of
-the factor level. Included by default are "1", "yes", "Yes".}
+the factor level. Included by default are "1", "yes", "Yes".
+All variables in \code{vars} must be binary (e.g. 0/1, yes/no, TRUE/FALSE),
+unless \code{levels} is given; otherwise an error is returned.}
 
 \item{stat_cat}{Summary statistic to display for categorical variables.
 Options include "n_percent" (default) and "n", and "n_N".}
@@ -61,7 +65,7 @@ any expected cell count <5.}
 not (FALSE). Default to FALSE.}
 
 \item{ci_cat}{Confidence interval method for categorical variables.
-Options include "wilson" (default), "wilson.no.correct", "clopper.pearson",
+Options include "clopper.pearson" (default), "wilson", "wilson.no.correct",
 "wald", "wald.no.correct", "agresti.coull" and "jeffreys".
 If NULL, no CI will be displayed.}
 
@@ -71,7 +75,12 @@ If NULL, no CI will be displayed.}
 variables. Default to 0.}
 
 \item{overall}{Logical. If TRUE, an additional column with the total is
-added to the table. Default to FALSE.}
+added at the end of the table. Default to FALSE.}
+
+\item{add_n}{Logical. If TRUE (default), a column with the number of
+patients is added before each group column (and before the Overall column).
+As missing values are treated as absent, N is the number of patients in
+each group.}
 
 \item{as_flex_table}{Logical. If TRUE (default) the gtsummary object is
 converted to a flextable object. Useful when rendering to Word.}
@@ -91,4 +100,30 @@ Optionally returns a .docx file in the specified folder.
 }
 \description{
 Collapses factor levels from multiple columns into one and creates summary table.
+}
+\examples{
+# Site of progression: one column per site, more than one site possible
+progression <- data.frame(
+  arm   = rep(c("A", "B"), each = 5),
+  liver = c("absent", "present", "absent", "present", "absent",
+            "absent", "present", "absent", "present", "absent"),
+  lung  = c("absent", "absent", "present", "absent", "absent",
+            "absent", "absent", "absent", "absent", "absent"),
+  brain = c("present", "absent", "present", "present", "present",
+            "present", "present", "present", "present", "present")
+)
+
+summaryLevels(data = progression,
+              vars = c("liver", "lung", "brain"),
+              label = "Site of progression",
+              levels = "present")
+
+# By arm, with an overall column
+summaryLevels(data = progression,
+              vars = c("liver", "lung", "brain"),
+              group = "arm",
+              overall = TRUE,
+              label = "Site of progression",
+              levels = "present")
+
 }

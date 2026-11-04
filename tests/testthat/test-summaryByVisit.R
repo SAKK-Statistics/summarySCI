@@ -151,8 +151,20 @@ test_that("runs with defaults for one continuous and one categorical variable", 
 })
 
 test_that("works without file_path when word_output = FALSE", {
-  # default is `file_path = file_path` (recursive default) -> must not be evaluated
   expect_no_error(summaryByVisit(vd, vars = "weight"))
+})
+
+test_that("default file_path is used when word_output = TRUE", {
+  old_wd <- setwd(tempdir())
+  on.exit(setwd(old_wd), add = TRUE)
+  f <- paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx")
+  on.exit(unlink(f), add = TRUE)
+
+  expect_message(
+    summaryByVisit(vd, vars = "weight", word_output = TRUE),
+    "Table saved to"
+  )
+  expect_true(file.exists(f))
 })
 
 test_that("return class depends on as_flex_table", {

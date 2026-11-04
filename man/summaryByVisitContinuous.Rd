@@ -14,7 +14,7 @@ summaryByVisitContinuous(
   order = NULL,
   visitgroup = NULL,
   digits_cont = 1,
-  add_n = FALSE,
+  add_n = TRUE,
   overall = FALSE,
   as_flex_table = FALSE,
   border = TRUE,
@@ -55,7 +55,8 @@ Typically, this would be a visit group such as e.g., baseline, follow-up etc.}
 variables. Default to 1.}
 
 \item{add_n}{Logical. If TRUE, an additional column with the total
-number of non-missing observations for each variable is added.}
+number of non-missing observations for each variable is added.
+Default to TRUE.}
 
 \item{overall}{Logical. If TRUE, an additional column with the total is
 added to the table. Ignored, if no groups are defined. Default to FALSE.}
