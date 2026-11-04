@@ -290,7 +290,7 @@ boxplotSCI(data = hemoglobin,
 
 ## Special case: only one time point
 
-The function also works if no intput is provided for `order` or if
+The function also works if no input is provided for `order` or if
 `order` only contains one time point.
 
 ``` r

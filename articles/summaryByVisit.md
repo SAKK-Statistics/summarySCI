@@ -2,7 +2,7 @@
 
 The function
 [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
-produces a table with descriptive statistics for continues and
+produces a table with descriptive statistics for continuous and
 categorical variables at different time points (visits). It is largely
 based on the function
 [`gtsummary::tbl_summary()`](https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html)
@@ -16,7 +16,7 @@ The changes as compared to these functions are:
 ### Setup and data
 
 To demonstrate the various functionalities of the function, we will
-create a small dataset. We have three hypotetical lab-values: LDH, ANC
+create a small dataset. We have three hypothetical lab-values: LDH, ANC
 and Lymphocytes and two categorical variables, grade and stage. Each
 lab-value has been measured at 10 time points (visits), which can
 further be divided into three visit groups (baseline, treatment and
@@ -276,4 +276,4 @@ summaryByVisit(data,
 
 ## Further steps:
 
-- improve costumization
+- improve customization

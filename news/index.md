@@ -76,10 +76,20 @@
   or more groups). Rows with a missing group are removed with a message
   instead of being shown as an extra group “0”.
 
-- Character variables are now shown in natural order in
+- CI limits of categorical variables now have exactly `digits_cat`
+  decimals in
   [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md)
-  (e.g. “3” before “10”, “\< 10%” before “20%”). Factors keep their
-  level order.
+  and
+  [`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
+  (before, one more below 10%).
+
+- Character variables are now shown in natural order in
+  [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md),
+  [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
+  and
+  [`stackedbarplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/stackedbarplotSCI.md)
+  (e.g. “3” before “10”, “\< 10%” before “20%”, “Arm 2” before “Arm
+  10”). Factors keep their level order.
 
 - Visits in
   [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)

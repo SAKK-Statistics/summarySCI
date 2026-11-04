@@ -88,8 +88,8 @@ summaryByVisitContinuous(
 
 - as_flex_table:
 
-  Logical. If TRUE (default) the gtsummary object is converted to a
-  flextable object. Useful when rendering to Word.
+  Logical. If TRUE, the gtsummary object is converted to a flextable
+  object. Useful when rendering to Word. Default to FALSE.
 
 - border:
 

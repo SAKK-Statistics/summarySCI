@@ -54,9 +54,9 @@ summarySCI::summaryLevels(data=data,
 | 2N = number of patients in the group (missing values counted as absent) |  |  |
 | 3n (%) |  |  |
 
-The footnote emphazises that a patient may have more than one site of
-progression. Therefore, the column percentages do not neccessarily add
-up to 100%.
+The footnote emphasizes that a patient may have more than one site of
+progression. Therefore, the column percentages do not necessarily add up
+to 100%.
 
 ### By group
 

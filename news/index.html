@@ -19,6 +19,8 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/boxplotSCI.html">BoxplotSCI</a></li>
+    <li><a class="dropdown-item" href="../articles/summarizeByVisitSCI.html">summarizeByVisitSCI</a></li>
+    <li><a class="dropdown-item" href="../articles/summarizeSCI.html">summarizeSCI</a></li>
     <li><a class="dropdown-item" href="../articles/summaryByVisit.html">summaryByVisit</a></li>
     <li><a class="dropdown-item" href="../articles/summaryLevels.html">summaryLevels</a></li>
     <li><a class="dropdown-item" href="../articles/summaryTable.html">summaryTable</a></li>
@@ -57,7 +59,8 @@
 <li><p>In <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code>, unnamed <code>labels</code> (e.g. <code>list("Weight", "ECOG")</code>) are now used in the order of <code>vars</code>; before they were silently ignored.</p></li>
 <li><p><code>digits_cat</code> now only applies to percentages: counts are always shown without decimals (before, e.g. “3.0 (75.0%)” in <code><a href="../reference/summaryLevels.html">summaryLevels()</a></code> and <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code>, and “3/4.0” for <code>stat_cat = "n_N"</code>).</p></li>
 <li><p><code><a href="../reference/summaryLevels.html">summaryLevels()</a></code> now checks <code>group</code> (single existing column, at least two groups) and supports any number of groups (before, empty cells were blank with 4 or more groups). Rows with a missing group are removed with a message instead of being shown as an extra group “0”.</p></li>
-<li><p>Character variables are now shown in natural order in <code><a href="../reference/summaryTable.html">summaryTable()</a></code> (e.g. “3” before “10”, “&lt; 10%” before “20%”). Factors keep their level order.</p></li>
+<li><p>CI limits of categorical variables now have exactly <code>digits_cat</code> decimals in <code><a href="../reference/summaryTable.html">summaryTable()</a></code> and <code><a href="../reference/summaryLevels.html">summaryLevels()</a></code> (before, one more below 10%).</p></li>
+<li><p>Character variables are now shown in natural order in <code><a href="../reference/summaryTable.html">summaryTable()</a></code>, <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code> and <code><a href="../reference/stackedbarplotSCI.html">stackedbarplotSCI()</a></code> (e.g. “3” before “10”, “&lt; 10%” before “20%”, “Arm 2” before “Arm 10”). Factors keep their level order.</p></li>
 <li><p>Visits in <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code> are now sorted naturally (e.g. “Visit 2” before “Visit 10”) when <code>order</code> is not given, whatever the name of the visit column.</p></li>
 <li><p><code><a href="../reference/summaryTable.html">summaryTable()</a></code> only computes p-values when <code>test = TRUE</code>; Fisher’s exact test no longer fails for variables with many categories.</p></li>
 <li><p>Bug fixes</p></li>

@@ -35,8 +35,10 @@ boxplotSCI(
   legend_offset = c(0, 0),
   legend_cex = 1,
   legend_bty = "n",
+  risk_table = NULL,
   missing_nr = 0,
-  color_time = FALSE
+  color_time = FALSE,
+  ...
 )
 ```
 
@@ -106,8 +108,8 @@ boxplotSCI(
 - y_ticks:
 
   A numeric vector specifying the explicit tick positions on the y-axis.
-  Default is `NULL`, which calculates 5 evenly spaced ticks across the
-  data range.
+  Default is `NULL`, which places about 5 ticks at round values within
+  the y-axis limits, as in the other plots of the package.
 
 - col:
 
@@ -200,6 +202,14 @@ boxplotSCI(
   are `"n"` (transparent/no border, the default) and `"o"` (standard box
   frame).
 
+- risk_table:
+
+  A logical toggle switch enabling the patient numbers (non-missing
+  observations of `var`) beneath the x-axis: one row per group over
+  time, or one number under each box for a single time point. Default is
+  `NULL`, which shows them over time but not for a single time point;
+  `TRUE` shows them in both cases, `FALSE` in neither.
+
 - missing_nr:
 
   A numeric or character value indicating how zero-count patient sizes
@@ -213,6 +223,12 @@ boxplotSCI(
   were used as "timepoint" variable. If set to `TRUE`, it treats
   timepoints as individual categories,applying sequential coloring and
   rendering a matching tracking legend. Default is `FALSE`.
+
+- ...:
+
+  Further graphical parameters passed on to
+  [`boxplot()`](https://rdrr.io/r/graphics/boxplot.html), e.g. `lwd`,
+  `border` or `outline = FALSE` (no points for outliers).
 
 ## Examples
 
