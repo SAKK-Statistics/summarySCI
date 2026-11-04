@@ -267,9 +267,10 @@ test_that("default ylim pads the data range by 10% and is passed to every box", 
                             order = "time", group = "arm")
   # range 1..100 -> c(1 - 0.1, 100 + 10)
   for (b in rec$boxplot) expect_equal(b$args$ylim, c(0.9, 110))
-  # ticks: seq(floor(0.9), ceiling(110), length.out = 5)
-  expect_equal(axis_call(rec, 2)$at, c(0, 27.5, 55, 82.5, 110))
-  expect_equal(axis_call(rec, 2)$labels, c(0, 27.5, 55, 82.5, 110))
+  # ticks: round values within c(0.9, 110), horizontal labels
+  expect_equal(axis_call(rec, 2)$at, c(20, 40, 60, 80, 100))
+  expect_equal(axis_call(rec, 2)$labels, c(20, 40, 60, 80, 100))
+  expect_equal(axis_call(rec, 2)$las, 1)
 })
 
 test_that("default ylim is correct for positive, mixed and negative data", {
@@ -489,4 +490,15 @@ test_that("risk_table = TRUE adds counts under each box for a single time point"
   rec <- capture_boxplotSCI(data = df, var = "value", order = "time",
                             group = "arm", risk_table = FALSE)
   expect_length(rec$mtext, 0)   # neither count rows nor their "# A" labels
+})
+
+test_that("further graphical parameters reach boxplot()", {
+  df <- make_fixture()
+  rec <- capture_boxplotSCI(data = df, var = "value", group = "arm",
+                            lwd = 3, outline = FALSE)
+  expect_equal(rec$boxplot[[1]]$args$lwd, 3)
+  expect_false(rec$boxplot[[1]]$args$outline)
+  rec <- capture_boxplotSCI(data = df, var = "value", order = "time",
+                            group = "arm", lwd = 3)
+  expect_true(all(vapply(rec$boxplot, function(b) b$args$lwd, 0) == 3))
 })

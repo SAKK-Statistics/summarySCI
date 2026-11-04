@@ -36,7 +36,8 @@ boxplotSCI(
   legend_bty = "n",
   risk_table = NULL,
   missing_nr = 0,
-  color_time = FALSE
+  color_time = FALSE,
+  ...
 )
 }
 \arguments{
@@ -77,7 +78,8 @@ time points, otherwise defaults to \code{"Group"}.}
 Default is \code{NULL}, which adds a 10\% padding buffer above and below the data range.}
 
 \item{y_ticks}{A numeric vector specifying the explicit tick positions on the
-y-axis. Default is \code{NULL}, which calculates 5 evenly spaced ticks across the data range.}
+y-axis. Default is \code{NULL}, which places about 5 ticks at round values within
+the y-axis limits, as in the other plots of the package.}
 
 \item{col}{A character vector of hex colors or color names to use for the boxes.
 Default is \code{NULL}, which automatically applies the SCI color palette.}
@@ -144,6 +146,9 @@ sizes on the x-axis should be displayed. Default is \code{0}. Can also be set to
 legacy use, where, for a single timepoint, multiple groups were used as "timepoint" variable.
 If set to \code{TRUE}, it treats timepoints as individual categories,applying sequential coloring
 and rendering a matching tracking legend. Default is \code{FALSE}.}
+
+\item{...}{Further graphical parameters passed on to \code{boxplot()}, e.g.
+\code{lwd}, \code{border} or \code{outline = FALSE} (no points for outliers).}
 }
 \description{
 Generates boxplots over time for one or multiple sub-groups.

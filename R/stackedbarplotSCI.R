@@ -355,9 +355,11 @@ stackedbar_draw <- function(counts, n, visit = dimnames(counts)[[3]],
   }
 
   # --- Plot region -----------------------------------------------------------
+  # the layout of boxplotSCI(), moved down by the group labels under the bars
+  # and by rotated labels
   label_line  <- if (show_grp) 0.8 else 0
-  header_line <- (if (rotate_labels) 6 else 3) + label_line
-  n_rows      <- if (n_time == 1L) 1 else n_grp
+  lay <- sci_layout(n_time, n_grp, risk_table,
+                    offset = label_line + if (rotate_labels) 3 else 0)
   show_legend <- !is.null(legend_position) && !identical(legend_position, "none")
   legend_side <- if (show_legend && is.character(legend_position) &&
                      legend_position %in% c("top", "right")) legend_position else ""
@@ -372,16 +374,13 @@ stackedbar_draw <- function(counts, n, visit = dimnames(counts)[[3]],
   } else 0
 
   if (is.null(mar_custom)) {
-    bottom <- (if (rotate_labels) 7 else 4) + label_line
-    left   <- max(4.5, ylab_line + 1.5)
-    if (risk_table) {
-      bottom    <- bottom + n_rows + 2.5
-      lab_chars <- max(nchar(c("No. of patients", groups_short)))
-      left      <- max(left, 1.5 + 0.45 * lab_chars * cex_n_patients)
-    }
-    right <- if (legend_side == "right") 1.5 + (leg_txt_w + leg_key_w) / csi else 2
-    top   <- top_lines + if (nzchar(main)) 2.5 else if (top_lines > 0) 0.5 else 2
-    mar_custom <- c(bottom, left, top, right)
+    mar_custom <- lay$mar
+    mar_custom[2] <- max(mar_custom[2], ylab_line + 1.6)
+    # a legend on top or on the right may need more room than boxplotSCI() has
+    mar_custom[3] <- max(mar_custom[3],
+                         top_lines + if (nzchar(main)) 2.5 else 0.5)
+    if (legend_side == "right")
+      mar_custom[4] <- 1.5 + (leg_txt_w + leg_key_w) / csi
   }
   op <- graphics::par(mar = mar_custom)
   on.exit(graphics::par(op), add = TRUE)
@@ -446,33 +445,25 @@ stackedbar_draw <- function(counts, n, visit = dimnames(counts)[[3]],
   graphics::mtext(ylab, side = 2, line = ylab_line, cex = cex_lab)
 
   # --- Patient numbers: the denominator of each bar --------------------------
+  # rows as in boxplotSCI(): one number under each bar for a single time point,
+  # one row per group over time
   if (risk_table) {
-    shown <- matrix(as.character(n), nrow = n_grp)
-    shown[n == 0] <- if (is.na(missing_nr)) "" else as.character(missing_nr)
-    lab_at <- if (is.null(xlab_position)) usr[1] - 0.02 * diff(usr[1:2])
+    lab_at <- if (is.null(xlab_position)) usr[1] - 0.03 * diff(usr[1:2])
     else xlab_position
-
-    graphics::mtext("No. of patients", side = 1, line = header_line, at = lab_at,
-                    adj = 1, cex = cex_n_patients, font = 2, xpd = NA)
     if (n_time == 1L) {
-      graphics::mtext(shown[, 1], side = 1, line = header_line + 1,
-                      at = tick_at, cex = cex_n_patients)
+      risk_row(n[, 1], line = lay$rows, at = tick_at, cex = cex_n_patients,
+               missing_nr = missing_nr)
     } else {
       for (i in seq_len(n_grp)) {
-        ln <- header_line + i
-        graphics::mtext(groups_short[i], side = 1, line = ln, at = lab_at,
-                        adj = 1, cex = cex_n_patients, xpd = NA)
-        graphics::mtext(shown[i, ], side = 1, line = ln, at = tick_at,
-                        cex = cex_n_patients)
+        risk_row(n[i, ], line = lay$rows[i], at = tick_at,
+                 label = if (n_grp > 1) groups_short[i], label_at = lab_at,
+                 cex = cex_n_patients, missing_nr = missing_nr)
       }
     }
   }
 
   # --- x-axis label ----------------------------------------------------------
-  if (is.null(xlab_line)) {
-    xlab_line <- if (risk_table) header_line + n_rows + 1.5
-    else (if (rotate_labels) 5.5 else 2.5) + label_line
-  }
+  if (is.null(xlab_line)) xlab_line <- lay$xlab_line
   graphics::mtext(xlab, side = 1, line = xlab_line, cex = cex_lab)
 
   # --- Legend: stacking order, bottom segment last (vertical) or first (top) -

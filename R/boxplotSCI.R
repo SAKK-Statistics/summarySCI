@@ -28,7 +28,8 @@
 #' @param ylim The y-axis limits of the plot as a numeric vector of length 2.
 #' Default is `NULL`, which adds a 10% padding buffer above and below the data range.
 #' @param y_ticks A numeric vector specifying the explicit tick positions on the
-#' y-axis. Default is `NULL`, which calculates 5 evenly spaced ticks across the data range.
+#' y-axis. Default is `NULL`, which places about 5 ticks at round values within
+#' the y-axis limits, as in the other plots of the package.
 #' @param col A character vector of hex colors or color names to use for the boxes.
 #' Default is `NULL`, which automatically applies the SCI color palette.
 #' @param cex_lab A numeric value specifying the font size of the main axis labels. Default is `1`.
@@ -75,6 +76,8 @@
 #' legacy use, where, for a single timepoint, multiple groups were used as "timepoint" variable.
 #' If set to `TRUE`, it treats timepoints as individual categories,applying sequential coloring
 #' and rendering a matching tracking legend. Default is `FALSE`.
+#' @param ... Further graphical parameters passed on to `boxplot()`, e.g.
+#' `lwd`, `border` or `outline = FALSE` (no points for outliers).
 #' @importFrom graphics par boxplot axis mtext title legend abline
 #' @importFrom grDevices colorRampPalette
 #'
@@ -138,7 +141,8 @@ boxplotSCI <- function(data,
                               legend_bty = "n",
                               risk_table = NULL,
                               missing_nr = 0,
-                              color_time = FALSE) {
+                              color_time = FALSE,
+                              ...) {
 
   # 1. Checks, input validation and graphical parameters
   if (missing(data)) stop("'data' must be specified.")
@@ -184,16 +188,9 @@ boxplotSCI <- function(data,
   # Design and environment configurations
   if (is.null(xlab)) xlab <- ifelse(is.null(order) || n_timepoints == 1, "Group", "Time")
 
-  # Dynamic layout tracking
-  if (is.null(xlab_line)) {
-    if (!risk_table) {
-      xlab_line <- 3.0
-    } else if (is.null(order) || n_timepoints == 1) {
-      xlab_line <- 3.6
-    } else {
-      xlab_line <- 2 + (group_number - 1) * 0.65 + 1.2
-    }
-  }
+  # Dynamic layout tracking, shared with lineplotSCI() and stackedbarplotSCI()
+  lay <- sci_layout(n_timepoints, group_number, risk_table)
+  if (is.null(xlab_line)) xlab_line <- lay$xlab_line
 
   # SCI color palette
   palette_n <- if (color_time && group_number == 1) n_timepoints else group_number
@@ -204,7 +201,11 @@ boxplotSCI <- function(data,
     range_m <- range(data[[var]], na.rm = TRUE)
     ylim <- c(range_m[1] - 0.1 * abs(range_m[1]), range_m[2] + 0.1 * abs(range_m[2]))
   }
-  if (is.null(y_ticks)) y_ticks <- seq(floor(ylim[1]), ceiling(ylim[2]), length.out = 5)
+  # round tick values within the limits, as lineplotSCI() and stackedbarplotSCI()
+  if (is.null(y_ticks)) {
+    y_ticks <- pretty(ylim, n = 5)
+    y_ticks <- y_ticks[y_ticks >= ylim[1] & y_ticks <= ylim[2]]
+  }
 
   # Flexible Boxwex calculation
   if (is.null(boxwex)) {
@@ -223,16 +224,7 @@ boxplotSCI <- function(data,
 
   # Dynamic Margins calculation
   if (is.null(mar_custom)) {
-    if (is.null(order) || n_timepoints == 1) {
-      calculated_bottom <- if (risk_table) 4.6 else 4.0
-      left_margin       <- 4.5
-    } else {
-      base_bottom       <- if (n_timepoints > 8) 6.5 else 5.0
-      calculated_bottom <- if (risk_table) base_bottom + (group_number - 1) * 0.65
-                           else base_bottom - 1
-      left_margin       <- if (n_timepoints > 8) 5.5 else 4.5
-    }
-    current_margins <- c(calculated_bottom, left_margin, 4, 2) + 0.1
+    current_margins <- lay$mar
   } else {
     current_margins <- mar_custom
   }
@@ -246,10 +238,10 @@ boxplotSCI <- function(data,
     # without a grouping variable, a single box of all observations
     if (is.null(group)) {
       boxplot(data[[var]], xlab = "", ylab = "", col = col,
-              xaxt = "n", yaxt = "n", ylim = ylim, boxwex = boxwex)
+              xaxt = "n", yaxt = "n", ylim = ylim, boxwex = boxwex, ...)
     } else {
       boxplot(data[[var]] ~ data[[group]], xlab = "", ylab = "", col = col,
-              xaxt = "n", yaxt = "n", ylim = ylim, boxwex = boxwex)
+              xaxt = "n", yaxt = "n", ylim = ylim, boxwex = boxwex, ...)
     }
 
     axis(side = 1, at = 1:group_number,
@@ -260,10 +252,8 @@ boxplotSCI <- function(data,
       has_value <- !is.na(data[[var]])
       n_counts <- if (is.null(group)) sum(has_value) else
         table(factor(data[[group]][has_value], levels = group_levels))
-      n_counts <- as.vector(n_counts)
-      n_counts[n_counts == 0] <- missing_nr
-      mtext(text = n_counts, side = 1, line = 2, at = 1:group_number,
-            cex = cex_n_patients)
+      risk_row(n_counts, line = lay$rows, at = 1:group_number,
+               cex = cex_n_patients, missing_nr = missing_nr)
     }
   } else {
     for (g in 1:group_number) {
@@ -275,23 +265,19 @@ boxplotSCI <- function(data,
       boxplot(g_subset[[var]] ~ factor(g_subset[[order]], levels = master_timepoints),
               col = current_box_col, at = at_positions, add = (g > 1),
               xaxt = "n", yaxt = "n", xlab = "", ylab = "", ylim = ylim, boxwex = boxwex,
-              xlim = c(0.5, n_timepoints + 0.5))
+              xlim = c(0.5, n_timepoints + 0.5), ...)
 
       if (risk_table) {
-        if (nrow(g_subset) > 0) {
-          n_counts <- table(factor(g_subset[[order]][!is.na(g_subset[[var]])], levels = master_timepoints))
-          n_counts[n_counts == 0] <- missing_nr
+        n_counts <- if (nrow(g_subset) > 0) {
+          table(factor(g_subset[[order]][!is.na(g_subset[[var]])], levels = master_timepoints))
         } else {
-          n_counts <- rep(missing_nr, n_timepoints)
+          rep(0, n_timepoints)
         }
-
-        current_line <- 2 + (g - 1) * 0.65
-        mtext(text = as.vector(n_counts), side = 1, line = current_line, at = 1:n_timepoints, cex = cex_n_patients)
-
-        if (group_number > 1) {
-          if (is.null(xlab_position)) xlab_position <- par("usr")[1] - 0.03 * (par("usr")[2] - par("usr")[1])
-          mtext(text = paste("#", group_names_short[g]), side = 1, line = current_line, at = xlab_position, cex = cex_n_patients, adj = 1)
-        }
+        if (is.null(xlab_position)) xlab_position <- par("usr")[1] - 0.03 * (par("usr")[2] - par("usr")[1])
+        risk_row(n_counts, line = lay$rows[g], at = 1:n_timepoints,
+                 label = if (group_number > 1) group_names_short[g],
+                 label_at = xlab_position, cex = cex_n_patients,
+                 missing_nr = missing_nr)
       }
     }
 
@@ -300,7 +286,7 @@ boxplotSCI <- function(data,
   }
 
   # 3. Margin texts, annotations and legend
-  axis(2, at = y_ticks, labels = y_ticks, cex.axis = cex_axis)
+  axis(2, at = y_ticks, labels = y_ticks, las = 1, cex.axis = cex_axis)
 
   title(main = main)
   title(xlab = xlab, line = xlab_line, cex.lab = cex_lab)

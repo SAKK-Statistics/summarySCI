@@ -302,23 +302,24 @@ lineplot_draw <- function(centre, lower, upper, obs, xs, at_x = xs,
     ylim <- c(rng[1] - pad, rng[2] + pad)
   }
 
-  # --- Plot region: extra bottom margin for rotated labels and/or the
-  #     sample-size rows, extra left margin for their row labels --------------
+  # --- Plot region: the layout of boxplotSCI(), with room for rotated labels -
+  lay <- sci_layout(max(2L, length(at_x)), n_groups, risk_table,
+                    offset = if (rotate_labels) 3 else 0)
   if (is.null(mar_custom)) {
-    bottom <- if (rotate_labels) 7 else 5
-    left   <- max(4.5, ylab_line + 1.5)
-    if (risk_table) {
-      bottom    <- bottom + n_groups + 2.5
-      lab_chars <- max(nchar(c("No. of patients", groups_short)))
-      left      <- max(left, 1.5 + 0.45 * lab_chars * cex_n_patients)
-    }
-    mar_custom <- c(bottom, left, if (nzchar(main)) 3 else 2, 2)
+    mar_custom <- lay$mar
+    mar_custom[2] <- max(mar_custom[2], ylab_line + 1.6)
   }
   op <- par(mar = mar_custom)
   on.exit(par(op), add = TRUE)
 
-  plot(NULL,
-       xlim = if (is.null(xlim)) range(c(at_x, xs)) else xlim, ylim = ylim, main = main,
+  # half a visit beyond the first and last one, as the boxes of boxplotSCI()
+  if (is.null(xlim)) {
+    x_rng <- range(c(at_x, xs))
+    half  <- if (length(at_x) > 1) 0.5 * diff(range(at_x)) / (length(at_x) - 1) else 0.5
+    xlim  <- x_rng + c(-1, 1) * half
+  }
+
+  plot(NULL, xlim = xlim, ylim = ylim, main = main,
        xlab = "", ylab = "", xaxt = "n", yaxt = "n", ...)
   usr <- par("usr")
   box()
@@ -389,31 +390,18 @@ lineplot_draw <- function(centre, lower, upper, obs, xs, at_x = xs,
     idx <- match(xs, at_x)
     counts[, idx[!is.na(idx)]] <- obs[, !is.na(idx), drop = FALSE]
 
-    shown <- matrix(as.character(counts), nrow = n_groups)
-    shown[counts == 0] <- if (is.na(missing_nr)) "" else as.character(missing_nr)
-
-    header_line <- if (rotate_labels) 6 else 3
-    lab_at <- if (is.null(xlab_position)) usr[1] - 0.02 * diff(usr[1:2])
+    # one row per group, as in boxplotSCI()
+    lab_at <- if (is.null(xlab_position)) usr[1] - 0.03 * diff(usr[1:2])
     else xlab_position
-
-    mtext("No. of patients", side = 1, line = header_line, at = lab_at,
-          adj = 1, cex = cex_n_patients, font = 2, xpd = NA)
-
     for (i in seq_len(n_groups)) {
-      ln <- header_line + i
-      mtext(groups_short[i], side = 1, line = ln, at = lab_at, adj = 1,
-            col = cols[i], cex = cex_n_patients, xpd = NA)
-      mtext(shown[i, ], side = 1, line = ln, at = at_x,
-            col = "black", cex = cex_n_patients)
+      risk_row(counts[i, ], line = lay$rows[i], at = at_x,
+               label = if (n_groups > 1) groups_short[i], label_at = lab_at,
+               cex = cex_n_patients, missing_nr = missing_nr)
     }
   }
 
   # --- x-axis label, placed below rotated labels / sample-size rows ----------
-  if (is.null(xlab_line)) {
-    xlab_line <- if (risk_table) {
-      (if (rotate_labels) 6 else 3) + n_groups + 1.5
-    } else if (rotate_labels) 5.5 else 3
-  }
+  if (is.null(xlab_line)) xlab_line <- lay$xlab_line
   mtext(xlab, side = 1, line = xlab_line, cex = cex_lab)
 
   # --- Legend ----------------------------------------------------------------

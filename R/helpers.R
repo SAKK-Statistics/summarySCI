@@ -251,3 +251,64 @@ to_flextable <- function(tbl, border = TRUE) {
   }
   FitFlextableToPage(ft)
 }
+
+
+
+#' Layout of the plots
+#'
+#' Margins, lines of the patient numbers and of the x-axis title shared by
+#' [boxplotSCI()], [lineplotSCI()] and [stackedbarplotSCI()], so that plots used
+#' together line up. The blueprint is the layout of [boxplotSCI()].
+#'
+#' @param n_time Number of time points; `1` for a single time point.
+#' @param n_groups Number of groups.
+#' @param risk_table Logical. Are patient numbers drawn beneath the x-axis?
+#' @param offset Lines taken by extra labels beneath the x-axis (e.g. group
+#' labels under bars, or rotated labels), by which the numbers and the x-axis
+#' title move down.
+#' @return A list with `mar` (for `par(mar = )`), `rows` (margin lines of the
+#' rows of patient numbers, one per group over time, one for a single time
+#' point) and `xlab_line`.
+#' @keywords internal
+sci_layout <- function(n_time, n_groups, risk_table, offset = 0) {
+  if (n_time == 1L) {
+    bottom    <- if (risk_table) 4.6 else 4.0
+    left      <- 4.5
+    rows      <- 2
+    xlab_line <- if (risk_table) 3.6 else 3.0
+  } else {
+    base      <- if (n_time > 8) 6.5 else 5.0
+    bottom    <- if (risk_table) base + (n_groups - 1) * 0.65 else base - 1
+    left      <- if (n_time > 8) 5.5 else 4.5
+    rows      <- 2 + (seq_len(n_groups) - 1) * 0.65
+    xlab_line <- if (risk_table) 2 + (n_groups - 1) * 0.65 + 1.2 else 3.0
+  }
+  list(mar = c(bottom + offset, left, 4, 2) + 0.1,
+       rows = rows + offset, xlab_line = xlab_line + offset)
+}
+
+
+
+#' One row of patient numbers beneath the x-axis
+#'
+#' Draws the numbers `n` at the x positions `at` on margin line `line`, zero
+#' counts shown as `missing_nr`, and optionally the row label `"# <label>"`
+#' left of the plot, as in [boxplotSCI()].
+#'
+#' @param n Numbers of patients.
+#' @param line Margin line of the row.
+#' @param at x positions of the numbers.
+#' @param label Group label of the row, or `NULL` for none.
+#' @param label_at x position of the right end of the label.
+#' @param cex Font size.
+#' @param missing_nr Shown instead of zero counts.
+#' @keywords internal
+risk_row <- function(n, line, at, label = NULL, label_at = NULL, cex = 0.7,
+                     missing_nr = 0) {
+  n <- as.vector(n)
+  n[n == 0] <- missing_nr
+  mtext(text = n, side = 1, line = line, at = at, cex = cex)
+  if (!is.null(label))
+    mtext(text = paste("#", label), side = 1, line = line, at = label_at,
+          cex = cex, adj = 1)
+}
