@@ -58,14 +58,25 @@ get_labels <- function(data, vars) {
 
 #'Geometric mean
 #'
-#' This function return the geometric mean
+#' This function return the geometric mean. It is only defined for positive
+#' values: if `x` contains zeros or negative values, `NA` is returned with a
+#' warning (instead of silently dropping them, which `log()` and `na.rm` would
+#' otherwise do).
 #'
 #' @param x Numeric vector
+#' @param na.rm Logical; whether missing values are removed first.
 #' @return Geometric mean
 #' @keywords internal
 
 geom_mean <- function(x, na.rm = TRUE) {
-  exp(mean(log(x), na.rm = na.rm))
+  if (na.rm) x <- x[!is.na(x)]
+  n_bad <- sum(x <= 0, na.rm = TRUE)
+  if (n_bad > 0) {
+    warning("geometric mean needs positive values; ", n_bad,
+            " value(s) are <= 0, so NA is shown.", call. = FALSE)
+    return(NA_real_)
+  }
+  exp(mean(log(x)))
 }
 
 

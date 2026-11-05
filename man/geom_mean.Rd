@@ -8,11 +8,16 @@ geom_mean(x, na.rm = TRUE)
 }
 \arguments{
 \item{x}{Numeric vector}
+
+\item{na.rm}{Logical; whether missing values are removed first.}
 }
 \value{
 Geometric mean
 }
 \description{
-This function return the geometric mean
+This function return the geometric mean. It is only defined for positive
+values: if \code{x} contains zeros or negative values, \code{NA} is returned with a
+warning (instead of silently dropping them, which \code{log()} and \code{na.rm} would
+otherwise do).
 }
 \keyword{internal}

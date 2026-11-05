@@ -412,6 +412,21 @@ test_that("Geometric mean is correct", {
   expect_true(abs(nums(get_cell(tbl, "age"))[1] - exp(mean(log(x)))) <= 0.005 + 1e-8)
 })
 
+test_that("Geometric mean is NA, not computed from the positive values only, with values <= 0", {
+  expect_equal(geom_mean(c(1, 10, NA)), sqrt(10))
+  expect_warning(res <- geom_mean(c(-1, 4, 9)), "1 value\\(s\\) are <= 0")
+  expect_identical(res, NA_real_)
+  expect_warning(res <- geom_mean(c(0, 4, 9)), "1 value\\(s\\) are <= 0")
+  expect_identical(res, NA_real_)
+
+  trial <- gtsummary::trial
+  trial$shifted <- trial$marker - 0.5          # some values negative
+  tbl <- suppressMessages(suppressWarnings(
+    summaryTable(trial, vars = "shifted", stat_cont = "geomMean_sd",
+                 as_flex_table = FALSE)))
+  expect_match(get_cell(tbl, "shifted"), "^NA \\(")
+})
+
 test_that("Statistics by group are correct", {
   skip_on_cran()
   trial <- gtsummary::trial

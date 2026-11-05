@@ -169,6 +169,13 @@ lineplotSCI <- function(data, var, order, group = NULL,
   keep <- !is.na(g) & !is.na(o)
   v <- v[keep]; g <- factor(g[keep]); o <- as.numeric(o[keep])
 
+  if (stat == "geomean") {
+    n_bad <- sum(v <= 0, na.rm = TRUE)
+    if (n_bad > 0)
+      stop("The geometric mean needs positive values, but '", var_name, "' has ",
+           n_bad, " value(s) <= 0.", call. = FALSE)
+  }
+
   # --- Summarise: point estimate and interval per group and time point ------
   interval_of <- function(x, m) {
     n <- length(x)
@@ -295,6 +302,8 @@ lineplot_draw <- function(centre, lower, upper, obs, xs, at_x = xs,
   cols <- rep(col, length.out = n_groups)
 
   # --- Axis ranges -----------------------------------------------------------
+  if (!any(is.finite(centre)))
+    stop("Nothing to plot: no time point has a value to show.", call. = FALSE)
   rng <- if (band && any(!is.na(lower))) range(c(lower, upper), na.rm = TRUE)
   else range(centre, na.rm = TRUE)
   if (is.null(ylim)) {
