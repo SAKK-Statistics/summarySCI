@@ -19,7 +19,10 @@
 #' is built in every case, since it decides the type of each plot.
 #' @param plot_args A named list of further arguments for the plotting
 #' functions, e.g. `list(risk_table = TRUE, col = c("grey", "black"))`. Each
-#' plot receives the arguments its function has.
+#' plot receives the arguments its function has, as in [boxplotSCI()] and
+#' [stackedbarplotSCI()]; an argument no plot uses gives a warning. For
+#' example, `stat_footnote = TRUE` adds a footnote saying what each plot shows
+#' (the box and whiskers, or the denominator of the percentages).
 #' @param ... Further arguments passed on to [summaryTable()], e.g. `test`,
 #' `ci`, `overall` or `digits_cont`.
 #'

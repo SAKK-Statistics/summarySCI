@@ -88,8 +88,11 @@ is built in every case, since it decides the type of each plot.}
 default) or \code{"boxplot"}.}
 
 \item{plot_args}{A named list of further arguments for the plotting
-functions, e.g. \code{list(risk_table = TRUE, col = c("grey", "black"))}. Each
-plot receives the arguments its function has.}
+functions, e.g. \code{list(risk_table = TRUE, dodge = 0.1)}. Each plot receives
+the arguments its function has, as in \code{\link[=lineplotSCI]{lineplotSCI()}}, \code{\link[=boxplotSCI]{boxplotSCI()}} and
+\code{\link[=stackedbarplotSCI]{stackedbarplotSCI()}}; an argument no plot uses gives a warning. For
+example, \code{stat_footnote = TRUE} adds a footnote saying what each plot shows:
+for the line plot the statistic of \code{stat_cont} (e.g. "Median (Q1, Q3)").}
 
 \item{as_flex_table}{Logical. If TRUE (default) the gtsummary object is
 converted to a flextable object. Useful when rendering to Word.}

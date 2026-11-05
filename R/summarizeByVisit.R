@@ -26,6 +26,12 @@
 #' @inheritParams summarizeSCI
 #' @param plot_cont The plot for continuous variables: `"lineplot"` (the
 #' default) or `"boxplot"`.
+#' @param plot_args A named list of further arguments for the plotting
+#' functions, e.g. `list(risk_table = TRUE, dodge = 0.1)`. Each plot receives
+#' the arguments its function has, as in [lineplotSCI()], [boxplotSCI()] and
+#' [stackedbarplotSCI()]; an argument no plot uses gives a warning. For
+#' example, `stat_footnote = TRUE` adds a footnote saying what each plot shows:
+#' for the line plot the statistic of `stat_cont` (e.g. "Median (Q1, Q3)").
 #' @param ... Further arguments passed on to [summaryByVisit()], e.g.
 #' `digits_cont`, `add_n` or `overall`.
 #'

@@ -67,7 +67,10 @@ is built in every case, since it decides the type of each plot.}
 
 \item{plot_args}{A named list of further arguments for the plotting
 functions, e.g. \code{list(risk_table = TRUE, col = c("grey", "black"))}. Each
-plot receives the arguments its function has.}
+plot receives the arguments its function has, as in \code{\link[=boxplotSCI]{boxplotSCI()}} and
+\code{\link[=stackedbarplotSCI]{stackedbarplotSCI()}}; an argument no plot uses gives a warning. For
+example, \code{stat_footnote = TRUE} adds a footnote saying what each plot shows
+(the box and whiskers, or the denominator of the percentages).}
 
 \item{as_flex_table}{Logical. If TRUE (default) the gtsummary object is
 converted to a flextable object. Useful when rendering to Word.}
