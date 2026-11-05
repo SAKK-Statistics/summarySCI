@@ -157,5 +157,29 @@ test_that("plots are saved to files", {
 test_that("informative errors", {
   d <- visit_fixture()
   expect_error(summarizeSCI(), "'data' must be specified")
-  expect_error(summarizeSCI(d, vars = "hb", word_output = TRUE), "not available")
+  expect_error(summarizeSCI(d, vars = "hb", type = "plot", word_output = TRUE),
+               "'word_output' saves the table")
+})
+
+test_that("word_output saves the table as summaryTable() does", {
+  d <- visit_fixture()
+  f  <- tempfile(fileext = ".docx")
+  f2 <- tempfile(fileext = ".docx")
+  on.exit(unlink(c(f, f2)))
+  expect_message(res <- summarizeSCI(d, vars = "hb", group = "Arm",
+                                     word_output = TRUE, file_path = f),
+                 "Table saved to")
+  expect_true(file.exists(f))
+  expect_s3_class(res$table, "flextable")
+  expect_length(res$plots, 1)
+  # the same table as summaryTable() writes
+  doc_text <- function(path) officer::docx_summary(officer::read_docx(path))$text
+  suppressMessages(summaryTable(d, vars = "hb", group = "Arm",
+                                word_output = TRUE, file_path = f2))
+  expect_equal(doc_text(f), doc_text(f2))
+  # also when the result holds the gtsummary table
+  res <- suppressMessages(summarizeSCI(d, vars = "hb", group = "Arm",
+                                       as_flex_table = FALSE,
+                                       word_output = TRUE, file_path = f))
+  expect_s3_class(res$table, "gtsummary")
 })

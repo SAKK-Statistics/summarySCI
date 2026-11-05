@@ -168,10 +168,10 @@ build_plots <- function(specs, data, plot_args) {
 }
 
 # Argument checks shared by the wrappers
-check_wrapper_args <- function(dots, plot_args, table_fun) {
-  if (any(c("word_output", "file_path") %in% names(dots)))
-    stop("Word output is not available in the wrappers yet; use ", table_fun,
-         "(..., word_output = TRUE) for the table.", call. = FALSE)
+check_wrapper_args <- function(plot_args, type, word_output) {
+  if (isTRUE(word_output) && type == "plot")
+    stop("'word_output' saves the table; use type = \"both\" or \"table\".",
+         call. = FALSE)
   if (!is.list(plot_args) || (length(plot_args) > 0 && is.null(names(plot_args))))
     stop("'plot_args' must be a named list, e.g. list(risk_table = TRUE).",
          call. = FALSE)
@@ -191,9 +191,14 @@ bar_spec <- function(v, label, group, stat_cat, missing, missing_percent,
 }
 
 # The object both wrappers return: the table (as flextable if requested;
-# NULL when only the plots were asked for) and the plots
-wrapper_result <- function(tbl, plots, type, as_flex_table, border, class) {
+# NULL when only the plots were asked for) and the plots. With 'word_output',
+# the table is saved as summaryTable() / summaryByVisit() save it.
+wrapper_result <- function(tbl, plots, type, as_flex_table, border, class,
+                           word_output = FALSE, file_path = NULL) {
+  ft <- if (type != "plot" && (isTRUE(as_flex_table) || isTRUE(word_output)))
+    to_flextable(tbl, border)
+  if (isTRUE(word_output)) save_word(ft, file_path)
   table <- if (type == "plot") NULL else
-    if (isTRUE(as_flex_table)) to_flextable(tbl, border) else tbl
+    if (isTRUE(as_flex_table)) ft else tbl
   structure(list(table = table, plots = plots), class = class)
 }

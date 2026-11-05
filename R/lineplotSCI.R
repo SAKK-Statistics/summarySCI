@@ -36,9 +36,11 @@
 #' in the summary tables, i.e. `quantile(type = 2)`), `"range"` (observed
 #' minimum to maximum), `"ci"` (a two-sided confidence interval at level
 #' `1 - alpha`), `"sd"` (point estimate +/- one standard deviation), `"se"`
-#' (point estimate +/- one standard error), or `"none"` to plot point
-#' estimates alone. With `stat = "geomean"`, only `"iqr"`, `"range"` and
-#' `"none"` are available.
+#' (point estimate +/- one standard error), `"gsd"` (geometric mean
+#' divided and multiplied by the geometric standard deviation,
+#' `exp(sd(log(x)))`; only with `stat = "geomean"`), or `"none"` to plot point
+#' estimates alone. With `stat = "geomean"`, only `"gsd"`, `"iqr"`, `"range"`
+#' and `"none"` are available.
 #' @param interval_type The style in which the error band is drawn. Either
 #' `"whiskers"` (the default; vertical bars with caps) or `"ribbon"` (a shaded
 #' polygon with a dashed border). Ignored when `interval` is `"none"`.
@@ -62,6 +64,10 @@
 #' @param ylab A label for the y-axis. Default is `"Variable"`.
 #' @param xlim The x-axis limits of the plot as a numeric vector of length 2.
 #' Default is `NULL`, which spans all tick positions and observed time points.
+#' @param stat_footnote Show what the plot displays as a footnote in the
+#' bottom-right corner, beneath the x-axis title: `TRUE` for the default text
+#' (e.g. `"Median (Q1, Q3)"`), a character string for a text of your own, or `FALSE` (the
+#' default) for none.
 #' @param ylim The y-axis limits of the plot as a numeric vector of length 2.
 #' Default is `NULL`, which adds a 10% padding buffer above and below the data
 #' range (band included, where one is drawn).
@@ -125,7 +131,7 @@ lineplotSCI <- function(data, var, order, group = NULL,
                       visit = NULL, n_order = NULL,
                       group_names = NULL, group_names_short = NULL,
                       stat = c("median", "mean", "geomean"),
-                      interval = c("iqr", "range", "ci", "sd", "se", "none"),
+                      interval = c("iqr", "range", "ci", "sd", "se", "gsd", "none"),
                       interval_type = c("whiskers", "ribbon"), alpha = 0.05,
                       dodge = 0, connect = TRUE, connect_shade = 0.15,
                       main = "", xlab = "Time", ylab = "Variable",
@@ -137,7 +143,7 @@ lineplotSCI <- function(data, var, order, group = NULL,
                       lines = NULL, lty = 1, col_lines = "grey",
                       legend_position = "topright", legend_title = NULL,
                       legend_offset = c(0, 0), legend_cex = 1, legend_bty = "n",
-                      ...) {
+                      stat_footnote = FALSE, ...) {
 
   if (missing(data)) stop("'data' must be specified.")
   if (missing(var) || missing(order)) stop("'var' and 'order' must be specified.")
@@ -159,7 +165,10 @@ lineplotSCI <- function(data, var, order, group = NULL,
   interval_type <- match.arg(interval_type)
   band          <- interval != "none"
   if (stat == "geomean" && interval %in% c("ci", "sd", "se"))
-    stop("With stat = \"geomean\", 'interval' must be \"iqr\", \"range\" or \"none\".")
+    stop("With stat = \"geomean\", 'interval' must be \"gsd\", \"iqr\", ",
+         "\"range\" or \"none\".")
+  if (stat != "geomean" && interval == "gsd")
+    stop("interval = \"gsd\" needs stat = \"geomean\".")
 
   v <- data[[var_name]]
   o <- data[[order_name]]
@@ -187,6 +196,8 @@ lineplotSCI <- function(data, var, order, group = NULL,
            sd    = if (n < 2) c(NA_real_, NA_real_) else m + c(-1, 1) * sd(x),
            se    = if (n < 2) c(NA_real_, NA_real_) else
              m + c(-1, 1) * sd(x) / sqrt(n),
+           # geometric mean divided / multiplied by the geometric SD
+           gsd   = m * geom_sd(x)^c(-1, 1),
            ci    = if (stat == "mean") {
              if (n < 2) c(NA_real_, NA_real_) else
                m + c(-1, 1) * qt(1 - alpha / 2, n - 1) * sd(x) / sqrt(n)
@@ -252,7 +263,10 @@ lineplotSCI <- function(data, var, order, group = NULL,
                 xlab_position = xlab_position, lines = lines, lty = lty,
                 col_lines = col_lines, legend_position = legend_position,
                 legend_title = legend_title, legend_offset = legend_offset,
-                legend_cex = legend_cex, legend_bty = legend_bty, ...)
+                legend_cex = legend_cex, legend_bty = legend_bty,
+                stat_footnote = footnote_text(stat_footnote,
+                                              line_note(stat, interval, alpha)),
+                ...)
 }
 
 #' Draw a line plot from pre-computed group-by-time summaries
@@ -268,6 +282,8 @@ lineplotSCI <- function(data, var, order, group = NULL,
 #' @param xs The x coordinates of the columns of `centre`.
 #' @param at_x The tick positions on the x-axis.
 #' @param band Logical; whether an error band is drawn at all.
+#' @param stat_footnote The text of the footnote in the bottom-right corner,
+#' or `NULL` for none (the callers turn `TRUE` into their default text).
 #'
 #' @return Invisibly, a list with `centre`, `lower`, `upper` and `n`.
 #' @keywords internal
@@ -287,8 +303,9 @@ lineplot_draw <- function(centre, lower, upper, obs, xs, at_x = xs,
                           lines = NULL, lty = 1, col_lines = "grey",
                           legend_position = "topright", legend_title = NULL,
                           legend_offset = c(0, 0), legend_cex = 1,
-                          legend_bty = "n", ...) {
+                          legend_bty = "n", stat_footnote = NULL, ...) {
 
+  note <- if (is.character(stat_footnote)) stat_footnote
   if (is.null(col)) col <- sci_palette(nrow(centre), lines = TRUE)   # SCI palette
 
   groups   <- rownames(centre)                 # sorted factor levels
@@ -313,7 +330,8 @@ lineplot_draw <- function(centre, lower, upper, obs, xs, at_x = xs,
 
   # --- Plot region: the layout of boxplotSCI(), with room for rotated labels -
   lay <- sci_layout(max(2L, length(at_x)), n_groups, risk_table,
-                    offset = if (rotate_labels) 3 else 0)
+                    offset = if (rotate_labels) 3 else 0,
+                    footnote = !is.null(note))
   if (is.null(mar_custom)) {
     mar_custom <- lay$mar
     mar_custom[2] <- max(mar_custom[2], ylab_line + 1.6)
@@ -412,6 +430,7 @@ lineplot_draw <- function(centre, lower, upper, obs, xs, at_x = xs,
   # --- x-axis label, placed below rotated labels / sample-size rows ----------
   if (is.null(xlab_line)) xlab_line <- lay$xlab_line
   mtext(xlab, side = 1, line = xlab_line, cex = cex_lab)
+  draw_footnote(note, lay$note_line)
 
   # --- Legend ----------------------------------------------------------------
   if (!is.null(legend_position)) {

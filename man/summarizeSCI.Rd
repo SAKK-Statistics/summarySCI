@@ -18,6 +18,8 @@ summarizeSCI(
   plot_args = list(),
   as_flex_table = TRUE,
   border = TRUE,
+  word_output = FALSE,
+  file_path = paste0("SummaryTable_", format(Sys.Date(), "\%Y\%m\%d"), ".docx"),
   ...
 )
 }
@@ -40,7 +42,11 @@ dataset. If no label present, the variable name is taken.}
 
 \item{stat_cont}{Summary statistic to display for continuous variables. Options
 include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
-"geomMean_sd".}
+"geomMean_sd".
+"geomMean_sd" shows the geometric mean with the geometric standard
+deviation, \code{exp(sd(log(x)))}, both \code{NA} if a value is zero or negative.
+The geometric SD is a factor close to 1 and is shown with at least 2
+decimals.}
 
 \item{stat_cat}{Summary statistic to display for categorical variables.
 Options include "n_percent" (default) and "n", and "n_N".}
@@ -69,6 +75,12 @@ converted to a flextable object. Useful when rendering to Word.}
 \item{border}{Logical. If TRUE, a border will be drawn around the table. Only
 available if flex_table = TRUE. Default is TRUE.}
 
+\item{word_output}{Logical. If TRUE, the table is also saved in a word document.}
+
+\item{file_path}{Character string.
+Specify the path of the Word document containing the table.
+Only used when \code{word_output} is TRUE. Needs to end with ".docx".}
+
 \item{...}{Further arguments passed on to \code{\link[=summaryTable]{summaryTable()}}, e.g. \code{test},
 \code{ci}, \code{overall} or \code{digits_cont}.}
 }
@@ -76,7 +88,8 @@ available if flex_table = TRUE. Default is TRUE.}
 An object of class \code{summarizeSCI}, a list with
 \itemize{
 \item \code{table}: the table, a flextable or (with \code{as_flex_table = FALSE}) a
-gtsummary object; \code{NULL} with \code{type = "plot"};
+gtsummary object; \code{NULL} with \code{type = "plot"}. With \code{word_output = TRUE}
+it is also saved to \code{file_path}, as \code{\link[=summaryTable]{summaryTable()}} does;
 \item \code{plots}: a named list with one plot per variable, e.g. \code{res$plots$hb};
 empty with \code{type = "table"}. Printing a plot draws it; \code{\link[=save_plots]{save_plots()}}
 writes them to files.

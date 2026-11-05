@@ -18,6 +18,10 @@
 #' @param stat_cont Summary statistic to display for continuous variables.
 #' Options include "median_IQR", "median_range" (default), "mean_sd",
 #' "mean_se" and "geomMean_sd".
+#' "geomMean_sd" shows the geometric mean with the geometric standard
+#' deviation, `exp(sd(log(x)))`, both `NA` if a value is zero or negative.
+#' The geometric SD is a factor close to 1 and is shown with at least 2
+#' decimals.
 #'
 #' @param visit Name of the stratum for which summary statistics are
 #' displayed by line. Typically, this would be `"visit"`.
@@ -109,6 +113,8 @@ summaryByVisitContinuous<- function(data,
 
   # Summary stat for continuous variables
   stat_cont <- format_lookup[[stat_cont]]
+  # digits per statistic: digits_cont, at least 2 for the geometric SD
+  digits_cont_vec <- cont_digits(stat_cont, digits_cont)
 
   # if vars = NULL, take all the variables (except group if not NULL).
   if (is.null(vars)) {
@@ -149,7 +155,7 @@ summaryByVisitContinuous<- function(data,
                    gtsummary::tbl_summary(missing="no",
                                           statistic = list(gtsummary::all_continuous() ~ stat_cont),
                                           type= all_of(vars[i]) ~ "continuous",
-                                          digits = list(gtsummary::all_continuous() ~ digits_cont))|>
+                                          digits = list(gtsummary::all_continuous() ~ digits_cont_vec))|>
 
         gtsummary::add_n(last=TRUE)|>
         gtsummary::add_overall(last=TRUE)|>
@@ -176,7 +182,7 @@ summaryByVisitContinuous<- function(data,
                                             statistic = list(gtsummary::all_continuous() ~ stat_cont),
                                             by=group,
                                             type= vars[i] ~ "continuous",
-                                            digits = list(gtsummary::all_continuous() ~ digits_cont))|>
+                                            digits = list(gtsummary::all_continuous() ~ digits_cont_vec))|>
                      gtsummary::add_n(last=TRUE)|>
                      gtsummary::add_overall(last=TRUE)|>
                      gtsummary::add_stat(
@@ -205,7 +211,7 @@ summaryByVisitContinuous<- function(data,
                                             statistic = list(gtsummary::all_continuous() ~ stat_cont),
                                             by=group,
                                             type= vars[i] ~ "continuous",
-                                            digits = list(gtsummary::all_continuous() ~ digits_cont))|>
+                                            digits = list(gtsummary::all_continuous() ~ digits_cont_vec))|>
                      gtsummary::add_n(last=TRUE)|>
                      gtsummary::add_overall(last=TRUE)|>
                      gtsummary::add_stat(

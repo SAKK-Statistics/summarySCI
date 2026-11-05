@@ -1,5 +1,12 @@
 # summarySCI 1.0.0
 
+- `stat_cont = "geomMean_sd"` now shows the geometric mean with the geometric
+  standard deviation, `exp(sd(log(x)))`, instead of the arithmetic standard
+  deviation, and both are `NA` if a value is zero or negative (instead of the
+  geometric mean of the positive values only). The geometric SD, a factor
+  close to 1, is shown with at least 2 decimals. The footnotes read "Geometric
+  mean (geometric SD)" and "Mean (SE)".
+
 - Improvement of the internal structure of the function 
 
 - More informative error messages 

@@ -79,6 +79,37 @@ geom_mean <- function(x, na.rm = TRUE) {
   exp(mean(log(x)))
 }
 
+#' Geometric standard deviation
+#'
+#' The standard deviation on the log scale, back-transformed:
+#' `exp(sd(log(x)))`. It is a factor: about two thirds of log-normal values lie
+#' between the geometric mean divided and multiplied by it. Like [geom_mean()],
+#' it is only defined for positive values and is `NA` otherwise (without a
+#' second warning), and `NA` for fewer than two values.
+#'
+#' @param x Numeric vector
+#' @param na.rm Logical; whether missing values are removed first.
+#' @return Geometric standard deviation
+#' @keywords internal
+geom_sd <- function(x, na.rm = TRUE) {
+  if (na.rm) x <- x[!is.na(x)]
+  if (length(x) < 2L || any(x <= 0)) return(NA_real_)
+  exp(stats::sd(log(x)))
+}
+
+# gtsummary names unknown statistics by their function in the footnote
+# ("geom_mean (geom_sd)", "Mean (se)"); these are the readable names
+tidy_stat_footnotes <- function(tbl) {
+  fh <- tbl$table_styling$footnote_header
+  if (is.null(fh) || !"footnote" %in% names(fh)) return(tbl)
+  fn <- fh$footnote
+  fn <- gsub("geom_mean", "Geometric mean", fn, fixed = TRUE)
+  fn <- gsub("geom_sd", "geometric SD", fn, fixed = TRUE)
+  fn <- gsub("(se)", "(SE)", fn, fixed = TRUE)
+  tbl$table_styling$footnote_header$footnote <- fn
+  tbl
+}
+
 
 
 #' Standard error
@@ -98,7 +129,7 @@ format_lookup <- list(
   mean_se = "{mean} ({se})",
   median_range = "{median} ({min}, {max})",
   median_IQR = "{median} ({p25}, {p75})",
-  geomMean_sd = "{geom_mean} ({sd})"
+  geomMean_sd = "{geom_mean} ({geom_sd})"
 )
 
 format_lookup_cat <-
@@ -107,6 +138,21 @@ format_lookup_cat <-
     n = "{n}",
     n_N = "{n}/{N}"
   )
+
+#' Digits for the continuous statistics
+#'
+#' `digits_cont` for every statistic, except the geometric SD: a factor close
+#' to 1 (e.g. 1.13), which gets at least 2 decimals. The digits are returned
+#' in the order of the statistics in `stat_fmt`, as gtsummary expects.
+#'
+#' @param stat_fmt Statistic string, e.g. `"{geom_mean} ({geom_sd})"`.
+#' @param digits_cont Digits for continuous statistics.
+#' @return Integer vector, one value per statistic.
+#' @keywords internal
+cont_digits <- function(stat_fmt, digits_cont) {
+  stats <- regmatches(stat_fmt, gregexpr("\\{[A-Za-z_.]+\\}", stat_fmt))[[1]]
+  ifelse(stats == "{geom_sd}", max(2, digits_cont), digits_cont)
+}
 
 #' Digits for the categorical statistics
 #'
@@ -345,11 +391,23 @@ col_names <- function(sub, val_fun) {
 #' @param n Number of colors.
 #' @param lines Logical. If `TRUE`, only the darker shades are used, since the
 #' light ones are hard to see as lines and points on a white background.
-#' Default is `FALSE`, for filled boxes and bars.
+#' Default is `FALSE`, for filled boxes.
+#' @param bars Logical. If `TRUE`, the palette of the stacked bars: the
+#' lightest shade is left out, as it is hard to tell from the white background.
+#' Default is `FALSE`.
 #' @return A character vector of `n` hex colors, light to dark.
 #' @keywords internal
-sci_palette <- function(n, lines = FALSE) {
+sci_palette <- function(n, lines = FALSE, bars = FALSE) {
   base <- c("#FFE3E3", "#F4B9C2", "#E4002B", "#961D13", "#401F28")
+  if (bars) {
+    fill <- base[2:5]
+    return(switch(as.character(n),
+                  "1" = fill[2],
+                  "2" = fill[1:2],
+                  "3" = fill[1:3],
+                  "4" = fill,
+                  grDevices::colorRampPalette(fill)(n)))
+  }
   if (lines) {
     dark <- base[3:5]
     return(switch(as.character(n),
@@ -368,6 +426,23 @@ sci_palette <- function(n, lines = FALSE) {
 }
 
 
+
+#' Save a flextable to a Word document
+#'
+#' What [summaryTable()], [summaryByVisit()] and the wrappers do with
+#' `word_output = TRUE`.
+#'
+#' @param ft A flextable.
+#' @param file_path Path of the `.docx` file.
+#' @return `file_path`, invisibly.
+#' @keywords internal
+save_word <- function(ft, file_path) {
+  doc <- officer::read_docx()
+  doc <- flextable::body_add_flextable(doc, value = ft)
+  print(doc, target = file_path)
+  message("Table saved to: ", normalizePath(file_path))
+  invisible(file_path)
+}
 
 #' Convert a gtsummary table to a flextable
 #'
@@ -402,11 +477,14 @@ to_flextable <- function(tbl, border = TRUE) {
 #' @param offset Lines taken by extra labels beneath the x-axis (e.g. group
 #' labels under bars, or rotated labels), by which the numbers and the x-axis
 #' title move down.
+#' @param footnote Logical. Is a footnote on the statistic drawn beneath the
+#' x-axis title? It adds the same space to every plot type.
 #' @return A list with `mar` (for `par(mar = )`), `rows` (margin lines of the
 #' rows of patient numbers, one per group over time, one for a single time
-#' point) and `xlab_line`.
+#' point), `xlab_line` and `note_line` (the line of the footnote).
 #' @keywords internal
-sci_layout <- function(n_time, n_groups, risk_table, offset = 0) {
+sci_layout <- function(n_time, n_groups, risk_table, offset = 0,
+                       footnote = FALSE) {
   if (n_time == 1L) {
     bottom    <- if (risk_table) 4.6 else 4.0
     left      <- 4.5
@@ -419,8 +497,68 @@ sci_layout <- function(n_time, n_groups, risk_table, offset = 0) {
     rows      <- 2 + (seq_len(n_groups) - 1) * 0.65
     xlab_line <- if (risk_table) 2 + (n_groups - 1) * 0.65 + 1.2 else 3.0
   }
+  note_line <- xlab_line + 1.3
+  if (isTRUE(footnote)) bottom <- max(bottom, note_line + 1)
   list(mar = c(bottom + offset, left, 4, 2) + 0.1,
-       rows = rows + offset, xlab_line = xlab_line + offset)
+       rows = rows + offset, xlab_line = xlab_line + offset,
+       note_line = note_line + offset)
+}
+
+# --- Footnote on the statistic of a plot (stat_footnote) ---------------------
+
+# The text of the footnote: NULL for FALSE, 'auto' for TRUE, or the text given
+footnote_text <- function(stat_footnote, auto) {
+  if (is.null(stat_footnote) || isFALSE(stat_footnote)) return(NULL)
+  if (isTRUE(stat_footnote)) return(auto)
+  if (is.character(stat_footnote) && length(stat_footnote) == 1L)
+    return(stat_footnote)
+  stop("'stat_footnote' must be TRUE, FALSE or a character string.",
+       call. = FALSE)
+}
+
+# Draw the footnote in the bottom-right corner, beneath the x-axis title
+draw_footnote <- function(text, line, cex = 0.7) {
+  if (!is.null(text))
+    graphics::mtext(text, side = 1, line = line, adj = 1, cex = cex,
+                    col = "grey30")
+}
+
+# What a line plot shows, worded like the table footnotes
+line_note <- function(stat, interval, alpha = 0.05) {
+  centre <- c(median = "Median", mean = "Mean", geomean = "Geometric mean")[[stat]]
+  switch(interval,
+         none  = centre,
+         iqr   = paste0(centre, " (Q1, Q3)"),
+         range = paste0(centre, " (Min, Max)"),
+         sd    = paste0(centre, " \u00b1 SD"),
+         gsd   = paste0(centre, " \u00d7/\u00f7 geometric SD"),
+         se    = paste0(centre, " \u00b1 SE"),
+         ci    = paste0(centre, " (", format(100 * (1 - alpha)), "% CI)"))
+}
+
+# What a boxplot shows; 'range' as in boxplot()
+box_note <- function(range = 1.5) {
+  paste0("Box: median (Q1, Q3); whiskers: ",
+         if (range > 0) paste0("up to ", format(range), " \u00d7 IQR")
+         else "Min, Max")
+}
+
+# What the segments of a stacked bar show
+bar_note <- function(scale, missing_shown = FALSE, yes_no = FALSE) {
+  if (scale == "count") return("Number of patients")
+  if (yes_no) return("% of patients; a patient can count in several segments")
+  if (missing_shown) "% of patients, including missing values"
+  else "% of patients with a non-missing value"
+}
+
+# The statistic and interval of the line plot for a table's 'stat_cont'
+stat_cont_plot <- function(stat_cont) {
+  switch(stat_cont,
+         median_range = c("median", "range"),
+         median_IQR   = c("median", "iqr"),
+         mean_sd      = c("mean", "sd"),
+         mean_se      = c("mean", "se"),
+         geomMean_sd  = c("geomean", "gsd"))
 }
 
 

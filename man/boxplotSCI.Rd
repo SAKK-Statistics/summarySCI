@@ -37,6 +37,7 @@ boxplotSCI(
   risk_table = NULL,
   missing_nr = 0,
   color_time = FALSE,
+  stat_footnote = FALSE,
   ...
 )
 }
@@ -146,6 +147,11 @@ sizes on the x-axis should be displayed. Default is \code{0}. Can also be set to
 legacy use, where, for a single timepoint, multiple groups were used as "timepoint" variable.
 If set to \code{TRUE}, it treats timepoints as individual categories,applying sequential coloring
 and rendering a matching tracking legend. Default is \code{FALSE}.}
+
+\item{stat_footnote}{Show what the plot displays as a footnote in the
+bottom-right corner, beneath the x-axis title: \code{TRUE} for the default text
+(e.g. the definition of box and whiskers), a character string for a text of your own, or \code{FALSE} (the
+default) for none.}
 
 \item{...}{Further graphical parameters passed on to \code{boxplot()}, e.g.
 \code{lwd}, \code{border} or \code{outline = FALSE} (no points for outliers).}

@@ -42,6 +42,16 @@ test_that("the geometric mean needs positive values", {
   res <- draw_quietly(lineplotSCI(d, hb, visit_nr, stat = "geomean", interval = "none"))
   expect_equal(unname(res$centre[1, ]), as.vector(truth[colnames(res$centre)]))
 
+  # the band: geometric mean divided / multiplied by the geometric SD
+  res <- draw_quietly(lineplotSCI(d, hb, visit_nr, stat = "geomean", interval = "gsd"))
+  gsd <- with(d[!is.na(d$hb), ], tapply(hb, visit_nr, function(x) exp(sd(log(x)))))
+  expect_equal(unname(res$lower[1, ]),
+               as.vector((truth / gsd)[colnames(res$centre)]))
+  expect_equal(unname(res$upper[1, ]),
+               as.vector((truth * gsd)[colnames(res$centre)]))
+  expect_error(lineplotSCI(d, hb, visit_nr, interval = "gsd"),
+               "interval = \"gsd\" needs stat = \"geomean\"")
+
   d$chg <- d$hb - 130                          # change scores: some values <= 0
   n_bad <- sum(d$chg <= 0, na.rm = TRUE)
   expect_error(draw_quietly(lineplotSCI(d, chg, visit_nr, stat = "geomean",

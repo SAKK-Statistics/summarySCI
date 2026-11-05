@@ -410,10 +410,35 @@ test_that("Geometric mean is correct", {
   tbl <- summaryTable(trial, vars = "age", stat_cont = "geomMean_sd", digits_cont = 2,
                       as_flex_table = FALSE)
   expect_true(abs(nums(get_cell(tbl, "age"))[1] - exp(mean(log(x)))) <= 0.005 + 1e-8)
+  # with the geometric SD, not the arithmetic one
+  expect_true(abs(nums(get_cell(tbl, "age"))[2] - exp(sd(log(x)))) <= 0.005 + 1e-8)
+  expect_true("Geometric mean (geometric SD)" %in%
+                tbl$table_styling$footnote_header$footnote)
+})
+
+test_that("The geometric SD gets at least 2 decimals", {
+  trial <- gtsummary::trial
+  cell <- function(d) get_cell(summaryTable(trial, vars = "age",
+                                            stat_cont = "geomMean_sd",
+                                            digits_cont = d, as_flex_table = FALSE),
+                               "age")
+  expect_match(cell(1), "^[0-9]+[.][0-9] [(][0-9]+[.][0-9]{2}[)]$")
+  expect_match(cell(0), "^[0-9]+ [(][0-9]+[.][0-9]{2}[)]$")
+  expect_match(cell(3), "^[0-9]+[.][0-9]{3} [(][0-9]+[.][0-9]{3}[)]$")
+  expect_equal(cont_digits("{mean} ({sd})", 1), c(1, 1))
+})
+
+test_that("Footnotes name the statistics readably", {
+  tbl <- summaryTable(gtsummary::trial, vars = "age", stat_cont = "mean_se",
+                      as_flex_table = FALSE)
+  expect_true("Mean (SE)" %in% tbl$table_styling$footnote_header$footnote)
 })
 
 test_that("Geometric mean is NA, not computed from the positive values only, with values <= 0", {
   expect_equal(geom_mean(c(1, 10, NA)), sqrt(10))
+  expect_equal(geom_sd(c(1, 100, NA)), exp(sd(log(c(1, 100)))))
+  expect_identical(geom_sd(c(-1, 4, 9)), NA_real_)
+  expect_identical(geom_sd(5), NA_real_)
   expect_warning(res <- geom_mean(c(-1, 4, 9)), "1 value\\(s\\) are <= 0")
   expect_identical(res, NA_real_)
   expect_warning(res <- geom_mean(c(0, 4, 9)), "1 value\\(s\\) are <= 0")
@@ -424,7 +449,7 @@ test_that("Geometric mean is NA, not computed from the positive values only, wit
   tbl <- suppressMessages(suppressWarnings(
     summaryTable(trial, vars = "shifted", stat_cont = "geomMean_sd",
                  as_flex_table = FALSE)))
-  expect_match(get_cell(tbl, "shifted"), "^NA \\(")
+  expect_match(get_cell(tbl, "shifted"), "^NA \\(NA\\)")
 })
 
 test_that("Statistics by group are correct", {

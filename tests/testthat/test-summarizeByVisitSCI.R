@@ -91,9 +91,11 @@ test_that("the line plot shows the statistic of the table", {
     res <- summarizeByVisitSCI(d, vars = "hb", group = "Arm", visit = "visit",
                                stat_cont = st, digits_cont = 2,
                                as_flex_table = FALSE)
-    # mean +/- SD or SE: both numbers are rounded in the table
-    check_lines_match_table(res, "hb", "Hemoglobin", digits = 2,
-                            k = if (st %in% c("mean_sd", "mean_se")) 2 else 1)
+    # mean +/- SD or SE: both numbers are rounded in the table; geometric
+    # mean times / divided by geometric SD: up to (mean + GSD + 1) rounding units
+    k <- switch(st, mean_sd = , mean_se = 2,
+                geomMean_sd = 3 + max(d$hb, na.rm = TRUE), 1)
+    check_lines_match_table(res, "hb", "Hemoglobin", digits = 2, k = k)
   }
 })
 
@@ -163,11 +165,100 @@ test_that("plot_args reach the plots, and plots are saved", {
                  "not used by any plot: nonsense")
 })
 
+test_that("word_output saves the table as summaryByVisit() does", {
+  d <- sbv_fixture()
+  f  <- tempfile(fileext = ".docx")
+  f2 <- tempfile(fileext = ".docx")
+  on.exit(unlink(c(f, f2)))
+  expect_message(res <- summarizeByVisitSCI(d, vars = "hb", group = "Arm",
+                                            visit = "visit", word_output = TRUE,
+                                            file_path = f),
+                 "Table saved to")
+  expect_true(file.exists(f))
+  expect_length(res$plots, 1)
+  suppressMessages(summaryByVisit(d, vars = "hb", group = "Arm", visit = "visit",
+                                  word_output = TRUE, file_path = f2))
+  doc_text <- function(path) officer::docx_summary(officer::read_docx(path))$text
+  expect_equal(doc_text(f), doc_text(f2))
+})
+
 test_that("informative errors", {
   d <- sbv_fixture()
   expect_error(summarizeByVisitSCI(), "'data' must be specified")
-  expect_error(summarizeByVisitSCI(d, vars = "hb", word_output = TRUE),
-               "not available")
+  expect_error(summarizeByVisitSCI(d, vars = "hb", type = "plot",
+                                   word_output = TRUE),
+               "'word_output' saves the table")
   expect_error(summarizeByVisitSCI(d, vars = "hb", plot_cont = "violin"),
                "should be one of")
+})
+
+# The texts of the footnotes drawn by 'expr' (the grey mtext in the corner)
+footnotes <- function(expr) {
+  mt <- drawn_calls(expr, "C_mtext")
+  unlist(lapply(Filter(function(a) identical(a[[9]], "grey30"), mt),
+                `[[`, 1))
+}
+
+test_that("stat_footnote shows what each plot displays", {
+  d <- hb_fixture()
+  expect_null(footnotes(lineplotSCI(d, hb, visit_nr, Arm)))
+  expect_equal(footnotes(lineplotSCI(d, hb, visit_nr, Arm, stat_footnote = TRUE)),
+               "Median (Q1, Q3)")
+  expect_equal(footnotes(lineplotSCI(d, hb, visit_nr, Arm, stat = "mean",
+                                     interval = "sd", stat_footnote = TRUE)),
+               "Mean \u00b1 SD")
+  expect_equal(footnotes(lineplotSCI(d, hb, visit_nr, Arm, interval = "ci",
+                                     stat_footnote = TRUE)),
+               "Median (95% CI)")
+  expect_equal(footnotes(boxplotSCI(d, hb, visit_nr, group = Arm,
+                                    stat_footnote = TRUE)),
+               "Box: median (Q1, Q3); whiskers: up to 1.5 \u00d7 IQR")
+  expect_equal(footnotes(boxplotSCI(d, hb, visit_nr, group = Arm, range = 0,
+                                    stat_footnote = TRUE)),
+               "Box: median (Q1, Q3); whiskers: Min, Max")
+  expect_equal(footnotes(stackedbarplotSCI(d, hb_cat, visit_nr, group = Arm,
+                                           stat_footnote = TRUE)),
+               "% of patients with a non-missing value")
+  expect_equal(footnotes(stackedbarplotSCI(d, hb_cat, visit_nr, group = Arm,
+                                           missing = TRUE, stat_footnote = TRUE)),
+               "% of patients, including missing values")
+  # a text of one's own
+  expect_equal(footnotes(stackedbarplotSCI(d, hb_cat, visit_nr, group = Arm,
+                                           stat_footnote = "Source: trial X")),
+               "Source: trial X")
+  expect_error(lineplotSCI(d, hb, visit_nr, stat_footnote = 1),
+               "'stat_footnote' must be TRUE, FALSE or a character string")
+})
+
+test_that("the footnote takes the same space in every plot type", {
+  d <- hb_fixture()
+  line_of <- function(expr) {
+    mt <- drawn_calls(expr, "C_mtext")
+    Filter(function(a) identical(a[[9]], "grey30"), mt)[[1]][[3]]
+  }
+  box  <- line_of(boxplotSCI(d, hb, visit_nr, group = Arm, risk_table = TRUE,
+                             stat_footnote = TRUE))
+  line <- line_of(lineplotSCI(d, hb, visit_nr, Arm, risk_table = TRUE,
+                              stat_footnote = TRUE))
+  expect_equal(box, line)
+  # the stacked bar sits lower by its row of group labels, as without footnote
+  bar  <- line_of(stackedbarplotSCI(d, hb_cat, visit_nr, group = Arm,
+                                    risk_table = TRUE, stat_footnote = TRUE))
+  expect_equal(bar, box + 0.8)
+})
+
+test_that("the wrapper footnotes follow the table's statistic", {
+  d <- sbv_fixture()
+  res <- summarizeByVisitSCI(d, vars = c("hb", "hb_cat"), group = "Arm",
+                             visit = "visit", order = "visit_nr",
+                             stat_cont = "mean_se", as_flex_table = FALSE,
+                             plot_args = list(stat_footnote = TRUE))
+  expect_equal(footnotes(print(res$plots$hb)), "Mean \u00b1 SE")
+  expect_equal(footnotes(print(res$plots$hb_cat)),
+               "% of patients, including missing values")
+  # plotByVisit() reads the statistic off the table
+  tbl <- summaryByVisit(d, vars = "hb", group = "Arm", visit = "visit",
+                        stat_cont = "median_range", as_flex_table = FALSE)
+  expect_equal(footnotes(plotByVisit(tbl, stat_footnote = TRUE)),
+               "Median (Min, Max)")
 })

@@ -66,8 +66,8 @@ determines the error bars:
 \item \code{"median_range"}: median with whiskers from minimum to maximum;
 \item \code{"median_IQR"}: median with whiskers from the first to the third quartile;
 \item \code{"mean_sd"} / \code{"mean_se"}: mean +/- one standard deviation / standard error;
-\item \code{"geomMean_sd"}: geometric mean only, since a standard deviation on the
-original scale gives no meaningful interval around it.
+\item \code{"geomMean_sd"}: geometric mean divided and multiplied by the geometric
+standard deviation.
 }
 
 Since the numbers are read from the printed table, they carry its rounding

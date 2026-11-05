@@ -256,6 +256,7 @@ test_that("geometric mean per visit is correct", {
   for (v in VISITS) {
     x <- vd$crp[vd$visit == v & !is.na(vd$crp)]
     expect_true(abs(nums(cont_cell(tbl, v))[1] - exp(mean(log(x)))) <= 0.005 + 1e-8, label = v)
+    expect_true(abs(nums(cont_cell(tbl, v))[2] - exp(sd(log(x)))) <= 0.005 + 1e-8, label = v)
   }
 })
 

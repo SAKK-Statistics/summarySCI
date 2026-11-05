@@ -230,6 +230,9 @@ summaryByVisit<- function(data,
   }
   #
 
+  # readable names of the statistics in the footnotes
+  tbl_out <- tidy_stat_footnotes(tbl_out)
+
   # if flex_table is needed
   if(as_flex_table == TRUE | word_output == TRUE){
     if (border == TRUE){
@@ -245,15 +248,7 @@ summaryByVisit<- function(data,
 
 
   if (word_output == TRUE) {
-
-    # Create Word document
-    doc <- officer::read_docx()
-    doc <- flextable::body_add_flextable(doc, value = tbl_print)
-
-    # Save to specified location
-    print(doc, target = file_path)
-
-    message("Table saved to: ", normalizePath(file_path))
+    save_word(tbl_print, file_path)
   }
 
 

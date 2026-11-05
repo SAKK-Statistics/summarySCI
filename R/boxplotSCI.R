@@ -76,6 +76,10 @@
 #' legacy use, where, for a single timepoint, multiple groups were used as "timepoint" variable.
 #' If set to `TRUE`, it treats timepoints as individual categories,applying sequential coloring
 #' and rendering a matching tracking legend. Default is `FALSE`.
+#' @param stat_footnote Show what the plot displays as a footnote in the
+#' bottom-right corner, beneath the x-axis title: `TRUE` for the default text
+#' (e.g. the definition of box and whiskers), a character string for a text of your own, or `FALSE` (the
+#' default) for none.
 #' @param ... Further graphical parameters passed on to `boxplot()`, e.g.
 #' `lwd`, `border` or `outline = FALSE` (no points for outliers).
 #' @importFrom graphics par boxplot axis mtext title legend abline
@@ -141,6 +145,7 @@ boxplotSCI <- function(data,
                               risk_table = NULL,
                               missing_nr = 0,
                               color_time = FALSE,
+                              stat_footnote = FALSE,
                               ...) {
 
   # 1. Checks, input validation and graphical parameters
@@ -188,7 +193,10 @@ boxplotSCI <- function(data,
   if (is.null(xlab)) xlab <- ifelse(is.null(order) || n_timepoints == 1, "Group", "Time")
 
   # Dynamic layout tracking, shared with lineplotSCI() and stackedbarplotSCI()
-  lay <- sci_layout(n_timepoints, group_number, risk_table)
+  note <- footnote_text(stat_footnote,
+                        box_note(if (is.null(list(...)$range)) 1.5 else list(...)$range))
+  lay <- sci_layout(n_timepoints, group_number, risk_table,
+                    footnote = !is.null(note))
   if (is.null(xlab_line)) xlab_line <- lay$xlab_line
 
   # SCI color palette
@@ -292,6 +300,7 @@ boxplotSCI <- function(data,
   title(main = main)
   title(xlab = xlab, line = xlab_line, cex.lab = cex_lab)
   title(ylab = ylab, line = ylab_line, cex.lab = cex_lab)
+  draw_footnote(note, lay$note_line)
 
   # Show legend if multiple groups exist OR if there are multiple timepoints to track
   show_legend <- group_number > 1 || n_timepoints > 1

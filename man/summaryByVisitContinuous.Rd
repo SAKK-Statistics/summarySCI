@@ -40,7 +40,11 @@ dataset. If no label present, the variable name is taken.}
 
 \item{stat_cont}{Summary statistic to display for continuous variables.
 Options include "median_IQR", "median_range" (default), "mean_sd",
-"mean_se" and "geomMean_sd".}
+"mean_se" and "geomMean_sd".
+"geomMean_sd" shows the geometric mean with the geometric standard
+deviation, \code{exp(sd(log(x)))}, both \code{NA} if a value is zero or negative.
+The geometric SD is a factor close to 1 and is shown with at least 2
+decimals.}
 
 \item{visit}{Name of the stratum for which summary statistics are
 displayed by line. Typically, this would be \code{"visit"}.}

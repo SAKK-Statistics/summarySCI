@@ -23,6 +23,8 @@ summarizeByVisitSCI(
   plot_args = list(),
   as_flex_table = TRUE,
   border = TRUE,
+  word_output = FALSE,
+  file_path = paste0("SummaryByVisit_", format(Sys.Date(), "\%Y\%m\%d"), ".docx"),
   ...
 )
 }
@@ -95,6 +97,14 @@ converted to a flextable object. Useful when rendering to Word.}
 \item{border}{Logical. If TRUE, a border will be drawn around the table. Only
 available if flex_table = TRUE. Default is TRUE.}
 
+\item{word_output}{Logical. If TRUE, the table is also saved in a word document.}
+
+\item{file_path}{Character string.
+Specify the path of the Word document containing the table.
+Only used when \code{word_output} is TRUE. Needs to end with ".docx".
+Default to "SummaryByVisit_YYYYMMDD.docx" (today's date) in the working
+directory.}
+
 \item{...}{Further arguments passed on to \code{\link[=summaryByVisit]{summaryByVisit()}}, e.g.
 \code{digits_cont}, \code{add_n} or \code{overall}.}
 }
@@ -116,7 +126,8 @@ The settings of the table carry over to the plots:
 \item \code{stat_cont} sets what the line plot shows: \code{"median_range"} the median with
 minimum and maximum, \code{"median_IQR"} the median with the quartiles,
 \code{"mean_sd"} / \code{"mean_se"} the mean +/- one standard deviation / standard
-error, and \code{"geomMean_sd"} the geometric mean alone;
+error, and \code{"geomMean_sd"} the geometric mean divided and multiplied by
+the geometric standard deviation;
 \item the variable labels become the axis or legend titles;
 \item \code{missing} / \code{missing_percent} decide whether missing values form a
 segment of their own (as they are counted in the table's percentages),

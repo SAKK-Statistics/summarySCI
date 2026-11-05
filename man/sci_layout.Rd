@@ -4,7 +4,7 @@
 \alias{sci_layout}
 \title{Layout of the plots}
 \usage{
-sci_layout(n_time, n_groups, risk_table, offset = 0)
+sci_layout(n_time, n_groups, risk_table, offset = 0, footnote = FALSE)
 }
 \arguments{
 \item{n_time}{Number of time points; \code{1} for a single time point.}
@@ -16,11 +16,14 @@ sci_layout(n_time, n_groups, risk_table, offset = 0)
 \item{offset}{Lines taken by extra labels beneath the x-axis (e.g. group
 labels under bars, or rotated labels), by which the numbers and the x-axis
 title move down.}
+
+\item{footnote}{Logical. Is a footnote on the statistic drawn beneath the
+x-axis title? It adds the same space to every plot type.}
 }
 \value{
 A list with \code{mar} (for \code{par(mar = )}), \code{rows} (margin lines of the
 rows of patient numbers, one per group over time, one for a single time
-point) and \code{xlab_line}.
+point), \code{xlab_line} and \code{note_line} (the line of the footnote).
 }
 \description{
 Margins, lines of the patient numbers and of the x-axis title shared by

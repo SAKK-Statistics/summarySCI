@@ -5,6 +5,18 @@ draw_quietly <- function(expr) {
   force(expr)
 }
 
+# The arguments of every low-level graphics call 'fun' (e.g. "C_rect",
+# "C_mtext", "C_segments") that 'expr' draws, read from the display list
+drawn_calls <- function(expr, fun) {
+  grDevices::pdf(NULL)
+  on.exit(grDevices::dev.off())
+  grDevices::dev.control("enable")
+  force(expr)
+  dl <- grDevices::recordPlot()[[1]]
+  lapply(Filter(function(e) identical(e[[2]][[1]]$name, fun), dl),
+         function(e) e[[2]][-1])
+}
+
 # Hemoglobin data with a categorical version of hb (missing where hb is
 # missing) and a visit grouping
 hb_fixture <- function() {

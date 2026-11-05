@@ -25,7 +25,8 @@
 #'
 #' @return An object of class `summarizeSCI`, a list with
 #' * `table`: the table, a flextable or (with `as_flex_table = FALSE`) a
-#'   gtsummary object; `NULL` with `type = "plot"`;
+#'   gtsummary object; `NULL` with `type = "plot"`. With `word_output = TRUE`
+#'   it is also saved to `file_path`, as [summaryTable()] does;
 #' * `plots`: a named list with one plot per variable, e.g. `res$plots$hb`;
 #'   empty with `type = "table"`. Printing a plot draws it; [save_plots()]
 #'   writes them to files.
@@ -56,12 +57,17 @@ summarizeSCI <- function(data, vars = NULL, group = NULL, labels = NULL,
                          missing = TRUE, missing_percent = TRUE,
                          missing_text = "Missing",
                          type = c("both", "table", "plot"), plot_args = list(),
-                         as_flex_table = TRUE, border = TRUE, ...) {
+                         as_flex_table = TRUE, border = TRUE,
+                         word_output = FALSE,
+                         file_path = paste0("SummaryTable_",
+                                            format(Sys.Date(), "%Y%m%d"),
+                                            ".docx"),
+                         ...) {
 
   if (missing(data)) stop("'data' must be specified.")
   data <- as.data.frame(data)
   type <- match.arg(type)
-  check_wrapper_args(list(...), plot_args, "summaryTable")
+  check_wrapper_args(plot_args, type, word_output)
 
   tbl <- summaryTable(data, vars = vars, group = group, labels = labels,
                       stat_cont = stat_cont, stat_cat = stat_cat,
@@ -90,7 +96,8 @@ summarizeSCI <- function(data, vars = NULL, group = NULL, labels = NULL,
     plots <- build_plots(specs, data, plot_args)
   }
 
-  wrapper_result(tbl, plots, type, as_flex_table, border, "summarizeSCI")
+  wrapper_result(tbl, plots, type, as_flex_table, border, "summarizeSCI",
+                 word_output = word_output, file_path = file_path)
 }
 
 #' @export

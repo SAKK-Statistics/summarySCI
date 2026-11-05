@@ -96,3 +96,59 @@ test_that("factor categories, time points and groups keep their level order", {
   expect_equal(dimnames(res$counts)[[2]], c("Arm 10", "Arm 2"))
   expect_equal(dimnames(res$counts)[[3]], c("B", "A"))
 })
+
+test_that("the missing segment is hatched in grey and takes no colour", {
+  d <- three_arm_fixture()
+  rects <- drawn_calls(stackedbarplotSCI(d, grade, group = arm, missing = TRUE),
+                       "C_rect")
+  fills <- unique(unlist(lapply(rects, `[[`, "col")))
+  fills <- fills[!is.na(fills)]                # the outline of the hatching
+  # four grades: the bar palette, plus white under the hatching of "Missing"
+  expect_setequal(setdiff(fills, "white"), sci_palette(4, bars = TRUE))
+  expect_true("white" %in% fills)
+  hatch <- drawn_calls(stackedbarplotSCI(d, grade, group = arm, missing = TRUE),
+                       "C_segments")
+  expect_true(any(vapply(hatch, function(a) identical(a$col, "grey35"), TRUE)))
+  # no missing segment, no hatching
+  hatch <- drawn_calls(stackedbarplotSCI(d, grade, group = arm), "C_segments")
+  expect_false(any(vapply(hatch, function(a) identical(a$col, "grey35"), TRUE)))
+})
+
+test_that("the bar palette leaves out the lightest shade", {
+  expect_false("#FFE3E3" %in% sci_palette(3, bars = TRUE))
+  expect_equal(sci_palette(1, bars = TRUE), "#E4002B")
+  expect_length(sci_palette(7, bars = TRUE), 7)
+  # boxes and lines are unchanged
+  expect_equal(sci_palette(3), c("#FFE3E3", "#F4B9C2", "#E4002B"))
+})
+
+test_that("cex_groups sets the size of the group labels beneath the bars", {
+  d <- hb_fixture()
+  grp_cex <- function(...) {
+    mt <- drawn_calls(stackedbarplotSCI(d, hb_cat, visit_nr, group = Arm, ...),
+                      "C_mtext")
+    # the group labels are the mtext calls drawing the arm names
+    labs <- Filter(function(a) any(a[[1]] %in% levels(factor(d$Arm))), mt)
+    unique(vapply(labs, `[[`, 0, 8))
+  }
+  expect_equal(grp_cex(cex_groups = 1.1), 1.1)
+  expect_true(grp_cex() <= 0.7)
+})
+
+test_that("plotByVisit hatches the missing segment as well", {
+  d <- hb_fixture()
+  tbl <- summaryByVisit(d, vars = "hb_cat", visit = "visit", group = "Arm",
+                        as_flex_table = FALSE)
+  res <- draw_quietly(plotByVisit(tbl, "hb_cat", missing = TRUE))
+  expect_equal(tail(dimnames(res$counts)[[1]], 1), "Missing")
+  hatch <- drawn_calls(plotByVisit(tbl, "hb_cat", missing = TRUE), "C_segments")
+  expect_true(any(vapply(hatch, function(a) identical(a$col, "grey35"), TRUE)))
+})
+
+test_that("empty segments are not drawn (their border would show as a line)", {
+  d <- three_arm_fixture()
+  rects <- drawn_calls(stackedbarplotSCI(d, grade, order = visit, group = arm,
+                                         missing = TRUE), "C_rect")
+  flat <- vapply(rects, function(a) any(a[[2]] == a[[4]]), TRUE)
+  expect_false(any(flat))
+})

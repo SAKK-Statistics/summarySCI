@@ -11,7 +11,8 @@
 #' * `stat_cont` sets what the line plot shows: `"median_range"` the median with
 #'   minimum and maximum, `"median_IQR"` the median with the quartiles,
 #'   `"mean_sd"` / `"mean_se"` the mean +/- one standard deviation / standard
-#'   error, and `"geomMean_sd"` the geometric mean alone;
+#'   error, and `"geomMean_sd"` the geometric mean divided and multiplied by
+#'   the geometric standard deviation;
 #' * the variable labels become the axis or legend titles;
 #' * `missing` / `missing_percent` decide whether missing values form a
 #'   segment of their own (as they are counted in the table's percentages),
@@ -54,13 +55,18 @@ summarizeByVisitSCI <- function(data, vars = NULL, group = NULL, labels = NULL,
                                 type = c("both", "table", "plot"),
                                 plot_cont = c("lineplot", "boxplot"),
                                 plot_args = list(),
-                                as_flex_table = TRUE, border = TRUE, ...) {
+                                as_flex_table = TRUE, border = TRUE,
+                                word_output = FALSE,
+                                file_path = paste0("SummaryByVisit_",
+                                                   format(Sys.Date(), "%Y%m%d"),
+                                                   ".docx"),
+                                ...) {
 
   if (missing(data)) stop("'data' must be specified.")
   data <- as.data.frame(data)
-  check_wrapper_args(list(...), plot_args, "summaryByVisit")
   type      <- match.arg(type)
   plot_cont <- match.arg(plot_cont)
+  check_wrapper_args(plot_args, type, word_output)
 
   tbl <- summaryByVisit(data, vars = vars, group = group, labels = labels,
                         stat_cont = stat_cont, stat_cat = stat_cat,
@@ -107,12 +113,7 @@ summarizeByVisitSCI <- function(data, vars = NULL, group = NULL, labels = NULL,
                                 group = group, ylab = labs[i], xlab = "Visit")))
       }
       # the line plot shows the statistic of the table
-      st <- switch(stat_cont,
-                   median_range = c("median", "range"),
-                   median_IQR   = c("median", "iqr"),
-                   mean_sd      = c("mean", "sd"),
-                   mean_se      = c("mean", "se"),
-                   geomMean_sd  = c("geomean", "none"))
+      st <- stat_cont_plot(stat_cont)
       list(fun = lineplotSCI, name = "line plot",
            args = list(var = v, order = order_col, group = group, visit = visit,
                        stat = st[1], interval = st[2],
@@ -123,5 +124,6 @@ summarizeByVisitSCI <- function(data, vars = NULL, group = NULL, labels = NULL,
   }
 
   wrapper_result(tbl, plots, type, as_flex_table, border,
-                 c("summarizeByVisitSCI", "summarizeSCI"))
+                 c("summarizeByVisitSCI", "summarizeSCI"),
+                 word_output = word_output, file_path = file_path)
 }
