@@ -256,6 +256,7 @@ test_that("geometric mean per visit is correct", {
   for (v in VISITS) {
     x <- vd$crp[vd$visit == v & !is.na(vd$crp)]
     expect_true(abs(nums(cont_cell(tbl, v))[1] - exp(mean(log(x)))) <= 0.005 + 1e-8, label = v)
+    expect_true(abs(nums(cont_cell(tbl, v))[2] - exp(sd(log(x)))) <= 0.005 + 1e-8, label = v)
   }
 })
 
@@ -528,8 +529,24 @@ test_that("more than 3 groups gives a clear error", {
   expect_error(sbv(d, vars = "weight", group = "arm4"), "3")
 })
 
+test_that("empty levels of the group are dropped, as in summaryTable()", {
+  d <- vd
+  d$arm <- factor(d$arm, levels = c("A", "B", "C"))           # C has no rows
+  expect_message(tbl <- sbv(d, vars = c("weight", "ecog"), group = "arm"),
+                 "Empty level(s) of 'arm' removed: C", fixed = TRUE)
+  h <- tbl$table_styling$header
+  shown <- h$column[grepl("^stat_", h$column) & !h$hide]
+  expect_equal(shown, c("stat_1", "stat_2"))
+  expect_true(startsWith(header_label(tbl, "stat_1"), "**A**"))
+  expect_true(startsWith(header_label(tbl, "stat_2"), "**B**"))
+  # the same table as without the empty level
+  ref <- sbv(vd, vars = c("weight", "ecog"), group = "arm")
+  expect_equal(tbl$table_body, ref$table_body)
 
-
-
-
+  # and the plots of the wrapper show the two arms only
+  res <- suppressMessages(summarizeByVisitSCI(d, vars = c("weight", "ecog"),
+                                              group = "arm", as_flex_table = FALSE))
+  expect_equal(rownames(res$plots$weight$numbers$centre), c("A", "B"))
+  expect_equal(dimnames(res$plots$ecog$numbers$counts)[[2]], c("A", "B"))
+})
 

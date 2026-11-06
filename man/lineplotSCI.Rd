@@ -14,7 +14,7 @@ lineplotSCI(
   group_names = NULL,
   group_names_short = NULL,
   stat = c("median", "mean", "geomean"),
-  interval = c("iqr", "range", "ci", "sd", "se", "none"),
+  interval = c("iqr", "range", "ci", "sd", "se", "gsd", "none"),
   interval_type = c("whiskers", "ribbon"),
   alpha = 0.05,
   dodge = 0,
@@ -45,6 +45,7 @@ lineplotSCI(
   legend_offset = c(0, 0),
   legend_cex = 1,
   legend_bty = "n",
+  stat_footnote = FALSE,
   ...
 )
 }
@@ -83,16 +84,20 @@ for the groups, to be displayed below the x-axis near the patient counts.
 Optional. Defaults to \code{group_names}.}
 
 \item{stat}{The summary statistic plotted as the point estimate: \code{"median"}
-(the default), \code{"mean"} or \code{"geomean"} (geometric mean, for positive values).}
+(the default), \code{"mean"} or \code{"geomean"} (geometric mean, for positive values:
+as in the tables, groups and time points with a value of zero or below are
+left out, with a warning).}
 
 \item{interval}{The quantity spanned by the error band around the point
 estimate. One of \code{"iqr"} (the default, 25th to 75th percentile, computed as
 in the summary tables, i.e. \code{quantile(type = 2)}), \code{"range"} (observed
 minimum to maximum), \code{"ci"} (a two-sided confidence interval at level
 \code{1 - alpha}), \code{"sd"} (point estimate +/- one standard deviation), \code{"se"}
-(point estimate +/- one standard error), or \code{"none"} to plot point
-estimates alone. With \code{stat = "geomean"}, only \code{"iqr"}, \code{"range"} and
-\code{"none"} are available.}
+(point estimate +/- one standard error), \code{"gsd"} (geometric mean
+divided and multiplied by the geometric standard deviation,
+\code{exp(sd(log(x)))}; only with \code{stat = "geomean"}), or \code{"none"} to plot point
+estimates alone. With \code{stat = "geomean"}, only \code{"gsd"}, \code{"iqr"}, \code{"range"}
+and \code{"none"} are available.}
 
 \item{interval_type}{The style in which the error band is drawn. Either
 \code{"whiskers"} (the default; vertical bars with caps) or \code{"ribbon"} (a shaded
@@ -195,6 +200,11 @@ inside the legend box. Default is \code{1}.}
 
 \item{legend_bty}{The type of box border to be drawn around the legend.
 Allowed values are \code{"n"} (transparent/no border, the default) and \code{"o"} (standard box frame).}
+
+\item{stat_footnote}{Show what the plot displays as a footnote in the
+bottom-right corner, beneath the x-axis title: \code{TRUE} for the default text
+(e.g. \code{"Median (Q1, Q3)"}), a character string for a text of your own, or \code{FALSE} (the
+default) for none.}
 
 \item{...}{Further graphical parameters passed on to \code{plot()}.}
 }

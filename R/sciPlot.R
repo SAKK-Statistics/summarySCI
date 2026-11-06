@@ -14,13 +14,14 @@
 #' @name sci_plot
 NULL
 
-# Build a sci_plot calling `fun(data = data, <args>)`. The column names in
-# `args` are character strings, which all plotting functions accept; the data
-# is referred to by name, so that error messages do not print the whole data
-# frame. The plot is drawn once on a null device, so that a problem shows at
-# once rather than when the plot is printed, and to record its numbers.
+# Build a sci_plot calling `fun(data, <args>)`, where `data` is the data or
+# (for plotByVisit()) the table. The column names in `args` are character
+# strings, which all plotting functions accept; the data is referred to by
+# name, so that error messages do not print the whole data frame. The plot is
+# drawn once on a null device, so that a problem shows at once rather than
+# when the plot is printed, and to record its numbers.
 new_sci_plot <- function(fun, fun_name, data, args, variable) {
-  cl  <- as.call(c(list(fun, data = quote(data)), args))
+  cl  <- as.call(c(list(fun, quote(data)), args))
   env <- new.env(parent = emptyenv())
   env$data <- data
   draw <- function() eval(cl, env)
@@ -147,18 +148,22 @@ save_plots <- function(x, file_name = NULL, file_path = ".", format = "png",
 }
 
 # Build one sci_plot per variable from `specs`, a named list (by variable) of
-# list(fun, name, args). `plot_args` override the defaults, each plot taking
-# the arguments its function has; arguments no plot uses give a warning.
+# list(fun, name, args, accepts, data); `data`, if given, replaces the common
+# data for that plot. `plot_args` override the defaults, each plot taking
+# those in `accepts` (by default the arguments of `fun`); arguments no plot
+# uses give a warning.
 build_plots <- function(specs, data, plot_args) {
   plots <- list()
   used  <- character()
   for (v in names(specs)) {
     s    <- specs[[v]]
     args <- s$args[!vapply(s$args, is.null, logical(1))]
-    fits <- intersect(names(plot_args), setdiff(names(formals(s$fun)), "..."))
+    accepts <- if (is.null(s$accepts)) names(formals(s$fun)) else s$accepts
+    fits <- intersect(names(plot_args), setdiff(accepts, "..."))
     args[fits] <- plot_args[fits]
     used <- c(used, fits)
-    plots[[v]] <- new_sci_plot(s$fun, s$name, data, args, v)
+    plots[[v]] <- new_sci_plot(s$fun, s$name,
+                               if (is.null(s$data)) data else s$data, args, v)
   }
   unused <- setdiff(names(plot_args), used)
   if (length(unused) > 0)
@@ -168,10 +173,10 @@ build_plots <- function(specs, data, plot_args) {
 }
 
 # Argument checks shared by the wrappers
-check_wrapper_args <- function(dots, plot_args, table_fun) {
-  if (any(c("word_output", "file_path") %in% names(dots)))
-    stop("Word output is not available in the wrappers yet; use ", table_fun,
-         "(..., word_output = TRUE) for the table.", call. = FALSE)
+check_wrapper_args <- function(plot_args, type, word_output) {
+  if (isTRUE(word_output) && type == "plot")
+    stop("'word_output' saves the table; use type = \"both\" or \"table\".",
+         call. = FALSE)
   if (!is.list(plot_args) || (length(plot_args) > 0 && is.null(names(plot_args))))
     stop("'plot_args' must be a named list, e.g. list(risk_table = TRUE).",
          call. = FALSE)
@@ -191,9 +196,14 @@ bar_spec <- function(v, label, group, stat_cat, missing, missing_percent,
 }
 
 # The object both wrappers return: the table (as flextable if requested;
-# NULL when only the plots were asked for) and the plots
-wrapper_result <- function(tbl, plots, type, as_flex_table, border, class) {
+# NULL when only the plots were asked for) and the plots. With 'word_output',
+# the table is saved as summaryTable() / summaryByVisit() save it.
+wrapper_result <- function(tbl, plots, type, as_flex_table, border, class,
+                           word_output = FALSE, file_path = NULL) {
+  ft <- if (type != "plot" && (isTRUE(as_flex_table) || isTRUE(word_output)))
+    to_flextable(tbl, border)
+  if (isTRUE(word_output)) save_word(ft, file_path)
   table <- if (type == "plot") NULL else
-    if (isTRUE(as_flex_table)) to_flextable(tbl, border) else tbl
+    if (isTRUE(as_flex_table)) ft else tbl
   structure(list(table = table, plots = plots), class = class)
 }

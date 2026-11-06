@@ -1,10 +1,12 @@
 # Helpers for test-boxplotSCI.R
 #
 # boxplotSCI() draws a plot and returns nothing useful, so to check the numbers
-# we spy on the graphics functions it imports (boxplot, mtext, axis, legend,
-# par, abline, title). Every call is still forwarded to the real function on a
-# null PDF device, and we record both the arguments and the return value
-# (for boxplot() that is the computed stats: whiskers, hinges, median, n, out).
+# we spy on draw_boxes(), which computes and draws the boxes, and on the
+# graphics functions it imports (mtext, axis, legend, par, abline, title).
+# Every call is still forwarded to the real function on a null PDF device, and
+# we record both the arguments and the return value (for draw_boxes() the
+# computed stats: whiskers, quartiles, median, n, out). The entries keep the
+# name 'boxplot'.
 
 capture_boxplotSCI <- function(...) {
   rec <- new.env(parent = emptyenv())
@@ -30,7 +32,7 @@ capture_boxplotSCI <- function(...) {
   }, add = TRUE)
 
   testthat::local_mocked_bindings(
-    boxplot = spy("boxplot", graphics::boxplot),
+    draw_boxes = spy("boxplot", draw_boxes),
     mtext   = spy("mtext",   graphics::mtext),
     axis    = spy("axis",    graphics::axis),
     legend  = spy("legend",  graphics::legend),
@@ -46,7 +48,7 @@ capture_boxplotSCI <- function(...) {
 
 # ---- Accessors for the recorded calls --------------------------------------
 
-# One element per boxplot() call (= per group in longitudinal mode)
+# One element per draw_boxes() call (= per group in longitudinal mode)
 box_stats <- function(rec) lapply(rec$boxplot, function(x) x$value$stats)
 box_n     <- function(rec) lapply(rec$boxplot, function(x) x$value$n)
 box_at    <- function(rec) lapply(rec$boxplot, function(x) x$args$at)
@@ -87,13 +89,13 @@ title_arg <- function(rec, what) {
 #
 #   Arm A, t = 1 : 1, 2, 3, 4, 5           -> stats 1, 2, 3, 4, 5      n = 5
 #   Arm A, t = 2 : 10, 20, 30, 40, 50      -> stats 10, 20, 30, 40, 50 n = 5
-#   Arm A, t = 3 : 2, 4, 6, 8, 100         -> hinges 4 / 8, IQR 4,
+#   Arm A, t = 3 : 2, 4, 6, 8, 100         -> quartiles 4 / 8, IQR 4,
 #                                             upper fence 8 + 6 = 14,
 #                                             so 100 is an outlier and the
 #                                             upper whisker stops at 8
 #                                          -> stats 2, 4, 6, 8, 8 n = 5, out 100
 #   Arm B, t = 1 : 5, 6, 7, 8, 9 (+ one NA)-> stats 5, 6, 7, 8, 9      n = 5
-#   Arm B, t = 2 : 1, 3, 5, 7              -> fivenum 1, 2, 4, 6, 7    n = 4
+#   Arm B, t = 2 : 1, 3, 5, 7              -> stats 1, 2, 4, 6, 7      n = 4
 #   Arm B, t = 3 : no observations         -> all NA                   n = 0
 make_fixture <- function() {
   data.frame(

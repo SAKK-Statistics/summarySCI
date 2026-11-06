@@ -26,6 +26,8 @@ stackedbar_draw(
   cex_lab = 1,
   cex_axis = 1,
   cex_n_patients = 0.7,
+  cex_groups = NULL,
+  missing_seg = NULL,
   risk_table = FALSE,
   missing_nr = 0,
   rotate_labels = FALSE,
@@ -38,6 +40,7 @@ stackedbar_draw(
   legend_offset = c(0, 0),
   legend_cex = 1,
   legend_bty = "n",
+  stat_footnote = NULL,
   ...
 )
 }
@@ -78,7 +81,9 @@ y-axis. Default is \code{NULL}, which falls back to automatic tick placement.}
 
 \item{col}{A character vector of hex colors or color names to use for the
 stacked segments, bottom to top. Recycled if shorter than the number of
-segments. Default is \code{NULL}, which automatically applies the SCI color palette.}
+segments. The missing-value segment (see \code{missing}) is always hatched and
+takes no color. Default is \code{NULL}, which applies the SCI color palette
+without its lightest shade.}
 
 \item{greyscale}{A logical toggle switch replacing the color palette by a
 sequential grey ramp, for print or black-and-white reproduction. Default is
@@ -95,7 +100,7 @@ contrasts better with the fill.}
 \item{cex_percent}{A numeric value specifying the font size of the percentage
 labels. Default is \code{NULL}, which sizes them to fit the width of the bars
 (at most \code{0.8}). A number is used as given, even if labels then overflow
-narrow bars. The group labels beneath the bars always shrink to fit.}
+narrow bars.}
 
 \item{digits}{A numeric value indicating the number of decimal places shown
 in the percentage labels. Default is \code{0}.}
@@ -108,8 +113,16 @@ cluster of group bars.}
 
 \item{cex_axis}{A numeric value specifying the font size of the axis tick marks. Default is \code{1}.}
 
-\item{cex_n_patients}{A numeric value specifying the font size of the group
-labels beneath the bars and of the table of patient numbers. Default is \code{0.7}.}
+\item{cex_n_patients}{A numeric value specifying the font size of the table
+of patient numbers. Default is \code{0.7}.}
+
+\item{cex_groups}{A numeric value specifying the font size of the group
+labels beneath the bars (several groups over time). Default is \code{NULL}, which
+uses \code{cex_n_patients} and shrinks the labels until they fit the bars. A
+number is used as given, even if long labels then overlap.}
+
+\item{missing_seg}{Index of the segment holding the missing values, drawn
+hatched instead of coloured. Default is \code{NULL} (none).}
 
 \item{risk_table}{A logical toggle switch enabling the table of patient
 numbers (the denominator of each bar) beneath the x-axis. Default is \code{FALSE}.}
@@ -151,6 +164,9 @@ inside the legend box. Default is \code{1}.}
 
 \item{legend_bty}{The type of box border to be drawn around the legend.
 Allowed values are \code{"n"} (no border, the default) and \code{"o"} (standard box frame).}
+
+\item{stat_footnote}{The text of the footnote in the bottom-right corner,
+or \code{NULL} for none (the callers turn \code{TRUE} into their default text).}
 
 \item{...}{Further graphical parameters passed on to \code{plot()}.}
 }

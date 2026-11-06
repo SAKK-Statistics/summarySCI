@@ -23,6 +23,8 @@ summarizeByVisitSCI(
   plot_args = list(),
   as_flex_table = TRUE,
   border = TRUE,
+  word_output = FALSE,
+  file_path = paste0("SummaryByVisit_", format(Sys.Date(), "\%Y\%m\%d"), ".docx"),
   ...
 )
 }
@@ -86,14 +88,27 @@ is built in every case, since it decides the type of each plot.}
 default) or \code{"boxplot"}.}
 
 \item{plot_args}{A named list of further arguments for the plotting
-functions, e.g. \code{list(risk_table = TRUE, col = c("grey", "black"))}. Each
-plot receives the arguments its function has.}
+functions, e.g. \code{list(risk_table = TRUE, dodge = 0.1)}. Each plot receives
+the arguments its function has, as in \code{\link[=lineplotSCI]{lineplotSCI()}}, \code{\link[=boxplotSCI]{boxplotSCI()}} and
+\code{\link[=stackedbarplotSCI]{stackedbarplotSCI()}}, except those that compute the numbers (such as
+\code{stat} or \code{interval}), which come from the table; an argument no plot uses
+gives a warning. For
+example, \code{stat_footnote = TRUE} adds a footnote saying what each plot shows:
+for the line plot the statistic of \code{stat_cont} (e.g. "Median (Q1, Q3)").}
 
 \item{as_flex_table}{Logical. If TRUE (default) the gtsummary object is
 converted to a flextable object. Useful when rendering to Word.}
 
 \item{border}{Logical. If TRUE, a border will be drawn around the table. Only
 available if flex_table = TRUE. Default is TRUE.}
+
+\item{word_output}{Logical. If TRUE, the table is also saved in a word document.}
+
+\item{file_path}{Character string.
+Specify the path of the Word document containing the table.
+Only used when \code{word_output} is TRUE. Needs to end with ".docx".
+Default to "SummaryByVisit_YYYYMMDD.docx" (today's date) in the working
+directory.}
 
 \item{...}{Further arguments passed on to \code{\link[=summaryByVisit]{summaryByVisit()}}, e.g.
 \code{digits_cont}, \code{add_n} or \code{overall}.}
@@ -105,24 +120,32 @@ list with \code{table} and \code{plots}; see \code{\link[=summarizeSCI]{summariz
 \description{
 Produces the table of \code{\link[=summaryByVisit]{summaryByVisit()}} and one plot per variable (or
 either of them alone, see \code{type}), the plots
-over the visits: a line plot (\code{\link[=lineplotSCI]{lineplotSCI()}}) or boxplots
-(\code{\link[=boxplotSCI]{boxplotSCI()}}) for continuous variables, and stacked barplots
-(\code{\link[=stackedbarplotSCI]{stackedbarplotSCI()}}) for categorical ones. The type of each plot follows
-the type the variable has in the table, so that table and plots agree.
+over the visits: a line plot or boxplots (\code{\link[=boxplotSCI]{boxplotSCI()}}) for continuous
+variables, and stacked barplots for categorical ones. The type of each plot
+follows the type the variable has in the table.
 }
 \details{
-The settings of the table carry over to the plots:
+The line plots and stacked bars are drawn from the numbers printed in the
+table, as \code{\link[=plotByVisit]{plotByVisit()}} does, so that they show exactly what the table
+shows (with its rounding):
 \itemize{
 \item \code{stat_cont} sets what the line plot shows: \code{"median_range"} the median with
 minimum and maximum, \code{"median_IQR"} the median with the quartiles,
 \code{"mean_sd"} / \code{"mean_se"} the mean +/- one standard deviation / standard
-error, and \code{"geomMean_sd"} the geometric mean alone;
-\item the variable labels become the axis or legend titles;
+error, and \code{"geomMean_sd"} the geometric mean divided and multiplied by
+the geometric standard deviation;
+\item the variable labels become the axis or legend titles, the column headers
+the group names, and the N columns the numbers of the risk table;
 \item \code{missing} / \code{missing_percent} decide whether missing values form a
 segment of their own (as they are counted in the table's percentages),
 and \code{stat_cat = "n"} shows counts instead of percentages;
-\item \code{continuous_as_categorical} variables are plotted as stacked bars.
+\item \code{continuous_as_categorical} variables are plotted as stacked bars, and
+with \code{overall = TRUE} the overall column is plotted as one more group.
 }
+
+Boxplots show more than the table holds, and are drawn from the data: from
+the rows the table summarizes, with the box at the quartiles of the table
+(see \code{\link[=boxplotSCI]{boxplotSCI()}}).
 
 The visits appear in the order of the table. If \code{order} is given, its values
 also set the spacing of the visits in the line plots.

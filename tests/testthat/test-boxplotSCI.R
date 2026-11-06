@@ -58,28 +58,69 @@ test_that("box statistics per group and timepoint match hand-computed values", {
   expect_length(rec$boxplot[[2]]$value$out, 0)
 })
 
-test_that("box statistics agree with boxplot.stats() on random data", {
+test_that("the box spans the quartiles of the tables, not Tukey's hinges", {
+  # 1, 2, 3, 4, 5, 6, 20 (n = 7): quantile(type = 2) gives Q1 = 2 and Q3 = 6
+  # (the 2nd and 6th value), Tukey's hinges are 2.5 and 5.5. With Q1 = 2,
+  # Q3 = 6 the upper fence is 6 + 1.5 * 4 = 12, so 20 is an outlier and the
+  # upper whisker stops at 6.
+  df  <- data.frame(value = c(1, 2, 3, 4, 5, 6, 20))
+  rec <- capture_boxplotSCI(data = df, var = "value")
+  expect_equal(box_stats(rec)[[1]][, 1], c(1, 2, 4, 6, 6))
+  expect_equal(rec$boxplot[[1]]$value$out, 20)
+  expect_false(isTRUE(all.equal(box_stats(rec)[[1]][2:4, 1],
+                                stats::fivenum(df$value)[2:4])))
+
+  # the same numbers as the "median_IQR" table
+  df$arm <- "A"
+  tbl <- suppressMessages(summaryTable(df, vars = "value", stat_cont = "median_IQR",
+                                       missing = FALSE, as_flex_table = FALSE))
+  expect_equal(tbl$table_body$stat_1[1], "4.0 (2.0, 6.0)")
+
+  # range = 0: whiskers to the minimum and maximum, no outliers
+  rec0 <- capture_boxplotSCI(data = df, var = "value", range = 0)
+  expect_equal(box_stats(rec0)[[1]][, 1], c(1, 2, 4, 6, 20))
+  expect_length(rec0$boxplot[[1]]$value$out, 0)
+  # range = 0.5: fences at 2 - 2 = 0 and 6 + 2 = 8
+  rec5 <- capture_boxplotSCI(data = df, var = "value", range = 0.5)
+  expect_equal(box_stats(rec5)[[1]][, 1], c(1, 2, 4, 6, 6))
+})
+
+test_that("box statistics agree with quantile(type = 2) on random data", {
   set.seed(20261008)
   df <- expand.grid(id = 1:40, time = c(0, 3, 6, 12), arm = c("Ctl", "Trt"))
   df$value <- round(rnorm(nrow(df), mean = 100 + df$time, sd = 15), 1)
   df$value[sample(nrow(df), 25)] <- NA            # sprinkle missing values
   df <- df[sample(nrow(df), 260), ]               # unbalanced and unsorted
+  df$value[1:3] <- c(300, -50, 250)               # some outliers
 
   rec <- capture_boxplotSCI(data = df, var = "value", order = "time", group = "arm")
 
   arms  <- levels(factor(df$arm))
   times <- sort(unique(df$time))
   for (g in seq_along(arms)) {
+    out <- numeric()
     for (t in seq_along(times)) {
       x <- df$value[df$arm == arms[g] & df$time == times[t]]
-      x <- x[!is.na(x)]
-      expected <- grDevices::boxplot.stats(x)
-      expect_equal(box_stats(rec)[[g]][, t], expected$stats,
+      x <- sort(x[!is.na(x)])
+      q <- stats::quantile(x, c(0.25, 0.5, 0.75), type = 2, names = FALSE)
+      fence  <- q[c(1, 3)] + c(-1.5, 1.5) * (q[3] - q[1])
+      inside <- x >= fence[1] & x <= fence[2]
+      expect_equal(box_stats(rec)[[g]][, t],
+                   c(min(x[inside]), q, max(x[inside])),
                    info = paste(arms[g], times[t]))
-      expect_equal(box_n(rec)[[g]][t], expected$n,
-                   info = paste(arms[g], times[t]))
+      expect_equal(box_n(rec)[[g]][t], length(x), info = paste(arms[g], times[t]))
+      out <- c(out, x[!inside])
     }
+    expect_setequal(rec$boxplot[[g]]$value$out, out)
   }
+})
+
+test_that("notches and varwidth still work", {
+  df <- make_fixture()
+  # (bxp() warns that notches of such small groups go beyond the box)
+  expect_no_error(suppressWarnings(
+    capture_boxplotSCI(data = df, var = "value", order = "time",
+                       group = "arm", notch = TRUE, varwidth = TRUE)))
 })
 
 test_that("rows with missing group or missing time do not leak into any box", {

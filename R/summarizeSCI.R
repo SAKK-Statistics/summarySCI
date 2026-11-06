@@ -7,6 +7,8 @@
 #' ([stackedbarplotSCI()]). The type of each plot follows the type the
 #' variable has in the table, so that table and plots always agree.
 #'
+#' The plots are drawn from the same rows as the table, and the box of the
+#' boxplot spans the quartiles as the table computes them (see [boxplotSCI()]).
 #' The settings of the table carry over to the plots: the variable labels
 #' become the axis or legend titles, `missing` / `missing_percent` decide
 #' whether missing values form a segment of their own (as they are counted in
@@ -19,13 +21,17 @@
 #' is built in every case, since it decides the type of each plot.
 #' @param plot_args A named list of further arguments for the plotting
 #' functions, e.g. `list(risk_table = TRUE, col = c("grey", "black"))`. Each
-#' plot receives the arguments its function has.
+#' plot receives the arguments its function has, as in [boxplotSCI()] and
+#' [stackedbarplotSCI()]; an argument no plot uses gives a warning. For
+#' example, `stat_footnote = TRUE` adds a footnote saying what each plot shows
+#' (the box and whiskers, or the denominator of the percentages).
 #' @param ... Further arguments passed on to [summaryTable()], e.g. `test`,
 #' `ci`, `overall` or `digits_cont`.
 #'
 #' @return An object of class `summarizeSCI`, a list with
 #' * `table`: the table, a flextable or (with `as_flex_table = FALSE`) a
-#'   gtsummary object; `NULL` with `type = "plot"`;
+#'   gtsummary object; `NULL` with `type = "plot"`. With `word_output = TRUE`
+#'   it is also saved to `file_path`, as [summaryTable()] does;
 #' * `plots`: a named list with one plot per variable, e.g. `res$plots$hb`;
 #'   empty with `type = "table"`. Printing a plot draws it; [save_plots()]
 #'   writes them to files.
@@ -56,12 +62,17 @@ summarizeSCI <- function(data, vars = NULL, group = NULL, labels = NULL,
                          missing = TRUE, missing_percent = TRUE,
                          missing_text = "Missing",
                          type = c("both", "table", "plot"), plot_args = list(),
-                         as_flex_table = TRUE, border = TRUE, ...) {
+                         as_flex_table = TRUE, border = TRUE,
+                         word_output = FALSE,
+                         file_path = paste0("SummaryTable_",
+                                            format(Sys.Date(), "%Y%m%d"),
+                                            ".docx"),
+                         ...) {
 
   if (missing(data)) stop("'data' must be specified.")
   data <- as.data.frame(data)
   type <- match.arg(type)
-  check_wrapper_args(list(...), plot_args, "summaryTable")
+  check_wrapper_args(plot_args, type, word_output)
 
   tbl <- summaryTable(data, vars = vars, group = group, labels = labels,
                       stat_cont = stat_cont, stat_cat = stat_cat,
@@ -74,7 +85,9 @@ summarizeSCI <- function(data, vars = NULL, group = NULL, labels = NULL,
     # type and label of each variable, as the table has them
     tb    <- as.data.frame(tbl$table_body)
     rows  <- tb$row_type == "label" & !duplicated(tb$variable)
-    types <- stats::setNames(tb$var_type[rows], tb$variable[rows])
+    # (with missing_percent = "both" two tables are merged: var_type_1)
+    vtype <- if (is.null(tb$var_type)) tb$var_type_1 else tb$var_type
+    types <- stats::setNames(vtype[rows], tb$variable[rows])
     labs  <- stats::setNames(tb$label[rows], tb$variable[rows])
 
     specs <- lapply(stats::setNames(names(types), names(types)), function(v) {
@@ -90,7 +103,8 @@ summarizeSCI <- function(data, vars = NULL, group = NULL, labels = NULL,
     plots <- build_plots(specs, data, plot_args)
   }
 
-  wrapper_result(tbl, plots, type, as_flex_table, border, "summarizeSCI")
+  wrapper_result(tbl, plots, type, as_flex_table, border, "summarizeSCI",
+                 word_output = word_output, file_path = file_path)
 }
 
 #' @export

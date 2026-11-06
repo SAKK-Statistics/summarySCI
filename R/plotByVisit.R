@@ -11,8 +11,8 @@
 #' * `"median_range"`: median with whiskers from minimum to maximum;
 #' * `"median_IQR"`: median with whiskers from the first to the third quartile;
 #' * `"mean_sd"` / `"mean_se"`: mean +/- one standard deviation / standard error;
-#' * `"geomMean_sd"`: geometric mean only, since a standard deviation on the
-#'   original scale gives no meaningful interval around it.
+#' * `"geomMean_sd"`: geometric mean divided and multiplied by the geometric
+#'   standard deviation.
 #'
 #' Since the numbers are read from the printed table, they carry its rounding
 #' (`digits_cont` / `digits_cat`). Visits appear on the x-axis in the order
@@ -92,6 +92,9 @@ plotByVisit <- function(tbl, var = NULL, stat_cont = NULL,
 
   args <- list(...)
   if (is.null(args[["xlab"]])) args[["xlab"]] <- "Visit"
+  # x positions of the visits (summarizeByVisitSCI() passes those of 'order')
+  xs <- if (is.null(args[["xs"]])) seq_along(visits) else args[["xs"]]
+  args[["xs"]] <- NULL
 
   if (type == "continuous") {
     centre <- lower <- upper <- matrix(NA_real_, length(groups), length(visits),
@@ -104,14 +107,18 @@ plotByVisit <- function(tbl, var = NULL, stat_cont = NULL,
     obs[idx]    <- sm$n
 
     if (is.null(args[["ylab"]])) args[["ylab"]] <- var
-    xs  <- seq_along(visits)
+    st <- stat_cont_plot(detect_stat_cont(tbl, stat_cont))
+    args[["stat_footnote"]] <- footnote_text(args[["stat_footnote"]],
+                                             line_note(st[1], st[2]))
     res <- do.call(lineplot_draw,
                    c(list(centre = centre, lower = lower, upper = upper,
                           obs = obs, xs = xs, at_x = xs, visit = visits),
                      args))
   } else {
     if (!isTRUE(missing)) sm <- sm[sm$level != missing_text, , drop = FALSE]
+    # the missing-value segment on top of the stack, hatched
     levs   <- unique(sm$level)
+    levs   <- c(setdiff(levs, missing_text), intersect(levs, missing_text))
     counts <- array(0, dim = c(length(levs), length(groups), length(visits)),
                     dimnames = list(levs, groups, visits))
     counts[cbind(match(sm$level, levs), match(sm$group, groups),
@@ -120,6 +127,12 @@ plotByVisit <- function(tbl, var = NULL, stat_cont = NULL,
     n <- apply(counts, c(2, 3), sum)
 
     if (is.null(args[["legend_title"]])) args[["legend_title"]] <- var
+    if (is.null(args[["missing_seg"]]) && missing_text %in% levs)
+      args[["missing_seg"]] <- match(missing_text, levs)
+    args[["stat_footnote"]] <- footnote_text(
+      args[["stat_footnote"]],
+      bar_note(if (is.null(args[["scale"]])) "percent" else args[["scale"]],
+               missing_shown = !is.null(args[["missing_seg"]])))
     res <- do.call(stackedbar_draw, c(list(counts = counts, n = n), args))
   }
 
@@ -271,8 +284,8 @@ parse_continuous <- function(x, stat_type) {
          mean_sd      = ,
          mean_se      = list(centre = centre, lower = centre - first,
                              upper = centre + first),
-         geomMean_sd  = list(centre = centre, lower = rep(NA_real_, length(x)),
-                             upper = rep(NA_real_, length(x))))
+         geomMean_sd  = list(centre = centre, lower = centre / first,
+                             upper = centre * first))
 }
 
 stop_unknown_stat <- function() {

@@ -44,6 +44,7 @@ lineplot_draw(
   legend_offset = c(0, 0),
   legend_cex = 1,
   legend_bty = "n",
+  stat_footnote = NULL,
   ...
 )
 }
@@ -168,6 +169,9 @@ inside the legend box. Default is \code{1}.}
 
 \item{legend_bty}{The type of box border to be drawn around the legend.
 Allowed values are \code{"n"} (transparent/no border, the default) and \code{"o"} (standard box frame).}
+
+\item{stat_footnote}{The text of the footnote in the bottom-right corner,
+or \code{NULL} for none (the callers turn \code{TRUE} into their default text).}
 
 \item{...}{Further graphical parameters passed on to \code{plot()}.}
 }

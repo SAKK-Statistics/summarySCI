@@ -2,6 +2,14 @@
 #'
 #' Generates boxplots over time for one or multiple sub-groups.
 #'
+#' The box spans the first to the third quartile with the median inside,
+#' computed as in the summary tables ([summaryTable()], [summaryByVisit()]:
+#' `quantile(type = 2)`), so that a boxplot and a `"median_IQR"` table show
+#' the same numbers. (`boxplot()` itself draws Tukey's hinges, which can differ
+#' slightly.) The whiskers reach the most extreme values within `range` (1.5 by
+#' default) times the box length from the box; values beyond are drawn as
+#' points.
+#'
 #' @param data A data frame or tibble containing the data to be plotted.
 #' @param var Name of the column in `data` indicating the measurement to be
 #' plotted. Supports bare or quoted column names.
@@ -76,9 +84,15 @@
 #' legacy use, where, for a single timepoint, multiple groups were used as "timepoint" variable.
 #' If set to `TRUE`, it treats timepoints as individual categories,applying sequential coloring
 #' and rendering a matching tracking legend. Default is `FALSE`.
-#' @param ... Further graphical parameters passed on to `boxplot()`, e.g.
-#' `lwd`, `border` or `outline = FALSE` (no points for outliers).
-#' @importFrom graphics par boxplot axis mtext title legend abline
+#' @param stat_footnote Show what the plot displays as a footnote in the
+#' bottom-right corner, beneath the x-axis title: `TRUE` for the default text
+#' (e.g. the definition of box and whiskers), a character string for a text of your own, or `FALSE` (the
+#' default) for none.
+#' @param ... Further graphical parameters passed on to `bxp()`, which draws
+#' the boxes for `boxplot()`, e.g. `lwd`, `border`, `outline = FALSE` (no
+#' points for outliers) or `range` (the whisker length, see above; `0` for
+#' whiskers to the minimum and maximum).
+#' @importFrom graphics par bxp axis mtext title legend abline
 #' @importFrom grDevices colorRampPalette
 #'
 #' @examples
@@ -141,6 +155,7 @@ boxplotSCI <- function(data,
                               risk_table = NULL,
                               missing_nr = 0,
                               color_time = FALSE,
+                              stat_footnote = FALSE,
                               ...) {
 
   # 1. Checks, input validation and graphical parameters
@@ -180,6 +195,11 @@ boxplotSCI <- function(data,
     master_timepoints <- 1
   }
   n_timepoints <- length(master_timepoints)
+  # one label per time point (that of its first row)
+  x_axis_labels <- if (is.null(visit) || is.null(order)) master_timepoints else
+    as.character(tapply(as.character(data[[visit]]),
+                        factor(data[[order]], levels = master_timepoints),
+                        function(z) z[1L]))
 
   # patient numbers: by default over time only (single time points: none)
   if (is.null(risk_table)) risk_table <- !(is.null(order) || n_timepoints == 1)
@@ -188,7 +208,10 @@ boxplotSCI <- function(data,
   if (is.null(xlab)) xlab <- ifelse(is.null(order) || n_timepoints == 1, "Group", "Time")
 
   # Dynamic layout tracking, shared with lineplotSCI() and stackedbarplotSCI()
-  lay <- sci_layout(n_timepoints, group_number, risk_table)
+  note <- footnote_text(stat_footnote,
+                        box_note(if (is.null(list(...)$range)) 1.5 else list(...)$range))
+  lay <- sci_layout(n_timepoints, group_number, risk_table,
+                    footnote = !is.null(note))
   if (is.null(xlab_line)) xlab_line <- lay$xlab_line
 
   # SCI color palette
@@ -237,13 +260,9 @@ boxplotSCI <- function(data,
 
   if (is.null(order) || n_timepoints == 1) {
     # without a grouping variable, a single box of all observations
-    if (is.null(group)) {
-      boxplot(data[[var]], xlab = "", ylab = "", col = col,
-              xaxt = "n", yaxt = "n", ylim = ylim, boxwex = boxwex, ...)
-    } else {
-      boxplot(data[[var]] ~ data[[group]], xlab = "", ylab = "", col = col,
-              xaxt = "n", yaxt = "n", ylim = ylim, boxwex = boxwex, ...)
-    }
+    values <- if (is.null(group)) list(data[[var]]) else
+      split(data[[var]], data[[group]])
+    draw_boxes(values, col = col, ylim = ylim, boxwex = boxwex, ...)
 
     axis(side = 1, at = 1:group_number,
          labels = if (is.null(group)) "" else group_names, cex.axis = cex_axis)
@@ -263,10 +282,11 @@ boxplotSCI <- function(data,
 
       current_box_col <- if (color_time && group_number == 1) col else col[g]
 
-      boxplot(g_subset[[var]] ~ factor(g_subset[[order]], levels = master_timepoints),
-              col = current_box_col, at = at_positions, add = (g > 1),
-              xaxt = "n", yaxt = "n", xlab = "", ylab = "", ylim = ylim, boxwex = boxwex,
-              xlim = c(0.5, n_timepoints + 0.5), ...)
+      draw_boxes(split(g_subset[[var]],
+                       factor(g_subset[[order]], levels = master_timepoints)),
+                 col = current_box_col, at = at_positions, add = (g > 1),
+                 ylim = ylim, boxwex = boxwex,
+                 xlim = c(0.5, n_timepoints + 0.5), ...)
 
       if (risk_table) {
         n_counts <- if (nrow(g_subset) > 0) {
@@ -282,7 +302,6 @@ boxplotSCI <- function(data,
       }
     }
 
-    x_axis_labels <- if (is.null(visit)) master_timepoints else unique(data[order(data[[order]]), visit])
     axis(side = 1, at = 1:n_timepoints, labels = x_axis_labels, cex.axis = cex_axis)
   }
 
@@ -292,6 +311,7 @@ boxplotSCI <- function(data,
   title(main = main)
   title(xlab = xlab, line = xlab_line, cex.lab = cex_lab)
   title(ylab = ylab, line = ylab_line, cex.lab = cex_lab)
+  draw_footnote(note, lay$note_line)
 
   # Show legend if multiple groups exist OR if there are multiple timepoints to track
   show_legend <- group_number > 1 || n_timepoints > 1
@@ -299,7 +319,7 @@ boxplotSCI <- function(data,
   if (show_legend) {
     if (group_number == 1 && color_time) {
       # Legacy Mode active: display distinct timepoint steps
-      legend_labels <- if (is.null(visit)) master_timepoints else unique(data[order(data[[order]]), visit])
+      legend_labels <- x_axis_labels
       legend_col    <- col
     } else if (group_number == 1 && !color_time) {
       # Standard Single Group Longitudinal: display the cohort name or fall back to the tested variable name
@@ -326,4 +346,34 @@ boxplotSCI <- function(data,
     if (is.null(col_lines)) col_lines <- "grey"
     abline(h = lines, lty = lty, col = col_lines)
   }
+}
+
+# boxplot() with the box at the quartiles of the tables (quantile type 2)
+# instead of Tukey's hinges; whiskers reach the most extreme values within
+# 'range' box lengths of the box, the values beyond are outliers. 'values' is
+# a list with the observations of each box; '...' goes to bxp().
+draw_boxes <- function(values, col, range = 1.5, ...) {
+  st <- lapply(values, function(x) {
+    x <- x[!is.na(x)]
+    if (length(x) == 0L)
+      return(list(stats = rep(NA_real_, 5), conf = c(NA_real_, NA_real_),
+                  out = numeric()))
+    q   <- stats::quantile(x, c(0.25, 0.5, 0.75), type = 2, names = FALSE)
+    lim <- if (range > 0) q[c(1, 3)] + c(-1, 1) * range * (q[3] - q[1]) else
+      c(-Inf, Inf)
+    inside <- x >= lim[1] & x <= lim[2]
+    list(stats = c(min(x[inside]), q, max(x[inside])),
+         conf  = q[2] + c(-1, 1) * 1.58 * (q[3] - q[1]) / sqrt(length(x)),
+         out   = x[!inside])
+  })
+  st  <- unname(st)
+  out <- lapply(st, `[[`, "out")
+  z <- list(stats = vapply(st, `[[`, numeric(5), "stats"),
+            conf  = vapply(st, `[[`, numeric(2), "conf"),
+            n     = vapply(unname(values), function(x) sum(!is.na(x)), numeric(1)),
+            out   = unlist(out, use.names = FALSE),
+            group = rep(seq_along(out), lengths(out)),
+            names = names(values))
+  bxp(z, boxfill = col, xaxt = "n", yaxt = "n", ann = FALSE, ...)
+  invisible(z)
 }

@@ -61,10 +61,13 @@ test_that("mean +/- SE is read correctly", {
                    k = 2)
 })
 
-test_that("geometric mean is read, without an interval", {
+test_that("geometric mean and geometric SD are read correctly", {
   d <- hb_fixture()
+  # bounds are the product / quotient of two rounded numbers: the error is at
+  # most (geometric mean + geometric SD + 1) rounding units
   check_continuous(d, "hb", "Arm", "geomMean_sd",
-                   function(x) c(exp(mean(log(x))), NA, NA))
+                   function(x) exp(mean(log(x))) * exp(sd(log(x)))^c(0, -1, 1),
+                   digits = 4, k = 3 + max(d$hb, na.rm = TRUE))
 })
 
 test_that("ungrouped tables give a single 'Overall' line", {

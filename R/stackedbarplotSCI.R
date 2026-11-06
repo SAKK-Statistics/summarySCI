@@ -49,8 +49,9 @@
 #' @param scale The quantity on the y-axis. Either `"percent"` (the default) or
 #' `"count"`.
 #' @param missing A logical toggle switch adding missing values of `var` as a
-#' segment of their own, on top of the stack. Default is `FALSE`, which drops
-#' them. Only used when `var` is a single column.
+#' segment of their own, on top of the stack, hatched in grey on white rather
+#' than coloured. Default is `FALSE`, which drops them. Only used when `var` is
+#' a single column.
 #' @param missing_text Legend text for the missing-value segment. Default is
 #' `"Missing"`.
 #' @param main Title of the plot. Defaults to `""` (no title).
@@ -65,7 +66,9 @@
 #' y-axis. Default is `NULL`, which falls back to automatic tick placement.
 #' @param col A character vector of hex colors or color names to use for the
 #' stacked segments, bottom to top. Recycled if shorter than the number of
-#' segments. Default is `NULL`, which automatically applies the SCI color palette.
+#' segments. The missing-value segment (see `missing`) is always hatched and
+#' takes no color. Default is `NULL`, which applies the SCI color palette
+#' without its lightest shade.
 #' @param greyscale A logical toggle switch replacing the color palette by a
 #' sequential grey ramp, for print or black-and-white reproduction. Default is
 #' `FALSE`. Ignored if `col` is supplied.
@@ -78,7 +81,7 @@
 #' @param cex_percent A numeric value specifying the font size of the percentage
 #' labels. Default is `NULL`, which sizes them to fit the width of the bars
 #' (at most `0.8`). A number is used as given, even if labels then overflow
-#' narrow bars. The group labels beneath the bars always shrink to fit.
+#' narrow bars.
 #' @param digits A numeric value indicating the number of decimal places shown
 #' in the percentage labels. Default is `0`.
 #' @param bar_width A numeric value giving the width of each bar in x-axis
@@ -86,8 +89,12 @@
 #' cluster of group bars.
 #' @param cex_lab A numeric value specifying the font size of the main axis labels. Default is `1`.
 #' @param cex_axis A numeric value specifying the font size of the axis tick marks. Default is `1`.
-#' @param cex_n_patients A numeric value specifying the font size of the group
-#' labels beneath the bars and of the table of patient numbers. Default is `0.7`.
+#' @param cex_n_patients A numeric value specifying the font size of the table
+#' of patient numbers. Default is `0.7`.
+#' @param cex_groups A numeric value specifying the font size of the group
+#' labels beneath the bars (several groups over time). Default is `NULL`, which
+#' uses `cex_n_patients` and shrinks the labels until they fit the bars. A
+#' number is used as given, even if long labels then overlap.
 #' @param risk_table A logical toggle switch enabling the table of patient
 #' numbers (the denominator of each bar) beneath the x-axis. Default is `FALSE`.
 #' @param missing_nr A numeric or character value indicating how zero-count patient
@@ -117,6 +124,10 @@
 #' inside the legend box. Default is `1`.
 #' @param legend_bty The type of box border to be drawn around the legend.
 #' Allowed values are `"n"` (no border, the default) and `"o"` (standard box frame).
+#' @param stat_footnote Show what the bars display as a footnote in the
+#' bottom-right corner, beneath the x-axis title: `TRUE` for the default text
+#' (e.g. `"\% of patients with a non-missing value"`), a character string for a
+#' text of your own, or `FALSE` (the default) for none.
 #' @param ... Further graphical parameters passed on to `plot()`.
 #'
 #' @return Invisibly, a list with `counts` and `percent`, arrays indexed by
@@ -159,13 +170,14 @@ stackedbarplotSCI <- function(data, var, order = NULL, visit = NULL,
                               percent_labels = TRUE, col_percent = NULL,
                               cex_percent = NULL, digits = 0, bar_width = NULL,
                               cex_lab = 1, cex_axis = 1, cex_n_patients = 0.7,
+                              cex_groups = NULL,
                               risk_table = FALSE, missing_nr = 0,
                               rotate_labels = FALSE,
                               mar_custom = NULL, xlab_line = NULL,
                               ylab_line = 3.0, xlab_position = NULL,
                               legend_position = "top", legend_title = NULL,
                               legend_offset = c(0, 0), legend_cex = 1,
-                              legend_bty = "n", ...) {
+                              legend_bty = "n", stat_footnote = FALSE, ...) {
 
   if (missing(data)) stop("'data' must be specified.")
   data <- as.data.frame(data)
@@ -218,9 +230,11 @@ stackedbarplotSCI <- function(data, var, order = NULL, visit = NULL,
     # as in summaryTable(); factor levels are kept
     lev <- if (is.factor(x)) levels(x) else natural_levels(x)
     x   <- factor(as.character(x), levels = lev)
+    missing_seg <- NULL
     if (isTRUE(missing) && anyNA(x)) {
       lev <- c(lev, missing_text)
       x   <- factor(ifelse(is.na(x), missing_text, as.character(x)), levels = lev)
+      missing_seg <- length(lev)
     }
     counts <- unclass(table(x, gg, tt))
     n      <- apply(counts, c(2, 3), sum)
@@ -242,6 +256,7 @@ stackedbarplotSCI <- function(data, var, order = NULL, visit = NULL,
     n <- if (is.null(id_name)) unclass(table(gg, tt)) else
       tapply(data[[id_name]], list(gg, tt), function(z) length(unique(z)))
     n[is.na(n)] <- 0
+    missing_seg <- NULL
   }
   names(dimnames(counts)) <- NULL
   n <- matrix(n, nrow = nlevels(gg), dimnames = list(levels(gg), levels(tt)))
@@ -259,13 +274,19 @@ stackedbarplotSCI <- function(data, var, order = NULL, visit = NULL,
                   percent_labels = percent_labels, col_percent = col_percent,
                   cex_percent = cex_percent, digits = digits, bar_width = bar_width,
                   cex_lab = cex_lab, cex_axis = cex_axis,
-                  cex_n_patients = cex_n_patients, risk_table = risk_table,
+                  cex_n_patients = cex_n_patients, cex_groups = cex_groups,
+                  missing_seg = missing_seg, risk_table = risk_table,
                   missing_nr = missing_nr, rotate_labels = rotate_labels,
                   mar_custom = mar_custom, xlab_line = xlab_line,
                   ylab_line = ylab_line, xlab_position = xlab_position,
                   legend_position = legend_position, legend_title = legend_title,
                   legend_offset = legend_offset, legend_cex = legend_cex,
-                  legend_bty = legend_bty, ...)
+                  legend_bty = legend_bty,
+                  stat_footnote = footnote_text(
+                    stat_footnote,
+                    bar_note(scale, missing_shown = !is.null(missing_seg),
+                             yes_no = length(var_name) > 1L)),
+                  ...)
 }
 
 #' Draw a stacked barplot from pre-computed counts
@@ -279,6 +300,10 @@ stackedbarplotSCI <- function(data, var, order = NULL, visit = NULL,
 #' @param n Numeric group-by-time matrix of denominators for the percentages.
 #' @param visit Character vector of labels for the time points, one per
 #' column of the third dimension of `counts`.
+#' @param missing_seg Index of the segment holding the missing values, drawn
+#' hatched instead of coloured. Default is `NULL` (none).
+#' @param stat_footnote The text of the footnote in the bottom-right corner,
+#' or `NULL` for none (the callers turn `TRUE` into their default text).
 #'
 #' @return Invisibly, a list with `counts`, `n` and `percent`.
 #' @keywords internal
@@ -290,14 +315,16 @@ stackedbar_draw <- function(counts, n, visit = dimnames(counts)[[3]],
                             percent_labels = TRUE, col_percent = NULL,
                             cex_percent = NULL, digits = 0, bar_width = NULL,
                             cex_lab = 1, cex_axis = 1, cex_n_patients = 0.7,
+                            cex_groups = NULL, missing_seg = NULL,
                             risk_table = FALSE, missing_nr = 0,
                             rotate_labels = FALSE, mar_custom = NULL,
                             xlab_line = NULL, ylab_line = 3.0,
                             xlab_position = NULL,
                             legend_position = "top", legend_title = NULL,
                             legend_offset = c(0, 0), legend_cex = 1,
-                            legend_bty = "n", ...) {
+                            legend_bty = "n", stat_footnote = NULL, ...) {
 
+  note   <- if (is.character(stat_footnote)) stat_footnote
   n_lev  <- dim(counts)[1]
   n_grp  <- dim(counts)[2]
   n_time <- dim(counts)[3]
@@ -317,21 +344,28 @@ stackedbar_draw <- function(counts, n, visit = dimnames(counts)[[3]],
   heights[is.na(heights)] <- 0
 
   # --- Colors ----------------------------------------------------------------
+  # the missing segment is hatched in grey on white, so that it reads as
+  # "no answer" in colour and in black-and-white alike; the colours go to the
+  # other segments only
+  is_miss <- seq_len(n_lev) %in% missing_seg
+  n_col   <- sum(!is_miss)
   if (is.null(col)) {
     col <- if (isTRUE(greyscale)) {
-      paste0("gray", round(40 + (50 / n_lev) * seq_len(n_lev)))
+      paste0("gray", round(40 + (50 / n_col) * seq_len(n_col)))
     } else {
-      sci_palette(n_lev)
+      sci_palette(n_col, bars = TRUE)
     }
   }
-  col <- rep(col, length.out = n_lev)
+  fill <- rep("white", n_lev)
+  fill[!is_miss] <- rep(col, length.out = n_col)
   txt_col <- if (is.null(col_percent)) {
-    rgb <- grDevices::col2rgb(col) / 255
+    rgb <- grDevices::col2rgb(fill) / 255
     ifelse(0.299 * rgb[1, ] + 0.587 * rgb[2, ] + 0.114 * rgb[3, ] > 0.6,
            "black", "white")
   } else {
     rep(col_percent, length.out = n_lev)
   }
+  hatch_col <- "grey35"
 
   # --- Bar positions: one cluster of group bars per time point ---------------
   show_grp <- n_grp > 1 && n_time > 1
@@ -363,7 +397,8 @@ stackedbar_draw <- function(counts, n, visit = dimnames(counts)[[3]],
   # and by rotated labels
   label_line  <- if (show_grp) 0.8 else 0
   lay <- sci_layout(n_time, n_grp, risk_table,
-                    offset = label_line + if (rotate_labels) 3 else 0)
+                    offset = label_line + if (rotate_labels) 3 else 0,
+                    footnote = !is.null(note))
   show_legend <- !is.null(legend_position) && !identical(legend_position, "none")
   legend_side <- if (show_legend && is.character(legend_position) &&
                      legend_position %in% c("top", "right")) legend_position else ""
@@ -408,6 +443,7 @@ stackedbar_draw <- function(counts, n, visit = dimnames(counts)[[3]],
             bar_width)
   } else cex_percent
   min_h <- graphics::strheight("0", cex = cex_pct) * 1.2
+  edge_lwd <- 0.75   # outline of every segment
   for (j in seq_len(n_time)) {
     for (i in seq_len(n_grp)) {
       h <- heights[, i, j]
@@ -416,14 +452,44 @@ stackedbar_draw <- function(counts, n, visit = dimnames(counts)[[3]],
       bot_y <- top_y - h
       x0 <- x_at[i, j] - bar_width / 2
       x1 <- x_at[i, j] + bar_width / 2
-      graphics::rect(x0, bot_y, x1, top_y, col = col, border = "white", lwd = 0.5)
+      # coloured segments get a border in their own colour, as wide as the
+      # outline of the hatched ones, so both are equally wide on any device;
+      # white lines only between the segments
+      # (empty segments are skipped: their border would show as a line)
+      drawn <- h > 0
+      graphics::rect(x0, bot_y[drawn], x1, top_y[drawn], col = fill[drawn],
+                     border = ifelse(is_miss, hatch_col, fill)[drawn],
+                     lwd = edge_lwd)
+      inner <- which(h > 0)
+      inner <- inner[-length(inner)]
+      if (length(inner) > 0)
+        graphics::segments(x0, top_y[inner], x1, top_y[inner], col = "white",
+                           lwd = 0.5)
+      hatched <- is_miss & h > 0
+      if (any(hatched)) {
+        graphics::rect(x0, bot_y[hatched], x1, top_y[hatched], density = 15,
+                       angle = 45, col = hatch_col, border = NA, lwd = 0.5)
+        # the outline again, over the hatching and the white line beneath it
+        graphics::rect(x0, bot_y[hatched], x1, top_y[hatched], col = NA,
+                       border = hatch_col, lwd = edge_lwd)
+      }
       if (isTRUE(percent_labels)) {
         lab <- counts[, i, j] > 0 & h >= min_h
         if (any(lab)) {
-          graphics::text(x_at[i, j], ((bot_y + top_y) / 2)[lab],
-                         paste0(formatC(percent[lab, i, j], format = "f",
-                                        digits = digits), "%"),
-                         col = txt_col[lab], cex = cex_pct)
+          mid_y <- ((bot_y + top_y) / 2)[lab]
+          txt   <- paste0(formatC(percent[lab, i, j], format = "f",
+                                  digits = digits), "%")
+          # a white patch behind labels on the hatching keeps them readable
+          on_hatch <- is_miss[lab]
+          if (any(on_hatch)) {
+            w <- graphics::strwidth(txt[on_hatch], cex = cex_pct) * 1.2
+            h <- graphics::strheight("0", cex = cex_pct) * 1.6
+            graphics::rect(x_at[i, j] - w / 2, mid_y[on_hatch] - h / 2,
+                           x_at[i, j] + w / 2, mid_y[on_hatch] + h / 2,
+                           col = "white", border = NA)
+          }
+          graphics::text(x_at[i, j], mid_y, txt, col = txt_col[lab],
+                         cex = cex_pct)
         }
       }
     }
@@ -442,9 +508,13 @@ stackedbar_draw <- function(counts, n, visit = dimnames(counts)[[3]],
                    fit_cex(cex_axis, tick_labels, 0.85),
                  las = if (rotate_labels) 2 else 1, gap.axis = 0.25)
   if (show_grp) {
+    # an explicit 'cex_groups' is used as given; by default the labels shrink
+    # from 'cex_n_patients' until they fit the bars
+    cex_grp <- if (is.null(cex_groups)) {
+      fit_cex(cex_n_patients, groups_short, 0.85 * shift)
+    } else cex_groups
     graphics::mtext(rep(groups_short, n_time), side = 1, line = 0.2,
-                    at = as.vector(x_at),
-                    cex = fit_cex(cex_n_patients, groups_short, 0.85 * shift))
+                    at = as.vector(x_at), cex = cex_grp)
   }
   graphics::mtext(ylab, side = 2, line = ylab_line, cex = cex_lab)
 
@@ -469,10 +539,18 @@ stackedbar_draw <- function(counts, n, visit = dimnames(counts)[[3]],
   # --- x-axis label ----------------------------------------------------------
   if (is.null(xlab_line)) xlab_line <- lay$xlab_line
   graphics::mtext(xlab, side = 1, line = xlab_line, cex = cex_lab)
+  draw_footnote(note, lay$note_line)
 
   # --- Legend: stacking order, bottom segment last (vertical) or first (top) -
   if (show_legend) {
-    legend_args <- list(legend = rev(levs), fill = rev(col), border = NA,
+    key_col     <- ifelse(is_miss, hatch_col, fill)
+    key_density <- ifelse(is_miss, 15, NA)
+    # solid keys get a border in their own colour (rect() refuses a vector
+    # of NA borders)
+    key_border  <- ifelse(is_miss, hatch_col, fill)
+    legend_args <- list(legend = rev(levs), fill = rev(key_col),
+                        density = rev(key_density), angle = 45,
+                        border = rev(key_border),
                         title = legend_title, title.adj = 0,
                         bty = legend_bty, cex = legend_cex,
                         bg = if (legend_bty == "n") NA else "white",
@@ -482,8 +560,10 @@ stackedbar_draw <- function(counts, n, visit = dimnames(counts)[[3]],
               c(list(x = usr[2] + 0.01 * diff(usr[1:2]), y = usr[4], xpd = NA),
                 legend_args))
     } else if (legend_side == "top") {
-      legend_args$legend <- levs
-      legend_args$fill   <- col
+      legend_args$legend  <- levs
+      legend_args$fill    <- key_col
+      legend_args$density <- key_density
+      legend_args$border  <- key_border
       legend_args$title.adj <- 0.5
       do.call(graphics::legend,
               c(list(x = mean(usr[1:2]), y = usr[4] + 0.01 * diff(usr[3:4]),

@@ -59,9 +59,12 @@ the table's settings (labels, `missing`, `missing_percent`, `stat_cat`) carry
 over to the plots, and further plot options go into `plot_args`
 (see `?lineplotSCI`, `?boxplotSCI` and `?stackedbarplotSCI`).
 
-## The line plot shows the statistic of the table
+## The plots show the numbers of the table
 
-`stat_cont` decides what the line plot shows, matching the table:
+The line plots and stacked bars are drawn from the numbers printed in the
+table, as `plotByVisit()` does: they show exactly what the table shows, with
+its rounding, its visits and its N columns as the risk table. `stat_cont`
+decides what the line plot shows:
 
 | `stat_cont`      | Point             | Error bars                 |
 |------------------|-------------------|----------------------------|
@@ -69,11 +72,18 @@ over to the plots, and further plot options go into `plot_args`
 | `"median_IQR"`   | median            | first to third quartile    |
 | `"mean_sd"`      | mean              | +/- one standard deviation |
 | `"mean_se"`      | mean              | +/- one standard error     |
-| `"geomMean_sd"`  | geometric mean    | none                       |
+| `"geomMean_sd"`  | geometric mean    | ÷ and × geometric SD    |
+
+The geometric mean needs positive values: the table shows `NA` for visits with
+values of zero or below, and the line plot leaves those points out.
+`plot_args = list(stat_footnote = TRUE)` names the statistic in a footnote
+under each plot.
 
 `plot_cont = "boxplot"` draws boxplots per visit instead of the line plot.
-Boxplots always show the median and quartiles, whatever `stat_cont` the table
-uses.
+A boxplot shows more than the table holds, so it is drawn from the data: from
+the rows the table summarizes, with the box at the quartiles as the table
+computes them. It always shows the median and quartiles, whatever `stat_cont`
+the table uses; with `"median_IQR"` the two agree.
 
 ```{r, message = FALSE, warning = FALSE}
 res_box <- summarizeByVisitSCI(hb, vars = "hb", group = "Arm",
@@ -83,9 +93,10 @@ res_box <- summarizeByVisitSCI(hb, vars = "hb", group = "Arm",
 res_box$plots$hb
 ```
 
-## Saving plots
+## Saving the table and plots
 
-`save_plots()` works as described in `vignette("summarizeSCI")`:
+`word_output = TRUE` (with `file_path`) and `save_plots()` work as described
+in `vignette("summarizeSCI")`:
 
 ```{r}
 basename(save_plots(res, file_name = "visit", file_path = tempdir(),

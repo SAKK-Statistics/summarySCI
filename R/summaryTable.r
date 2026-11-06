@@ -28,6 +28,10 @@
 #' @param stat_cont Summary statistic to display for continuous variables. Options
 #' include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
 #' "geomMean_sd".
+#' "geomMean_sd" shows the geometric mean with the geometric standard
+#' deviation, `exp(sd(log(x)))`, both `NA` if a value is zero or negative.
+#' The geometric SD is a factor close to 1 and is shown with at least 2
+#' decimals.
 #'
 #' @param stat_cat Summary statistic to display for categorical variables.
 #' Options include "n_percent" (default) and "n", and "n_N".
@@ -308,6 +312,8 @@ summaryTable <- function(data,
   ## Summary stat for continuous and categorical variables -----
   stat_cont <- format_lookup[[stat_cont]]
   stat_cat <- format_lookup_cat[[stat_cat]]
+  # digits per statistic: digits_cont, at least 2 for the geometric SD
+  digits_cont_vec <- cont_digits(stat_cont, digits_cont)
   # digits per statistic: 0 for counts, digits_cat for percentages
   digits_cat_vec <- cat_digits(stat_cat, digits_cat)
 
@@ -511,7 +517,7 @@ n_before_overall <- function(tbl) {
                                            missing = var_missing,
                                            missing_text = missing_text,
                                            digits = list(all_categorical() ~ digits_cat_vec,
-                                                         all_continuous() ~ digits_cont)) |>
+                                                         all_continuous() ~ digits_cont_vec)) |>
   maybe_overall() |>
         add_ci(method = list(all_continuous() ~ ci_cont,
                              all_categorical() ~ ci_cat_gt),
@@ -563,7 +569,7 @@ tbl_missing_percent <- data_missing_as_level|>
                                           all_categorical() ~ stat_cat),
                          missing_text = missing_text,
                          digits = list(all_categorical() ~ digits_cat_vec,
-                                       all_continuous() ~ digits_cont)) |>
+                                       all_continuous() ~ digits_cont_vec)) |>
   maybe_overall(use = missing_percent != "both") |>
   add_ci(method = list(all_continuous() ~ ci_cont,
                        all_categorical() ~ ci_cat_gt),
@@ -719,6 +725,9 @@ if(missing_percent == "both")
   modify_table_styling(columns = c(starts_with("n_")), footnote = "N without missing values")
 
 
+# readable names of the statistics in the footnotes
+tbl_return <- tidy_stat_footnotes(tbl_return)
+
 # flex_table and word output ----
 
 if(as_flex_table == TRUE | word_output == TRUE){
@@ -735,15 +744,7 @@ if(as_flex_table == TRUE | word_output == TRUE){
 
 # Word output -----
 if (word_output == TRUE) {
-
-  # Create Word document
-  doc <- officer::read_docx()
-  doc <- flextable::body_add_flextable(doc, value = tbl_print)
-
-  # Save to specified location
-  print(doc, target = file_path)
-
-  message("Table saved to: ", normalizePath(file_path))
+  save_word(tbl_print, file_path)
 }
 
 # return table

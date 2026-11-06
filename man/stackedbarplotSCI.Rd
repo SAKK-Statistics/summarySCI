@@ -32,6 +32,7 @@ stackedbarplotSCI(
   cex_lab = 1,
   cex_axis = 1,
   cex_n_patients = 0.7,
+  cex_groups = NULL,
   risk_table = FALSE,
   missing_nr = 0,
   rotate_labels = FALSE,
@@ -44,6 +45,7 @@ stackedbarplotSCI(
   legend_offset = c(0, 0),
   legend_cex = 1,
   legend_bty = "n",
+  stat_footnote = FALSE,
   ...
 )
 }
@@ -90,8 +92,9 @@ segments to be displayed in the legend. The order must match the levels of
 \code{"count"}.}
 
 \item{missing}{A logical toggle switch adding missing values of \code{var} as a
-segment of their own, on top of the stack. Default is \code{FALSE}, which drops
-them. Only used when \code{var} is a single column.}
+segment of their own, on top of the stack, hatched in grey on white rather
+than coloured. Default is \code{FALSE}, which drops them. Only used when \code{var} is
+a single column.}
 
 \item{missing_text}{Legend text for the missing-value segment. Default is
 \code{"Missing"}.}
@@ -113,7 +116,9 @@ y-axis. Default is \code{NULL}, which falls back to automatic tick placement.}
 
 \item{col}{A character vector of hex colors or color names to use for the
 stacked segments, bottom to top. Recycled if shorter than the number of
-segments. Default is \code{NULL}, which automatically applies the SCI color palette.}
+segments. The missing-value segment (see \code{missing}) is always hatched and
+takes no color. Default is \code{NULL}, which applies the SCI color palette
+without its lightest shade.}
 
 \item{greyscale}{A logical toggle switch replacing the color palette by a
 sequential grey ramp, for print or black-and-white reproduction. Default is
@@ -130,7 +135,7 @@ contrasts better with the fill.}
 \item{cex_percent}{A numeric value specifying the font size of the percentage
 labels. Default is \code{NULL}, which sizes them to fit the width of the bars
 (at most \code{0.8}). A number is used as given, even if labels then overflow
-narrow bars. The group labels beneath the bars always shrink to fit.}
+narrow bars.}
 
 \item{digits}{A numeric value indicating the number of decimal places shown
 in the percentage labels. Default is \code{0}.}
@@ -143,8 +148,13 @@ cluster of group bars.}
 
 \item{cex_axis}{A numeric value specifying the font size of the axis tick marks. Default is \code{1}.}
 
-\item{cex_n_patients}{A numeric value specifying the font size of the group
-labels beneath the bars and of the table of patient numbers. Default is \code{0.7}.}
+\item{cex_n_patients}{A numeric value specifying the font size of the table
+of patient numbers. Default is \code{0.7}.}
+
+\item{cex_groups}{A numeric value specifying the font size of the group
+labels beneath the bars (several groups over time). Default is \code{NULL}, which
+uses \code{cex_n_patients} and shrinks the labels until they fit the bars. A
+number is used as given, even if long labels then overlap.}
 
 \item{risk_table}{A logical toggle switch enabling the table of patient
 numbers (the denominator of each bar) beneath the x-axis. Default is \code{FALSE}.}
@@ -186,6 +196,11 @@ inside the legend box. Default is \code{1}.}
 
 \item{legend_bty}{The type of box border to be drawn around the legend.
 Allowed values are \code{"n"} (no border, the default) and \code{"o"} (standard box frame).}
+
+\item{stat_footnote}{Show what the bars display as a footnote in the
+bottom-right corner, beneath the x-axis title: \code{TRUE} for the default text
+(e.g. \code{"\\\% of patients with a non-missing value"}), a character string for a
+text of your own, or \code{FALSE} (the default) for none.}
 
 \item{...}{Further graphical parameters passed on to \code{plot()}.}
 }

@@ -148,6 +148,14 @@ summaryByVisit<- function(data,
   chr_cols <- chr_cols[vapply(data[chr_cols], is.character, logical(1))]
   data[chr_cols] <- lapply(data[chr_cols], as_natural_factor)
 
+  # empty levels of the group are left out, as in summaryTable()
+  empty <- if (!is.null(group))
+    setdiff(levels(data[[group]]), as.character(data[[group]]))
+  if (length(empty) > 0) {
+    message("Empty level(s) of '", group, "' removed: ", paste(empty, collapse = ", "))
+    data[[group]] <- droplevels(data[[group]])
+  }
+
   # labels
   labels <- chk$labels
   labels <- vapply(
@@ -230,6 +238,9 @@ summaryByVisit<- function(data,
   }
   #
 
+  # readable names of the statistics in the footnotes
+  tbl_out <- tidy_stat_footnotes(tbl_out)
+
   # if flex_table is needed
   if(as_flex_table == TRUE | word_output == TRUE){
     if (border == TRUE){
@@ -245,15 +256,7 @@ summaryByVisit<- function(data,
 
 
   if (word_output == TRUE) {
-
-    # Create Word document
-    doc <- officer::read_docx()
-    doc <- flextable::body_add_flextable(doc, value = tbl_print)
-
-    # Save to specified location
-    print(doc, target = file_path)
-
-    message("Table saved to: ", normalizePath(file_path))
+    save_word(tbl_print, file_path)
   }
 
 

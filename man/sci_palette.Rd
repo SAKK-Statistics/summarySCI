@@ -4,14 +4,18 @@
 \alias{sci_palette}
 \title{SCI color palette}
 \usage{
-sci_palette(n, lines = FALSE)
+sci_palette(n, lines = FALSE, bars = FALSE)
 }
 \arguments{
 \item{n}{Number of colors.}
 
 \item{lines}{Logical. If \code{TRUE}, only the darker shades are used, since the
 light ones are hard to see as lines and points on a white background.
-Default is \code{FALSE}, for filled boxes and bars.}
+Default is \code{FALSE}, for filled boxes.}
+
+\item{bars}{Logical. If \code{TRUE}, the palette of the stacked bars: the
+lightest shade is left out, as it is hard to tell from the white background.
+Default is \code{FALSE}.}
 }
 \value{
 A character vector of \code{n} hex colors, light to dark.
