@@ -1,13 +1,16 @@
-## Resubmission
+## Update
 
-This is a resubmission. In this version I have: 
-
-* add single quotes around the package 'gtsummary' in the Description 
-field of the DESCRIPTION file.
-
+This is an update of summarySCI from version 0.1.2 to 1.0.0. It adds the
+functions `summarizeSCI()`, `summarizeByVisitSCI()`, `lineplotSCI()`,
+`boxplotSCI()`, `stackedbarplotSCI()`, `plotByVisit()`, `tidySummaryByVisit()`,
+`save_plot()` and `save_plots()`, extends
+`summaryByVisit()` to categorical variables, and fixes several bugs. See
+NEWS.md for details.
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
+0 errors | 0 warnings | 0 notes
 
-* This is a new release.
+## Reverse dependencies
+
+There are currently no reverse dependencies on CRAN.
