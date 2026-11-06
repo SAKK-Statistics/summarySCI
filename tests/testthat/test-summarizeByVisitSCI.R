@@ -1,9 +1,10 @@
 # Slow (several minutes): run locally and on GitHub, not on CRAN
 skip_on_cran()
 
-# The plots of summarizeByVisitSCI() are drawn from the raw data. These tests
-# check that they show the numbers printed in the table: the table is read
-# back with tidySummaryByVisit(), and every plotted value is compared with it.
+# The line plots and stacked bars of summarizeByVisitSCI() are drawn from the
+# table, the boxplots from the rows the table summarizes. These tests check
+# that the plots show the numbers printed in the table: the table is read back
+# with tidySummaryByVisit(), and every plotted value is compared with it.
 
 sbv_fixture <- function() {
   d <- hb_fixture()
@@ -122,8 +123,13 @@ test_that("an order column sets the time axis, in the order of the table", {
   res <- summarizeByVisitSCI(d, vars = c("hb", "hb_cat"), group = "Arm",
                              visit = "visit", order = "week",
                              as_flex_table = FALSE)
-  expect_equal(colnames(res$plots$hb$numbers$centre),
-               as.character(c(0, 2, 4, 6, 8, 12, 16, 20, 24)))
+  expect_equal(colnames(res$plots$hb$numbers$centre), paste("Cycle", 1:9))
+  # the visits sit at their weeks on the x-axis
+  expect_equal(x_axis_drawn(res$plots$hb)$at, c(0, 2, 4, 6, 8, 12, 16, 20, 24))
+  # without 'order', evenly spaced
+  res1 <- summarizeByVisitSCI(d, vars = "hb", group = "Arm", visit = "visit",
+                              as_flex_table = FALSE)
+  expect_equal(x_axis_drawn(res1$plots$hb)$at, 1:9)
   check_lines_match_table(res, "hb", "Hemoglobin", digits = 1)
   check_bars_match_table(res, "hb_cat", "hb_cat")
 })
@@ -262,3 +268,93 @@ test_that("the wrapper footnotes follow the table's statistic", {
   expect_equal(footnotes(plotByVisit(tbl, stat_footnote = TRUE)),
                "Median (Min, Max)")
 })
+
+test_that("a value <= 0 with geomMean_sd leaves that point out, as the table does", {
+  d <- sbv_fixture()
+  d$hb[which(d$visit_nr == 2 & d$Arm == "Arm A" & !is.na(d$hb))[1]] <- 0
+  res <- suppressMessages(suppressWarnings(
+    summarizeByVisitSCI(d, vars = "hb", group = "Arm", visit = "visit",
+                        order = "visit_nr", stat_cont = "geomMean_sd",
+                        as_flex_table = FALSE)))
+  expect_false(is.null(res$table))
+  num <- res$plots$hb$numbers
+  expect_true(is.na(num$centre["Arm A", "Cycle 2"]))
+  expect_false(anyNA(num$centre["Arm B", ]))
+})
+
+test_that("rows the table leaves out are not plotted (visit label missing)", {
+  # rows without a visit label are not in the table; with 'order' they used
+  # to be plotted all the same, at the visit of their order value
+  d <- sbv_fixture()
+  d$visit[which(d$visit_nr == 3)[1:10]] <- NA
+  res <- summarizeByVisitSCI(d, vars = c("hb", "hb_cat"), group = "Arm",
+                             visit = "visit", order = "visit_nr",
+                             as_flex_table = FALSE)
+  check_lines_match_table(res, "hb", "Hemoglobin", digits = 1)
+  check_bars_match_table(res, "hb_cat", "hb_cat")
+
+  # the same rows in the boxplots: n of each box = N of the table
+  res_box <- summarizeByVisitSCI(d, vars = "hb", group = "Arm",
+                                 visit = "visit", order = "visit_nr",
+                                 plot_cont = "boxplot", as_flex_table = FALSE)
+  sm <- tidySummaryByVisit(res_box$table)
+  z  <- boxes_drawn(res_box$plots$hb)
+  expect_length(z, 2)                                     # one call per arm
+  for (g in 1:2) {
+    s <- sm[sm$group == c("Arm A", "Arm B")[g], ]
+    expect_equal(z[[g]]$n, s$n[order(s$visit_id)])
+  }
+})
+
+test_that("boxplots show the quartiles of a median_IQR table", {
+  d <- sbv_fixture()
+  res <- summarizeByVisitSCI(d, vars = "hb", group = "Arm", visit = "visit",
+                             stat_cont = "median_IQR", plot_cont = "boxplot",
+                             as_flex_table = FALSE)
+  sm <- tidySummaryByVisit(res$table)
+  z  <- boxes_drawn(res$plots$hb)
+  for (g in 1:2) {
+    s <- sm[sm$group == c("Arm A", "Arm B")[g], ]
+    s <- s[order(s$visit_id), ]
+    expect_within_rounding(z[[g]]$stats[3, ], s$centre, digits = 1)   # median
+    expect_within_rounding(z[[g]]$stats[2, ], s$lower, digits = 1)    # Q1
+    expect_within_rounding(z[[g]]$stats[4, ], s$upper, digits = 1)    # Q3
+  }
+  # the visit labels of the table under the boxes
+  expect_equal(x_axis_drawn(res$plots$hb)$labels, paste("Cycle", 1:9))
+})
+
+test_that("overall and add_n = FALSE carry over from the table", {
+  d <- sbv_fixture()
+  res <- suppressMessages(summarizeByVisitSCI(
+    d, vars = c("hb", "hb_cat"), group = "Arm", visit = "visit",
+    overall = TRUE, as_flex_table = FALSE))
+  expect_equal(rownames(res$plots$hb$numbers$centre), c("Arm A", "Arm B", "Overall"))
+  expect_equal(dimnames(res$plots$hb_cat$numbers$counts)[[2]],
+               c("Arm A", "Arm B", "Overall"))
+  check_lines_match_table(res, "hb", "Hemoglobin", digits = 1)
+  check_bars_match_table(res, "hb_cat", "hb_cat")
+
+  # the N columns are hidden, but the risk table still has its numbers
+  res <- summarizeByVisitSCI(d, vars = "hb", group = "Arm", visit = "visit",
+                             add_n = FALSE, as_flex_table = FALSE,
+                             plot_args = list(risk_table = TRUE))
+  expect_false(anyNA(res$plots$hb$numbers$n))
+  check_lines_match_table(res, "hb", "Hemoglobin", digits = 1)
+})
+
+test_that("plot_args cannot change the statistic the table shows", {
+  d <- sbv_fixture()
+  expect_warning(
+    res <- summarizeByVisitSCI(d, vars = "hb", group = "Arm", visit = "visit",
+                               stat_cont = "mean_sd", as_flex_table = FALSE,
+                               plot_args = list(stat = "median", interval = "range",
+                                                ylab = "Hb (g/L)")),
+    "not used by any plot: stat, interval")
+  check_lines_match_table(res, "hb", "Hemoglobin", digits = 1, k = 3)
+  # arguments of the drawing still reach the plot
+  txt <- c(drawn_calls(print(res$plots$hb), "C_title"),
+           drawn_calls(print(res$plots$hb), "C_mtext"))
+  expect_true("Hb (g/L)" %in% unlist(lapply(txt, function(a) Filter(is.character, a))))
+})
+

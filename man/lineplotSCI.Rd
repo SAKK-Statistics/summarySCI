@@ -84,7 +84,9 @@ for the groups, to be displayed below the x-axis near the patient counts.
 Optional. Defaults to \code{group_names}.}
 
 \item{stat}{The summary statistic plotted as the point estimate: \code{"median"}
-(the default), \code{"mean"} or \code{"geomean"} (geometric mean, for positive values).}
+(the default), \code{"mean"} or \code{"geomean"} (geometric mean, for positive values:
+as in the tables, groups and time points with a value of zero or below are
+left out, with a warning).}
 
 \item{interval}{The quantity spanned by the error band around the point
 estimate. One of \code{"iqr"} (the default, 25th to 75th percentile, computed as

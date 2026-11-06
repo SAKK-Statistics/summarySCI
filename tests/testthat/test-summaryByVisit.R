@@ -529,8 +529,24 @@ test_that("more than 3 groups gives a clear error", {
   expect_error(sbv(d, vars = "weight", group = "arm4"), "3")
 })
 
+test_that("empty levels of the group are dropped, as in summaryTable()", {
+  d <- vd
+  d$arm <- factor(d$arm, levels = c("A", "B", "C"))           # C has no rows
+  expect_message(tbl <- sbv(d, vars = c("weight", "ecog"), group = "arm"),
+                 "Empty level(s) of 'arm' removed: C", fixed = TRUE)
+  h <- tbl$table_styling$header
+  shown <- h$column[grepl("^stat_", h$column) & !h$hide]
+  expect_equal(shown, c("stat_1", "stat_2"))
+  expect_true(startsWith(header_label(tbl, "stat_1"), "**A**"))
+  expect_true(startsWith(header_label(tbl, "stat_2"), "**B**"))
+  # the same table as without the empty level
+  ref <- sbv(vd, vars = c("weight", "ecog"), group = "arm")
+  expect_equal(tbl$table_body, ref$table_body)
 
-
-
-
+  # and the plots of the wrapper show the two arms only
+  res <- suppressMessages(summarizeByVisitSCI(d, vars = c("weight", "ecog"),
+                                              group = "arm", as_flex_table = FALSE))
+  expect_equal(rownames(res$plots$weight$numbers$centre), c("A", "B"))
+  expect_equal(dimnames(res$plots$ecog$numbers$counts)[[2]], c("A", "B"))
+})
 

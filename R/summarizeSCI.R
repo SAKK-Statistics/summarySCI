@@ -7,6 +7,8 @@
 #' ([stackedbarplotSCI()]). The type of each plot follows the type the
 #' variable has in the table, so that table and plots always agree.
 #'
+#' The plots are drawn from the same rows as the table, and the box of the
+#' boxplot spans the quartiles as the table computes them (see [boxplotSCI()]).
 #' The settings of the table carry over to the plots: the variable labels
 #' become the axis or legend titles, `missing` / `missing_percent` decide
 #' whether missing values form a segment of their own (as they are counted in
@@ -83,7 +85,9 @@ summarizeSCI <- function(data, vars = NULL, group = NULL, labels = NULL,
     # type and label of each variable, as the table has them
     tb    <- as.data.frame(tbl$table_body)
     rows  <- tb$row_type == "label" & !duplicated(tb$variable)
-    types <- stats::setNames(tb$var_type[rows], tb$variable[rows])
+    # (with missing_percent = "both" two tables are merged: var_type_1)
+    vtype <- if (is.null(tb$var_type)) tb$var_type_1 else tb$var_type
+    types <- stats::setNames(vtype[rows], tb$variable[rows])
     labs  <- stats::setNames(tb$label[rows], tb$variable[rows])
 
     specs <- lapply(stats::setNames(names(types), names(types)), function(v) {

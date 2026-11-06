@@ -92,6 +92,9 @@ plotByVisit <- function(tbl, var = NULL, stat_cont = NULL,
 
   args <- list(...)
   if (is.null(args[["xlab"]])) args[["xlab"]] <- "Visit"
+  # x positions of the visits (summarizeByVisitSCI() passes those of 'order')
+  xs <- if (is.null(args[["xs"]])) seq_along(visits) else args[["xs"]]
+  args[["xs"]] <- NULL
 
   if (type == "continuous") {
     centre <- lower <- upper <- matrix(NA_real_, length(groups), length(visits),
@@ -107,7 +110,6 @@ plotByVisit <- function(tbl, var = NULL, stat_cont = NULL,
     st <- stat_cont_plot(detect_stat_cont(tbl, stat_cont))
     args[["stat_footnote"]] <- footnote_text(args[["stat_footnote"]],
                                              line_note(st[1], st[2]))
-    xs  <- seq_along(visits)
     res <- do.call(lineplot_draw,
                    c(list(centre = centre, lower = lower, upper = upper,
                           obs = obs, xs = xs, at_x = xs, visit = visits),

@@ -52,11 +52,28 @@ test_that("the geometric mean needs positive values", {
   expect_error(lineplotSCI(d, hb, visit_nr, interval = "gsd"),
                "interval = \"gsd\" needs stat = \"geomean\"")
 
-  d$chg <- d$hb - 130                          # change scores: some values <= 0
-  n_bad <- sum(d$chg <= 0, na.rm = TRUE)
-  expect_error(draw_quietly(lineplotSCI(d, chg, visit_nr, stat = "geomean",
-                                        interval = "none")),
-               paste0("'chg' has ", n_bad, " value\\(s\\) <= 0"))
+  # one zero: that time point is left out (NA, as in the table), with a
+  # warning; the others are drawn as before
+  d0 <- d
+  d0$hb[which(d0$visit_nr == 2 & !is.na(d0$hb))[1]] <- 0
+  expect_warning(res <- draw_quietly(lineplotSCI(d0, hb, visit_nr, stat = "geomean",
+                                                 interval = "gsd")),
+                 "1 group/time point\\(s\\) with values <= 0 are left out")
+  expect_true(is.na(res$centre[1, "2"]) && is.na(res$lower[1, "2"]))
+  keep <- colnames(res$centre) != "2"
+  expect_equal(unname(res$centre[1, keep]),
+               as.vector(truth[colnames(res$centre)[keep]]))
+  # as plotByVisit() reads it off the table
+  tbl <- suppressMessages(suppressWarnings(
+    summaryByVisit(d0, vars = "hb", visit = "visit_nr", stat_cont = "geomMean_sd",
+                   as_flex_table = FALSE)))
+  expect_true(is.na(draw_quietly(plotByVisit(tbl))$centre[1, "2"]))
+
+  # change scores: every time point has values <= 0, nothing left to draw
+  d$chg <- d$hb - 130
+  expect_error(suppressWarnings(draw_quietly(
+    lineplotSCI(d, chg, visit_nr, stat = "geomean", interval = "none"))),
+    "Nothing to plot")
 })
 
 test_that("a variable without values gives a readable error", {

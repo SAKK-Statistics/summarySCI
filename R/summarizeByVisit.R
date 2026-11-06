@@ -2,22 +2,29 @@
 #'
 #' Produces the table of [summaryByVisit()] and one plot per variable (or
 #' either of them alone, see `type`), the plots
-#' over the visits: a line plot ([lineplotSCI()]) or boxplots
-#' ([boxplotSCI()]) for continuous variables, and stacked barplots
-#' ([stackedbarplotSCI()]) for categorical ones. The type of each plot follows
-#' the type the variable has in the table, so that table and plots agree.
+#' over the visits: a line plot or boxplots ([boxplotSCI()]) for continuous
+#' variables, and stacked barplots for categorical ones. The type of each plot
+#' follows the type the variable has in the table.
 #'
-#' The settings of the table carry over to the plots:
+#' The line plots and stacked bars are drawn from the numbers printed in the
+#' table, as [plotByVisit()] does, so that they show exactly what the table
+#' shows (with its rounding):
 #' * `stat_cont` sets what the line plot shows: `"median_range"` the median with
 #'   minimum and maximum, `"median_IQR"` the median with the quartiles,
 #'   `"mean_sd"` / `"mean_se"` the mean +/- one standard deviation / standard
 #'   error, and `"geomMean_sd"` the geometric mean divided and multiplied by
 #'   the geometric standard deviation;
-#' * the variable labels become the axis or legend titles;
+#' * the variable labels become the axis or legend titles, the column headers
+#'   the group names, and the N columns the numbers of the risk table;
 #' * `missing` / `missing_percent` decide whether missing values form a
 #'   segment of their own (as they are counted in the table's percentages),
 #'   and `stat_cat = "n"` shows counts instead of percentages;
-#' * `continuous_as_categorical` variables are plotted as stacked bars.
+#' * `continuous_as_categorical` variables are plotted as stacked bars, and
+#'   with `overall = TRUE` the overall column is plotted as one more group.
+#'
+#' Boxplots show more than the table holds, and are drawn from the data: from
+#' the rows the table summarizes, with the box at the quartiles of the table
+#' (see [boxplotSCI()]).
 #'
 #' The visits appear in the order of the table. If `order` is given, its values
 #' also set the spacing of the visits in the line plots.
@@ -29,7 +36,9 @@
 #' @param plot_args A named list of further arguments for the plotting
 #' functions, e.g. `list(risk_table = TRUE, dodge = 0.1)`. Each plot receives
 #' the arguments its function has, as in [lineplotSCI()], [boxplotSCI()] and
-#' [stackedbarplotSCI()]; an argument no plot uses gives a warning. For
+#' [stackedbarplotSCI()], except those that compute the numbers (such as
+#' `stat` or `interval`), which come from the table; an argument no plot uses
+#' gives a warning. For
 #' example, `stat_footnote = TRUE` adds a footnote saying what each plot shows:
 #' for the line plot the statistic of `stat_cont` (e.g. "Median (Q1, Q3)").
 #' @param ... Further arguments passed on to [summaryByVisit()], e.g.
@@ -85,48 +94,52 @@ summarizeByVisitSCI <- function(data, vars = NULL, group = NULL, labels = NULL,
   plots <- list()
   if (type != "table") {
     # type and label of each variable, in the order of the table
-    sm <- parse_summary_by_visit(tbl, stat_cont = stat_cont, strict = FALSE)
+    sm    <- parse_summary_by_visit(tbl, stat_cont = stat_cont, strict = FALSE)
     labs  <- unique(sm$variable)
     types <- sm$var_type[match(labs, sm$variable)]
     if (is.null(vars)) vars <- setdiff(names(data), c(group, visit))  # as summaryByVisit
     if (length(vars) != length(labs))
       stop("Could not match the variables of the table to 'vars'.")
 
-    # the data as tabulated: continuous_as_categorical variables as factors
-    pdata <- data
-    if (!is.null(continuous_as_categorical))
-      pdata[continuous_as_categorical] <- lapply(pdata[continuous_as_categorical],
-                                                 as.factor)
-
-    # time axis: the 'order' column, or else the visits' position in the table
-    order_col <- order
-    if (is.null(order_col)) {
-      visits <- unique(sm$visit[base::order(match(sm$variable, labs), sm$visit_id)])
-      order_col <- ".visit_order"
-      pdata[[order_col]] <- match(as.character(pdata[[visit]]), visits)
-    }
+    # the plot_args the drawing functions take (not those computing numbers)
+    common <- function(f, draw) setdiff(intersect(names(formals(f)),
+                                                  names(formals(draw))), "visit")
+    line_args <- common(lineplotSCI, lineplot_draw)
+    bar_args  <- c(common(stackedbarplotSCI, stackedbar_draw), "missing")
 
     specs <- lapply(seq_along(vars), function(i) {
-      v <- vars[i]
       if (types[i] == "categorical") {
-        return(bar_spec(v, labs[i], group, stat_cat, missing, missing_percent,
-                        missing_text, order = order_col, visit = visit,
-                        xlab = "Visit"))
+        return(list(fun = plotByVisit, name = "stacked barplot", data = tbl,
+                    accepts = bar_args,
+                    args = list(var = i, missing_text = missing_text,
+                                missing = isTRUE(missing) && !isFALSE(missing_percent),
+                                scale = if (stat_cat == "n") "count" else "percent")))
       }
+      # the table's visits of this variable, and the visit of each row (NA
+      # for rows the table leaves out, e.g. without a visit label)
+      visits <- unique(sm$visit[sm$variable == labs[i]])
+      pos    <- match(as.character(data[[visit]]), visits)
+
       if (plot_cont == "boxplot") {
-        return(list(fun = boxplotSCI, name = "boxplot",
-                    args = list(var = v, order = order_col, visit = visit,
-                                group = group, ylab = labs[i], xlab = "Visit")))
+        keep <- !is.na(pos)
+        if (!is.null(group)) keep <- keep & !is.na(data[[group]])
+        bdata <- data[keep, , drop = FALSE]
+        bdata$.visit_id    <- pos[keep]
+        bdata$.visit_label <- visits[pos[keep]]
+        return(list(fun = boxplotSCI, name = "boxplot", data = bdata,
+                    args = list(var = vars[i], order = ".visit_id",
+                                visit = ".visit_label", group = group,
+                                ylab = labs[i], xlab = "Visit")))
       }
-      # the line plot shows the statistic of the table
-      st <- stat_cont_plot(stat_cont)
-      list(fun = lineplotSCI, name = "line plot",
-           args = list(var = v, order = order_col, group = group, visit = visit,
-                       stat = st[1], interval = st[2],
-                       ylab = labs[i], xlab = "Visit"))
+      # the visits spaced by 'order' (evenly, if a visit has no value of it)
+      xs <- if (!is.null(order)) vapply(seq_along(visits), function(k)
+        suppressWarnings(min(data[[order]][pos %in% k], na.rm = TRUE)), numeric(1))
+      if (!all(is.finite(xs)) || is.unsorted(xs, strictly = TRUE)) xs <- NULL
+      list(fun = plotByVisit, name = "line plot", data = tbl, accepts = line_args,
+           args = list(var = i, stat_cont = stat_cont, xs = xs))
     })
     names(specs) <- vars
-    plots <- build_plots(specs, pdata, plot_args)
+    plots <- build_plots(specs, data, plot_args)
   }
 
   wrapper_result(tbl, plots, type, as_flex_table, border,

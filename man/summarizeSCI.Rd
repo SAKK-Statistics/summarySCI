@@ -109,6 +109,8 @@ stacked barplot for categorical and dichotomous ones
 variable has in the table, so that table and plots always agree.
 }
 \details{
+The plots are drawn from the same rows as the table, and the box of the
+boxplot spans the quartiles as the table computes them (see \code{\link[=boxplotSCI]{boxplotSCI()}}).
 The settings of the table carry over to the plots: the variable labels
 become the axis or legend titles, \code{missing} / \code{missing_percent} decide
 whether missing values form a segment of their own (as they are counted in

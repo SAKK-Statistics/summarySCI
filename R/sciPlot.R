@@ -14,13 +14,14 @@
 #' @name sci_plot
 NULL
 
-# Build a sci_plot calling `fun(data = data, <args>)`. The column names in
-# `args` are character strings, which all plotting functions accept; the data
-# is referred to by name, so that error messages do not print the whole data
-# frame. The plot is drawn once on a null device, so that a problem shows at
-# once rather than when the plot is printed, and to record its numbers.
+# Build a sci_plot calling `fun(data, <args>)`, where `data` is the data or
+# (for plotByVisit()) the table. The column names in `args` are character
+# strings, which all plotting functions accept; the data is referred to by
+# name, so that error messages do not print the whole data frame. The plot is
+# drawn once on a null device, so that a problem shows at once rather than
+# when the plot is printed, and to record its numbers.
 new_sci_plot <- function(fun, fun_name, data, args, variable) {
-  cl  <- as.call(c(list(fun, data = quote(data)), args))
+  cl  <- as.call(c(list(fun, quote(data)), args))
   env <- new.env(parent = emptyenv())
   env$data <- data
   draw <- function() eval(cl, env)
@@ -147,18 +148,22 @@ save_plots <- function(x, file_name = NULL, file_path = ".", format = "png",
 }
 
 # Build one sci_plot per variable from `specs`, a named list (by variable) of
-# list(fun, name, args). `plot_args` override the defaults, each plot taking
-# the arguments its function has; arguments no plot uses give a warning.
+# list(fun, name, args, accepts, data); `data`, if given, replaces the common
+# data for that plot. `plot_args` override the defaults, each plot taking
+# those in `accepts` (by default the arguments of `fun`); arguments no plot
+# uses give a warning.
 build_plots <- function(specs, data, plot_args) {
   plots <- list()
   used  <- character()
   for (v in names(specs)) {
     s    <- specs[[v]]
     args <- s$args[!vapply(s$args, is.null, logical(1))]
-    fits <- intersect(names(plot_args), setdiff(names(formals(s$fun)), "..."))
+    accepts <- if (is.null(s$accepts)) names(formals(s$fun)) else s$accepts
+    fits <- intersect(names(plot_args), setdiff(accepts, "..."))
     args[fits] <- plot_args[fits]
     used <- c(used, fits)
-    plots[[v]] <- new_sci_plot(s$fun, s$name, data, args, v)
+    plots[[v]] <- new_sci_plot(s$fun, s$name,
+                               if (is.null(s$data)) data else s$data, args, v)
   }
   unused <- setdiff(names(plot_args), used)
   if (length(unused) > 0)

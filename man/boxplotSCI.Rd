@@ -153,11 +153,22 @@ bottom-right corner, beneath the x-axis title: \code{TRUE} for the default text
 (e.g. the definition of box and whiskers), a character string for a text of your own, or \code{FALSE} (the
 default) for none.}
 
-\item{...}{Further graphical parameters passed on to \code{boxplot()}, e.g.
-\code{lwd}, \code{border} or \code{outline = FALSE} (no points for outliers).}
+\item{...}{Further graphical parameters passed on to \code{bxp()}, which draws
+the boxes for \code{boxplot()}, e.g. \code{lwd}, \code{border}, \code{outline = FALSE} (no
+points for outliers) or \code{range} (the whisker length, see above; \code{0} for
+whiskers to the minimum and maximum).}
 }
 \description{
 Generates boxplots over time for one or multiple sub-groups.
+}
+\details{
+The box spans the first to the third quartile with the median inside,
+computed as in the summary tables (\code{\link[=summaryTable]{summaryTable()}}, \code{\link[=summaryByVisit]{summaryByVisit()}}:
+\code{quantile(type = 2)}), so that a boxplot and a \code{"median_IQR"} table show
+the same numbers. (\code{boxplot()} itself draws Tukey's hinges, which can differ
+slightly.) The whiskers reach the most extreme values within \code{range} (1.5 by
+default) times the box length from the box; values beyond are drawn as
+points.
 }
 \examples{
 library(summarySCI)

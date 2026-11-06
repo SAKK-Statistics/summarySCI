@@ -20,7 +20,9 @@ knitr::opts_chunk$set(
 `summarizeSCI()` produces, in one call, the summary table of `summaryTable()`
 and one plot per variable: a boxplot for continuous variables and a stacked
 barplot for categorical and dichotomous ones. The type of each plot follows the
-type the variable has in the table, so table and plots always agree.
+type the variable has in the table, so table and plots always agree. The plots
+use the same rows as the table, and the box of the boxplot spans the quartiles
+as the table computes them, so it shows the numbers of a `"median_IQR"` table.
 
 ## Setup and data
 

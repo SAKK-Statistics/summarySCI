@@ -62,3 +62,30 @@ expect_within_rounding <- function(parsed, truth, digits, k = 1) {
     testthat::expect_lte(max(abs(parsed[ok] - truth[ok])),
                          k * 0.5 * 10^(-digits) + 1e-9)
 }
+
+# The x-axis ticks and labels a plot draws (the axis() calls with ticks;
+# plot() and bxp() record empty ones)
+x_axis_drawn <- function(p) {
+  ax <- drawn_calls(print(p), "C_axis")
+  ax <- Filter(function(a) a[[1]] == 1 && !is.null(a[[2]]) && !is.null(a[[3]]), ax)
+  list(at = ax[[length(ax)]][[2]], labels = ax[[length(ax)]][[3]])
+}
+
+# The boxes a plot draws: one element per draw_boxes() call (per group over
+# time), each with the box statistics (rows: lower whisker, Q1, median, Q3,
+# upper whisker; one column per box), n and the outliers
+boxes_drawn <- function(p) {
+  rec  <- new.env(parent = emptyenv())
+  rec$z <- list()
+  real <- draw_boxes
+  testthat::local_mocked_bindings(
+    draw_boxes = function(...) {
+      z <- real(...)
+      rec$z <- c(rec$z, list(z))
+      invisible(z)
+    },
+    .package = "summarySCI")
+  draw_quietly(print(p))
+  rec$z
+}
+

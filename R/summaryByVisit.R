@@ -148,6 +148,14 @@ summaryByVisit<- function(data,
   chr_cols <- chr_cols[vapply(data[chr_cols], is.character, logical(1))]
   data[chr_cols] <- lapply(data[chr_cols], as_natural_factor)
 
+  # empty levels of the group are left out, as in summaryTable()
+  empty <- if (!is.null(group))
+    setdiff(levels(data[[group]]), as.character(data[[group]]))
+  if (length(empty) > 0) {
+    message("Empty level(s) of '", group, "' removed: ", paste(empty, collapse = ", "))
+    data[[group]] <- droplevels(data[[group]])
+  }
+
   # labels
   labels <- chk$labels
   labels <- vapply(

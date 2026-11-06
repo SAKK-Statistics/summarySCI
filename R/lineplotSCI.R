@@ -30,7 +30,9 @@
 #' for the groups, to be displayed below the x-axis near the patient counts.
 #' Optional. Defaults to `group_names`.
 #' @param stat The summary statistic plotted as the point estimate: `"median"`
-#' (the default), `"mean"` or `"geomean"` (geometric mean, for positive values).
+#' (the default), `"mean"` or `"geomean"` (geometric mean, for positive values:
+#' as in the tables, groups and time points with a value of zero or below are
+#' left out, with a warning).
 #' @param interval The quantity spanned by the error band around the point
 #' estimate. One of `"iqr"` (the default, 25th to 75th percentile, computed as
 #' in the summary tables, i.e. `quantile(type = 2)`), `"range"` (observed
@@ -178,13 +180,6 @@ lineplotSCI <- function(data, var, order, group = NULL,
   keep <- !is.na(g) & !is.na(o)
   v <- v[keep]; g <- factor(g[keep]); o <- as.numeric(o[keep])
 
-  if (stat == "geomean") {
-    n_bad <- sum(v <= 0, na.rm = TRUE)
-    if (n_bad > 0)
-      stop("The geometric mean needs positive values, but '", var_name, "' has ",
-           n_bad, " value(s) <= 0.", call. = FALSE)
-  }
-
   # --- Summarise: point estimate and interval per group and time point ------
   interval_of <- function(x, m) {
     n <- length(x)
@@ -223,15 +218,22 @@ lineplotSCI <- function(data, var, order, group = NULL,
       x <- x[!is.na(x)]
       obs[i, j] <- length(x)
       if (length(x) == 0L) next
+      # the geometric mean as in the tables: NA where a value is <= 0
       centre[i, j] <- switch(stat,
                              median  = median(x),
                              mean    = mean(x),
-                             geomean = exp(mean(log(x))))
+                             geomean = suppressWarnings(geom_mean(x)))
+      if (is.na(centre[i, j])) next
       iv <- interval_of(x, centre[i, j])
       lower[i, j] <- iv[1]
       upper[i, j] <- iv[2]
     }
   }
+  n_left_out <- sum(obs > 0 & is.na(centre))
+  if (n_left_out > 0)
+    warning("The geometric mean needs positive values; ", n_left_out,
+            " group/time point(s) with values <= 0 are left out (NA in the ",
+            "tables).", call. = FALSE)
   lower[!is.finite(lower)] <- NA
   upper[!is.finite(upper)] <- NA
 
