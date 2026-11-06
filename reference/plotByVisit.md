@@ -100,8 +100,8 @@ and determines the error bars:
 - `"mean_sd"` / `"mean_se"`: mean +/- one standard deviation / standard
   error;
 
-- `"geomMean_sd"`: geometric mean only, since a standard deviation on
-  the original scale gives no meaningful interval around it.
+- `"geomMean_sd"`: geometric mean divided and multiplied by the
+  geometric standard deviation.
 
 Since the numbers are read from the printed table, they carry its
 rounding (`digits_cont` / `digits_cat`). Visits appear on the x-axis in

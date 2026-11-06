@@ -54,7 +54,7 @@ together line up. The blueprint is the layout of <code><a href="boxplotSCI.html"
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">sci_layout</span><span class="op">(</span><span class="va">n_time</span>, <span class="va">n_groups</span>, <span class="va">risk_table</span>, offset <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">sci_layout</span><span class="op">(</span><span class="va">n_time</span>, <span class="va">n_groups</span>, <span class="va">risk_table</span>, offset <span class="op">=</span> <span class="fl">0</span>, footnote <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -78,12 +78,17 @@ together line up. The blueprint is the layout of <code><a href="boxplotSCI.html"
 labels under bars, or rotated labels), by which the numbers and the x-axis
 title move down.</p></dd>
 
+
+<dt id="arg-footnote">footnote<a class="anchor" aria-label="anchor" href="#arg-footnote"></a></dt>
+<dd><p>Logical. Is a footnote on the statistic drawn beneath the
+x-axis title? It adds the same space to every plot type.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list with <code>mar</code> (for <code>par(mar = )</code>), <code>rows</code> (margin lines of the
 rows of patient numbers, one per group over time, one for a single time
-point) and <code>xlab_line</code>.</p>
+point), <code>xlab_line</code> and <code>note_line</code> (the line of the footnote).</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

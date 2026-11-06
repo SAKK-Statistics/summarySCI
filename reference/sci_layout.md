@@ -11,7 +11,7 @@ so that plots used together line up. The blueprint is the layout of
 ## Usage
 
 ``` r
-sci_layout(n_time, n_groups, risk_table, offset = 0)
+sci_layout(n_time, n_groups, risk_table, offset = 0, footnote = FALSE)
 ```
 
 ## Arguments
@@ -34,8 +34,13 @@ sci_layout(n_time, n_groups, risk_table, offset = 0)
   under bars, or rotated labels), by which the numbers and the x-axis
   title move down.
 
+- footnote:
+
+  Logical. Is a footnote on the statistic drawn beneath the x-axis
+  title? It adds the same space to every plot type.
+
 ## Value
 
 A list with `mar` (for `par(mar = )`), `rows` (margin lines of the rows
 of patient numbers, one per group over time, one for a single time
-point) and `xlab_line`.
+point), `xlab_line` and `note_line` (the line of the footnote).

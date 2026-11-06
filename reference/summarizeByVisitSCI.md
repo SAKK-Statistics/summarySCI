@@ -3,14 +3,10 @@
 Produces the table of
 [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
 and one plot per variable (or either of them alone, see `type`), the
-plots over the visits: a line plot
-([`lineplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/lineplotSCI.md))
-or boxplots
+plots over the visits: a line plot or boxplots
 ([`boxplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/boxplotSCI.md))
-for continuous variables, and stacked barplots
-([`stackedbarplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/stackedbarplotSCI.md))
-for categorical ones. The type of each plot follows the type the
-variable has in the table, so that table and plots agree.
+for continuous variables, and stacked barplots for categorical ones. The
+type of each plot follows the type the variable has in the table.
 
 ## Usage
 
@@ -34,6 +30,8 @@ summarizeByVisitSCI(
   plot_args = list(),
   as_flex_table = TRUE,
   border = TRUE,
+  word_output = FALSE,
+  file_path = paste0("SummaryByVisit_", format(Sys.Date(), "%Y%m%d"), ".docx"),
   ...
 )
 ```
@@ -128,8 +126,17 @@ summarizeByVisitSCI(
 - plot_args:
 
   A named list of further arguments for the plotting functions, e.g.
-  `list(risk_table = TRUE, col = c("grey", "black"))`. Each plot
-  receives the arguments its function has.
+  `list(risk_table = TRUE, dodge = 0.1)`. Each plot receives the
+  arguments its function has, as in
+  [`lineplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/lineplotSCI.md),
+  [`boxplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/boxplotSCI.md)
+  and
+  [`stackedbarplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/stackedbarplotSCI.md),
+  except those that compute the numbers (such as `stat` or `interval`),
+  which come from the table; an argument no plot uses gives a warning.
+  For example, `stat_footnote = TRUE` adds a footnote saying what each
+  plot shows: for the line plot the statistic of `stat_cont` (e.g.
+  "Median (Q1, Q3)").
 
 - as_flex_table:
 
@@ -140,6 +147,17 @@ summarizeByVisitSCI(
 
   Logical. If TRUE, a border will be drawn around the table. Only
   available if flex_table = TRUE. Default is TRUE.
+
+- word_output:
+
+  Logical. If TRUE, the table is also saved in a word document.
+
+- file_path:
+
+  Character string. Specify the path of the Word document containing the
+  table. Only used when `word_output` is TRUE. Needs to end with
+  ".docx". Default to "SummaryByVisit_YYYYMMDD.docx" (today's date) in
+  the working directory.
 
 - ...:
 
@@ -155,21 +173,33 @@ with `table` and `plots`; see
 
 ## Details
 
-The settings of the table carry over to the plots:
+The line plots and stacked bars are drawn from the numbers printed in
+the table, as
+[`plotByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/plotByVisit.md)
+does, so that they show exactly what the table shows (with its
+rounding):
 
 - `stat_cont` sets what the line plot shows: `"median_range"` the median
   with minimum and maximum, `"median_IQR"` the median with the
   quartiles, `"mean_sd"` / `"mean_se"` the mean +/- one standard
   deviation / standard error, and `"geomMean_sd"` the geometric mean
-  alone;
+  divided and multiplied by the geometric standard deviation;
 
-- the variable labels become the axis or legend titles;
+- the variable labels become the axis or legend titles, the column
+  headers the group names, and the N columns the numbers of the risk
+  table;
 
 - `missing` / `missing_percent` decide whether missing values form a
   segment of their own (as they are counted in the table's percentages),
   and `stat_cat = "n"` shows counts instead of percentages;
 
-- `continuous_as_categorical` variables are plotted as stacked bars.
+- `continuous_as_categorical` variables are plotted as stacked bars, and
+  with `overall = TRUE` the overall column is plotted as one more group.
+
+Boxplots show more than the table holds, and are drawn from the data:
+from the rows the table summarizes, with the box at the quartiles of the
+table (see
+[`boxplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/boxplotSCI.md)).
 
 The visits appear in the order of the table. If `order` is given, its
 values also set the spacing of the visits in the line plots.

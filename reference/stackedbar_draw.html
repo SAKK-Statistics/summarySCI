@@ -73,6 +73,8 @@ plotByVisit(), which reads the counts off a summaryByVisit() table."></head><bod
 <span>  cex_lab <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  cex_axis <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  cex_n_patients <span class="op">=</span> <span class="fl">0.7</span>,</span>
+<span>  cex_groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  missing_seg <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  risk_table <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  missing_nr <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  rotate_labels <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -85,6 +87,7 @@ plotByVisit(), which reads the counts off a summaryByVisit() table."></head><bod
 <span>  legend_offset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>  legend_cex <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  legend_bty <span class="op">=</span> <span class="st">"n"</span>,</span>
+<span>  stat_footnote <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -152,7 +155,9 @@ y-axis. Default is <code>NULL</code>, which falls back to automatic tick placeme
 <dt id="arg-col">col<a class="anchor" aria-label="anchor" href="#arg-col"></a></dt>
 <dd><p>A character vector of hex colors or color names to use for the
 stacked segments, bottom to top. Recycled if shorter than the number of
-segments. Default is <code>NULL</code>, which automatically applies the SCI color palette.</p></dd>
+segments. The missing-value segment (see <code>missing</code>) is always hatched and
+takes no color. Default is <code>NULL</code>, which applies the SCI color palette
+without its lightest shade.</p></dd>
 
 
 <dt id="arg-greyscale">greyscale<a class="anchor" aria-label="anchor" href="#arg-greyscale"></a></dt>
@@ -177,7 +182,7 @@ contrasts better with the fill.</p></dd>
 <dd><p>A numeric value specifying the font size of the percentage
 labels. Default is <code>NULL</code>, which sizes them to fit the width of the bars
 (at most <code>0.8</code>). A number is used as given, even if labels then overflow
-narrow bars. The group labels beneath the bars always shrink to fit.</p></dd>
+narrow bars.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
@@ -200,8 +205,20 @@ cluster of group bars.</p></dd>
 
 
 <dt id="arg-cex-n-patients">cex_n_patients<a class="anchor" aria-label="anchor" href="#arg-cex-n-patients"></a></dt>
+<dd><p>A numeric value specifying the font size of the table
+of patient numbers. Default is <code>0.7</code>.</p></dd>
+
+
+<dt id="arg-cex-groups">cex_groups<a class="anchor" aria-label="anchor" href="#arg-cex-groups"></a></dt>
 <dd><p>A numeric value specifying the font size of the group
-labels beneath the bars and of the table of patient numbers. Default is <code>0.7</code>.</p></dd>
+labels beneath the bars (several groups over time). Default is <code>NULL</code>, which
+uses <code>cex_n_patients</code> and shrinks the labels until they fit the bars. A
+number is used as given, even if long labels then overlap.</p></dd>
+
+
+<dt id="arg-missing-seg">missing_seg<a class="anchor" aria-label="anchor" href="#arg-missing-seg"></a></dt>
+<dd><p>Index of the segment holding the missing values, drawn
+hatched instead of coloured. Default is <code>NULL</code> (none).</p></dd>
 
 
 <dt id="arg-risk-table">risk_table<a class="anchor" aria-label="anchor" href="#arg-risk-table"></a></dt>
@@ -267,6 +284,11 @@ inside the legend box. Default is <code>1</code>.</p></dd>
 <dt id="arg-legend-bty">legend_bty<a class="anchor" aria-label="anchor" href="#arg-legend-bty"></a></dt>
 <dd><p>The type of box border to be drawn around the legend.
 Allowed values are <code>"n"</code> (no border, the default) and <code>"o"</code> (standard box frame).</p></dd>
+
+
+<dt id="arg-stat-footnote">stat_footnote<a class="anchor" aria-label="anchor" href="#arg-stat-footnote"></a></dt>
+<dd><p>The text of the footnote in the bottom-right corner,
+or <code>NULL</code> for none (the callers turn <code>TRUE</code> into their default text).</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

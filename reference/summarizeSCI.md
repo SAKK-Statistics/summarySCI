@@ -27,6 +27,8 @@ summarizeSCI(
   plot_args = list(),
   as_flex_table = TRUE,
   border = TRUE,
+  word_output = FALSE,
+  file_path = paste0("SummaryTable_", format(Sys.Date(), "%Y%m%d"), ".docx"),
   ...
 )
 ```
@@ -59,7 +61,10 @@ summarizeSCI(
 
   Summary statistic to display for continuous variables. Options include
   "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
-  "geomMean_sd".
+  "geomMean_sd". "geomMean_sd" shows the geometric mean with the
+  geometric standard deviation, `exp(sd(log(x)))`, both `NA` if a value
+  is zero or negative. The geometric SD is a factor close to 1 and is
+  shown with at least 2 decimals.
 
 - stat_cat:
 
@@ -90,7 +95,13 @@ summarizeSCI(
 
   A named list of further arguments for the plotting functions, e.g.
   `list(risk_table = TRUE, col = c("grey", "black"))`. Each plot
-  receives the arguments its function has.
+  receives the arguments its function has, as in
+  [`boxplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/boxplotSCI.md)
+  and
+  [`stackedbarplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/stackedbarplotSCI.md);
+  an argument no plot uses gives a warning. For example,
+  `stat_footnote = TRUE` adds a footnote saying what each plot shows
+  (the box and whiskers, or the denominator of the percentages).
 
 - as_flex_table:
 
@@ -101,6 +112,16 @@ summarizeSCI(
 
   Logical. If TRUE, a border will be drawn around the table. Only
   available if flex_table = TRUE. Default is TRUE.
+
+- word_output:
+
+  Logical. If TRUE, the table is also saved in a word document.
+
+- file_path:
+
+  Character string. Specify the path of the Word document containing the
+  table. Only used when `word_output` is TRUE. Needs to end with
+  ".docx".
 
 - ...:
 
@@ -113,7 +134,10 @@ summarizeSCI(
 An object of class `summarizeSCI`, a list with
 
 - `table`: the table, a flextable or (with `as_flex_table = FALSE`) a
-  gtsummary object; `NULL` with `type = "plot"`;
+  gtsummary object; `NULL` with `type = "plot"`. With
+  `word_output = TRUE` it is also saved to `file_path`, as
+  [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md)
+  does;
 
 - `plots`: a named list with one plot per variable, e.g. `res$plots$hb`;
   empty with `type = "table"`. Printing a plot draws it;
@@ -124,6 +148,9 @@ Printing the result shows the table and lists the plots.
 
 ## Details
 
+The plots are drawn from the same rows as the table, and the box of the
+boxplot spans the quartiles as the table computes them (see
+[`boxplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/boxplotSCI.md)).
 The settings of the table carry over to the plots: the variable labels
 become the axis or legend titles, `missing` / `missing_percent` decide
 whether missing values form a segment of their own (as they are counted

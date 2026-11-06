@@ -524,10 +524,12 @@ go into <code>plot_args</code> (see <code><a href="../reference/lineplotSCI.html
 <code><a href="../reference/boxplotSCI.html">?boxplotSCI</a></code> and <code><a href="../reference/stackedbarplotSCI.html">?stackedbarplotSCI</a></code>).</p>
 </div>
 <div class="section level2">
-<h2 id="the-line-plot-shows-the-statistic-of-the-table">The line plot shows the statistic of the table<a class="anchor" aria-label="anchor" href="#the-line-plot-shows-the-statistic-of-the-table"></a>
+<h2 id="the-plots-show-the-numbers-of-the-table">The plots show the numbers of the table<a class="anchor" aria-label="anchor" href="#the-plots-show-the-numbers-of-the-table"></a>
 </h2>
-<p><code>stat_cont</code> decides what the line plot shows, matching the
-table:</p>
+<p>The line plots and stacked bars are drawn from the numbers printed in
+the table, as <code><a href="../reference/plotByVisit.html">plotByVisit()</a></code> does: they show exactly what
+the table shows, with its rounding, its visits and its N columns as the
+risk table. <code>stat_cont</code> decides what the line plot shows:</p>
 <table class="table">
 <thead><tr class="header">
 <th><code>stat_cont</code></th>
@@ -558,13 +560,21 @@ table:</p>
 <tr class="odd">
 <td><code>"geomMean_sd"</code></td>
 <td>geometric mean</td>
-<td>none</td>
+<td>÷ and × geometric SD</td>
 </tr>
 </tbody>
 </table>
+<p>The geometric mean needs positive values: the table shows
+<code>NA</code> for visits with values of zero or below, and the line
+plot leaves those points out.
+<code>plot_args = list(stat_footnote = TRUE)</code> names the statistic
+in a footnote under each plot.</p>
 <p><code>plot_cont = "boxplot"</code> draws boxplots per visit instead
-of the line plot. Boxplots always show the median and quartiles,
-whatever <code>stat_cont</code> the table uses.</p>
+of the line plot. A boxplot shows more than the table holds, so it is
+drawn from the data: from the rows the table summarizes, with the box at
+the quartiles as the table computes them. It always shows the median and
+quartiles, whatever <code>stat_cont</code> the table uses; with
+<code>"median_IQR"</code> the two agree.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res_box</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarizeByVisitSCI.html">summarizeByVisitSCI</a></span><span class="op">(</span><span class="va">hb</span>, vars <span class="op">=</span> <span class="st">"hb"</span>, group <span class="op">=</span> <span class="st">"Arm"</span>,</span>
 <span>                               visit <span class="op">=</span> <span class="st">"visit"</span>, order <span class="op">=</span> <span class="st">"visit_nr"</span>,</span>
@@ -574,9 +584,10 @@ whatever <code>stat_cont</code> the table uses.</p>
 <p><img src="summarizeByVisitSCI_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
-<h2 id="saving-plots">Saving plots<a class="anchor" aria-label="anchor" href="#saving-plots"></a>
+<h2 id="saving-the-table-and-plots">Saving the table and plots<a class="anchor" aria-label="anchor" href="#saving-the-table-and-plots"></a>
 </h2>
-<p><code><a href="../reference/save_plots.html">save_plots()</a></code> works as described in
+<p><code>word_output = TRUE</code> (with <code>file_path</code>) and
+<code><a href="../reference/save_plots.html">save_plots()</a></code> work as described in
 <code><a href="../articles/summarizeSCI.html">vignette("summarizeSCI")</a></code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="../reference/save_plots.html">save_plots</a></span><span class="op">(</span><span class="va">res</span>, file_name <span class="op">=</span> <span class="st">"visit"</span>, file_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>

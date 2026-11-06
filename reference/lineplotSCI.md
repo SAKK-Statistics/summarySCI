@@ -17,7 +17,7 @@ lineplotSCI(
   group_names = NULL,
   group_names_short = NULL,
   stat = c("median", "mean", "geomean"),
-  interval = c("iqr", "range", "ci", "sd", "se", "none"),
+  interval = c("iqr", "range", "ci", "sd", "se", "gsd", "none"),
   interval_type = c("whiskers", "ribbon"),
   alpha = 0.05,
   dodge = 0,
@@ -48,6 +48,7 @@ lineplotSCI(
   legend_offset = c(0, 0),
   legend_cex = 1,
   legend_bty = "n",
+  stat_footnote = FALSE,
   ...
 )
 ```
@@ -109,7 +110,8 @@ lineplotSCI(
 
   The summary statistic plotted as the point estimate: `"median"` (the
   default), `"mean"` or `"geomean"` (geometric mean, for positive
-  values).
+  values: as in the tables, groups and time points with a value of zero
+  or below are left out, with a warning).
 
 - interval:
 
@@ -118,8 +120,10 @@ lineplotSCI(
   summary tables, i.e. `quantile(type = 2)`), `"range"` (observed
   minimum to maximum), `"ci"` (a two-sided confidence interval at level
   `1 - alpha`), `"sd"` (point estimate +/- one standard deviation),
-  `"se"` (point estimate +/- one standard error), or `"none"` to plot
-  point estimates alone. With `stat = "geomean"`, only `"iqr"`,
+  `"se"` (point estimate +/- one standard error), `"gsd"` (geometric
+  mean divided and multiplied by the geometric standard deviation,
+  `exp(sd(log(x)))`; only with `stat = "geomean"`), or `"none"` to plot
+  point estimates alone. With `stat = "geomean"`, only `"gsd"`, `"iqr"`,
   `"range"` and `"none"` are available.
 
 - interval_type:
@@ -287,6 +291,13 @@ lineplotSCI(
   The type of box border to be drawn around the legend. Allowed values
   are `"n"` (transparent/no border, the default) and `"o"` (standard box
   frame).
+
+- stat_footnote:
+
+  Show what the plot displays as a footnote in the bottom-right corner,
+  beneath the x-axis title: `TRUE` for the default text (e.g.
+  `"Median (Q1, Q3)"`), a character string for a text of your own, or
+  `FALSE` (the default) for none.
 
 - ...:
 

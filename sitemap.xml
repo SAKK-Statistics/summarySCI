@@ -14,8 +14,10 @@
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/boxplotSCI.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/cat_digits.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/col_names.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/cont_digits.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/fisher_test_safe.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/geom_mean.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/geom_sd.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/get_labels.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/hemoglobin_data.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/index.html</loc></url>
@@ -26,6 +28,7 @@
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/risk_row.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/save_plot.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/save_plots.html</loc></url>
+<url><loc>https://sakk-statistics.github.io/summarySCI/reference/save_word.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/sci_layout.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/sci_palette.html</loc></url>
 <url><loc>https://sakk-statistics.github.io/summarySCI/reference/sci_plot.html</loc></url>

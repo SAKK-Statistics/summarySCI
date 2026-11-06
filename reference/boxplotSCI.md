@@ -38,6 +38,7 @@ boxplotSCI(
   risk_table = NULL,
   missing_nr = 0,
   color_time = FALSE,
+  stat_footnote = FALSE,
   ...
 )
 ```
@@ -224,11 +225,34 @@ boxplotSCI(
   timepoints as individual categories,applying sequential coloring and
   rendering a matching tracking legend. Default is `FALSE`.
 
+- stat_footnote:
+
+  Show what the plot displays as a footnote in the bottom-right corner,
+  beneath the x-axis title: `TRUE` for the default text (e.g. the
+  definition of box and whiskers), a character string for a text of your
+  own, or `FALSE` (the default) for none.
+
 - ...:
 
   Further graphical parameters passed on to
-  [`boxplot()`](https://rdrr.io/r/graphics/boxplot.html), e.g. `lwd`,
-  `border` or `outline = FALSE` (no points for outliers).
+  [`bxp()`](https://rdrr.io/r/graphics/bxp.html), which draws the boxes
+  for [`boxplot()`](https://rdrr.io/r/graphics/boxplot.html), e.g.
+  `lwd`, `border`, `outline = FALSE` (no points for outliers) or `range`
+  (the whisker length, see above; `0` for whiskers to the minimum and
+  maximum).
+
+## Details
+
+The box spans the first to the third quartile with the median inside,
+computed as in the summary tables
+([`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md),
+[`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md):
+`quantile(type = 2)`), so that a boxplot and a `"median_IQR"` table show
+the same numbers.
+([`boxplot()`](https://rdrr.io/r/graphics/boxplot.html) itself draws
+Tukey's hinges, which can differ slightly.) The whiskers reach the most
+extreme values within `range` (1.5 by default) times the box length from
+the box; values beyond are drawn as points.
 
 ## Examples
 

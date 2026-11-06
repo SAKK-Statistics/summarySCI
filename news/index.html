@@ -43,28 +43,48 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.0" id="summarysci-100">summarySCI 1.0.0<a class="anchor" aria-label="anchor" href="#summarysci-100"></a></h2>
-<ul><li><p>Improvement of the internal structure of the function</p></li>
-<li><p>More informative error messages</p></li>
-<li><p>No more upper limit for the number of groups in <code><a href="../reference/summaryTable.html">summaryTable()</a></code>.</p></li>
-<li><p><code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code> now also accepts categorical variables.</p></li>
-<li><p>Argument <code>file_name</code> was changed to <code>file_path</code></p></li>
-<li><p>New function <code><a href="../reference/boxplotSCI.html">boxplotSCI()</a></code></p></li>
-<li><p>Intensive tests have been added</p></li>
-<li><p>The default of <code>digits_cat</code> in <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code> was changed from 1 to 0, consistent with <code><a href="../reference/summaryTable.html">summaryTable()</a></code> and <code><a href="../reference/summaryLevels.html">summaryLevels()</a></code>.</p></li>
-<li><p>The default of <code>add_n</code> in <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code> was changed from FALSE to TRUE, consistent with <code><a href="../reference/summaryTable.html">summaryTable()</a></code>.</p></li>
-<li><p>In <code><a href="../reference/summaryLevels.html">summaryLevels()</a></code>, the Overall column is now shown at the end of the table (with the p-value before it), consistent with the other functions.</p></li>
-<li><p><code><a href="../reference/summaryLevels.html">summaryLevels()</a></code> now gives an informative error if a variable is not binary (e.g. 0/1, yes/no) and <code>levels</code> is not given, instead of showing counts of 0. Several values in <code>levels</code> are now all counted as present, and yes/no variables with missing values are handled correctly.</p></li>
-<li><p>New argument <code>add_n</code> in <code><a href="../reference/summaryLevels.html">summaryLevels()</a></code> (default TRUE), consistent with <code><a href="../reference/summaryTable.html">summaryTable()</a></code> and <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code>.</p></li>
-<li><p>The default CI method of <code><a href="../reference/summaryLevels.html">summaryLevels()</a></code> was changed from Wilson to Clopper-Pearson (<code>ci_cat = "clopper.pearson"</code>), consistent with <code><a href="../reference/summaryTable.html">summaryTable()</a></code>. <code>ci_cat = "clopper.pearson"</code> failed before in <code><a href="../reference/summaryLevels.html">summaryLevels()</a></code> and now works.</p></li>
-<li><p>In <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code>, unnamed <code>labels</code> (e.g. <code>list("Weight", "ECOG")</code>) are now used in the order of <code>vars</code>; before they were silently ignored.</p></li>
-<li><p><code>digits_cat</code> now only applies to percentages: counts are always shown without decimals (before, e.g. “3.0 (75.0%)” in <code><a href="../reference/summaryLevels.html">summaryLevels()</a></code> and <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code>, and “3/4.0” for <code>stat_cat = "n_N"</code>).</p></li>
-<li><p><code><a href="../reference/summaryLevels.html">summaryLevels()</a></code> now checks <code>group</code> (single existing column, at least two groups) and supports any number of groups (before, empty cells were blank with 4 or more groups). Rows with a missing group are removed with a message instead of being shown as an extra group “0”.</p></li>
-<li><p>CI limits of categorical variables now have exactly <code>digits_cat</code> decimals in <code><a href="../reference/summaryTable.html">summaryTable()</a></code> and <code><a href="../reference/summaryLevels.html">summaryLevels()</a></code> (before, one more below 10%).</p></li>
-<li><p>Character variables are now shown in natural order in <code><a href="../reference/summaryTable.html">summaryTable()</a></code>, <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code> and <code><a href="../reference/stackedbarplotSCI.html">stackedbarplotSCI()</a></code> (e.g. “3” before “10”, “&lt; 10%” before “20%”, “Arm 2” before “Arm 10”). Factors keep their level order.</p></li>
-<li><p>Visits in <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code> are now sorted naturally (e.g. “Visit 2” before “Visit 10”) when <code>order</code> is not given, whatever the name of the visit column.</p></li>
-<li><p><code><a href="../reference/summaryTable.html">summaryTable()</a></code> only computes p-values when <code>test = TRUE</code>; Fisher’s exact test no longer fails for variables with many categories.</p></li>
-<li><p>Bug fixes</p></li>
+<div class="section level3">
+<h3 id="new-functions-1-0-0">New functions<a class="anchor" aria-label="anchor" href="#new-functions-1-0-0"></a></h3>
+<ul><li>
+<code><a href="../reference/summarizeSCI.html">summarizeSCI()</a></code> and <code><a href="../reference/summarizeByVisitSCI.html">summarizeByVisitSCI()</a></code>: the table of <code><a href="../reference/summaryTable.html">summaryTable()</a></code> / <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code> together with one plot per variable that matches it.</li>
+<li>
+<code><a href="../reference/boxplotSCI.html">boxplotSCI()</a></code>, <code><a href="../reference/lineplotSCI.html">lineplotSCI()</a></code> and <code><a href="../reference/stackedbarplotSCI.html">stackedbarplotSCI()</a></code>: plots over time with a common layout, optional patient numbers and statistic footnote.</li>
+<li>
+<code><a href="../reference/plotByVisit.html">plotByVisit()</a></code> and <code><a href="../reference/tidySummaryByVisit.html">tidySummaryByVisit()</a></code>: plot or extract the numbers of a <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code> table.</li>
+<li>
+<code><a href="../reference/save_plot.html">save_plot()</a></code> and <code><a href="../reference/save_plots.html">save_plots()</a></code>: write plots to files.</li>
+<li>Example data <code>hemoglobin_data</code> and new vignettes.</li>
 </ul></div>
+<div class="section level3">
+<h3 id="new-functionality-1-0-0">New functionality<a class="anchor" aria-label="anchor" href="#new-functionality-1-0-0"></a></h3>
+<ul><li>
+<code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code> supports categorical variables.</li>
+<li>
+<code><a href="../reference/summaryTable.html">summaryTable()</a></code> supports any number of groups, and has new arguments <code>continuous_as_categorical</code>, <code>dichotomous_as_categorical</code> and <code>ref_level</code>.</li>
+<li>
+<code><a href="../reference/summaryLevels.html">summaryLevels()</a></code> has a new argument <code>add_n</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="breaking-changes-1-0-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1-0-0"></a></h3>
+<ul><li>
+<code>file_name</code> is now <code>file_path</code>.</li>
+<li>
+<code>ci_cat</code> defaults to <code>"clopper.pearson"</code> (was <code>"wilson"</code>).</li>
+<li>
+<code>add_n</code> defaults to <code>TRUE</code> in <code><a href="../reference/summaryByVisit.html">summaryByVisit()</a></code>.</li>
+<li>
+<code>test_cont</code> defaults to Wilcoxon for two groups and Kruskal-Wallis for more.</li>
+<li>
+<code>stat_cont = "geomMean_sd"</code> shows the geometric SD (was the arithmetic SD).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="other-changes-1-0-0">Other changes<a class="anchor" aria-label="anchor" href="#other-changes-1-0-0"></a></h3>
+<ul><li>Character variables and visits are sorted naturally (“2” before “10”).</li>
+<li>
+<code>digits_cat</code> applies to percentages only; counts have no decimals.</li>
+<li>More informative error messages, extensive tests and bug fixes.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.2" id="summarysci-012">summarySCI 0.1.2<a class="anchor" aria-label="anchor" href="#summarysci-012"></a></h2><p class="text-muted">CRAN release: 2026-09-14</p>
 <p>Removed the deprecated options from <code>gtsummary</code></p>

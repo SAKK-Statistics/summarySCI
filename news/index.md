@@ -2,105 +2,61 @@
 
 ## summarySCI 1.0.0
 
-- Improvement of the internal structure of the function
+### New functions
 
-- More informative error messages
+- [`summarizeSCI()`](https://sakk-statistics.github.io/summarySCI/reference/summarizeSCI.md)
+  and
+  [`summarizeByVisitSCI()`](https://sakk-statistics.github.io/summarySCI/reference/summarizeByVisitSCI.md):
+  the table of
+  [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md)
+  /
+  [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
+  together with one plot per variable that matches it.
+- [`boxplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/boxplotSCI.md),
+  [`lineplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/lineplotSCI.md)
+  and
+  [`stackedbarplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/stackedbarplotSCI.md):
+  plots over time with a common layout, optional patient numbers and
+  statistic footnote.
+- [`plotByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/plotByVisit.md)
+  and
+  [`tidySummaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/tidySummaryByVisit.md):
+  plot or extract the numbers of a
+  [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
+  table.
+- [`save_plot()`](https://sakk-statistics.github.io/summarySCI/reference/save_plot.md)
+  and
+  [`save_plots()`](https://sakk-statistics.github.io/summarySCI/reference/save_plots.md):
+  write plots to files.
+- Example data `hemoglobin_data` and new vignettes.
 
-- No more upper limit for the number of groups in
-  [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md).
+### New functionality
 
 - [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
-  now also accepts categorical variables.
-
-- Argument `file_name` was changed to `file_path`
-
-- New function
-  [`boxplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/boxplotSCI.md)
-
-- Intensive tests have been added
-
-- The default of `digits_cat` in
-  [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
-  was changed from 1 to 0, consistent with
-  [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md)
-  and
-  [`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md).
-
-- The default of `add_n` in
-  [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
-  was changed from FALSE to TRUE, consistent with
-  [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md).
-
-- In
-  [`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md),
-  the Overall column is now shown at the end of the table (with the
-  p-value before it), consistent with the other functions.
-
-- [`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
-  now gives an informative error if a variable is not binary (e.g. 0/1,
-  yes/no) and `levels` is not given, instead of showing counts of 0.
-  Several values in `levels` are now all counted as present, and yes/no
-  variables with missing values are handled correctly.
-
-- New argument `add_n` in
-  [`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
-  (default TRUE), consistent with
-  [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md)
-  and
-  [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md).
-
-- The default CI method of
-  [`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
-  was changed from Wilson to Clopper-Pearson
-  (`ci_cat = "clopper.pearson"`), consistent with
-  [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md).
-  `ci_cat = "clopper.pearson"` failed before in
-  [`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
-  and now works.
-
-- In
-  [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md),
-  unnamed `labels` (e.g. `list("Weight", "ECOG")`) are now used in the
-  order of `vars`; before they were silently ignored.
-
-- `digits_cat` now only applies to percentages: counts are always shown
-  without decimals (before, e.g. “3.0 (75.0%)” in
-  [`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
-  and
-  [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md),
-  and “3/4.0” for `stat_cat = "n_N"`).
-
-- [`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
-  now checks `group` (single existing column, at least two groups) and
-  supports any number of groups (before, empty cells were blank with 4
-  or more groups). Rows with a missing group are removed with a message
-  instead of being shown as an extra group “0”.
-
-- CI limits of categorical variables now have exactly `digits_cat`
-  decimals in
-  [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md)
-  and
-  [`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
-  (before, one more below 10%).
-
-- Character variables are now shown in natural order in
-  [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md),
-  [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
-  and
-  [`stackedbarplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/stackedbarplotSCI.md)
-  (e.g. “3” before “10”, “\< 10%” before “20%”, “Arm 2” before “Arm
-  10”). Factors keep their level order.
-
-- Visits in
-  [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md)
-  are now sorted naturally (e.g. “Visit 2” before “Visit 10”) when
-  `order` is not given, whatever the name of the visit column.
-
+  supports categorical variables.
 - [`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md)
-  only computes p-values when `test = TRUE`; Fisher’s exact test no
-  longer fails for variables with many categories.
+  supports any number of groups, and has new arguments
+  `continuous_as_categorical`, `dichotomous_as_categorical` and
+  `ref_level`.
+- [`summaryLevels()`](https://sakk-statistics.github.io/summarySCI/reference/summaryLevels.md)
+  has a new argument `add_n`.
 
-- Bug fixes
+### Breaking changes
+
+- `file_name` is now `file_path`.
+- `ci_cat` defaults to `"clopper.pearson"` (was `"wilson"`).
+- `add_n` defaults to `TRUE` in
+  [`summaryByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/summaryByVisit.md).
+- `test_cont` defaults to Wilcoxon for two groups and Kruskal-Wallis for
+  more.
+- `stat_cont = "geomMean_sd"` shows the geometric SD (was the arithmetic
+  SD).
+
+### Other changes
+
+- Character variables and visits are sorted naturally (“2” before “10”).
+- `digits_cat` applies to percentages only; counts have no decimals.
+- More informative error messages, extensive tests and bug fixes.
 
 ## summarySCI 0.1.2
 

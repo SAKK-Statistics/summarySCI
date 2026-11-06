@@ -33,6 +33,8 @@ stackedbar_draw(
   cex_lab = 1,
   cex_axis = 1,
   cex_n_patients = 0.7,
+  cex_groups = NULL,
+  missing_seg = NULL,
   risk_table = FALSE,
   missing_nr = 0,
   rotate_labels = FALSE,
@@ -45,6 +47,7 @@ stackedbar_draw(
   legend_offset = c(0, 0),
   legend_cex = 1,
   legend_bty = "n",
+  stat_footnote = NULL,
   ...
 )
 ```
@@ -113,8 +116,9 @@ stackedbar_draw(
 
   A character vector of hex colors or color names to use for the stacked
   segments, bottom to top. Recycled if shorter than the number of
-  segments. Default is `NULL`, which automatically applies the SCI color
-  palette.
+  segments. The missing-value segment (see `missing`) is always hatched
+  and takes no color. Default is `NULL`, which applies the SCI color
+  palette without its lightest shade.
 
 - greyscale:
 
@@ -139,7 +143,7 @@ stackedbar_draw(
   A numeric value specifying the font size of the percentage labels.
   Default is `NULL`, which sizes them to fit the width of the bars (at
   most `0.8`). A number is used as given, even if labels then overflow
-  narrow bars. The group labels beneath the bars always shrink to fit.
+  narrow bars.
 
 - digits:
 
@@ -164,8 +168,20 @@ stackedbar_draw(
 
 - cex_n_patients:
 
+  A numeric value specifying the font size of the table of patient
+  numbers. Default is `0.7`.
+
+- cex_groups:
+
   A numeric value specifying the font size of the group labels beneath
-  the bars and of the table of patient numbers. Default is `0.7`.
+  the bars (several groups over time). Default is `NULL`, which uses
+  `cex_n_patients` and shrinks the labels until they fit the bars. A
+  number is used as given, even if long labels then overlap.
+
+- missing_seg:
+
+  Index of the segment holding the missing values, drawn hatched instead
+  of coloured. Default is `NULL` (none).
 
 - risk_table:
 
@@ -232,6 +248,11 @@ stackedbar_draw(
 
   The type of box border to be drawn around the legend. Allowed values
   are `"n"` (no border, the default) and `"o"` (standard box frame).
+
+- stat_footnote:
+
+  The text of the footnote in the bottom-right corner, or `NULL` for
+  none (the callers turn `TRUE` into their default text).
 
 - ...:
 

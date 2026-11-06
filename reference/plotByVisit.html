@@ -128,8 +128,8 @@ level, group and visit, and the group-by-visit matrix <code>n</code> of denomina
 determines the error bars:</p><ul><li><p><code>"median_range"</code>: median with whiskers from minimum to maximum;</p></li>
 <li><p><code>"median_IQR"</code>: median with whiskers from the first to the third quartile;</p></li>
 <li><p><code>"mean_sd"</code> / <code>"mean_se"</code>: mean +/- one standard deviation / standard error;</p></li>
-<li><p><code>"geomMean_sd"</code>: geometric mean only, since a standard deviation on the
-original scale gives no meaningful interval around it.</p></li>
+<li><p><code>"geomMean_sd"</code>: geometric mean divided and multiplied by the geometric
+standard deviation.</p></li>
 </ul><p>Since the numbers are read from the printed table, they carry its rounding
 (<code>digits_cont</code> / <code>digits_cat</code>). Visits appear on the x-axis in the order
 of the table rows.</p>

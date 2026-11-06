@@ -81,6 +81,7 @@
 <span>  risk_table <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  missing_nr <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  color_time <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  stat_footnote <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -259,11 +260,30 @@ If set to <code>TRUE</code>, it treats timepoints as individual categories,apply
 and rendering a matching tracking legend. Default is <code>FALSE</code>.</p></dd>
 
 
+<dt id="arg-stat-footnote">stat_footnote<a class="anchor" aria-label="anchor" href="#arg-stat-footnote"></a></dt>
+<dd><p>Show what the plot displays as a footnote in the
+bottom-right corner, beneath the x-axis title: <code>TRUE</code> for the default text
+(e.g. the definition of box and whiskers), a character string for a text of your own, or <code>FALSE</code> (the
+default) for none.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Further graphical parameters passed on to <code><a href="https://rdrr.io/r/graphics/boxplot.html" class="external-link">boxplot()</a></code>, e.g.
-<code>lwd</code>, <code>border</code> or <code>outline = FALSE</code> (no points for outliers).</p></dd>
+<dd><p>Further graphical parameters passed on to <code><a href="https://rdrr.io/r/graphics/bxp.html" class="external-link">bxp()</a></code>, which draws
+the boxes for <code><a href="https://rdrr.io/r/graphics/boxplot.html" class="external-link">boxplot()</a></code>, e.g. <code>lwd</code>, <code>border</code>, <code>outline = FALSE</code> (no
+points for outliers) or <code>range</code> (the whisker length, see above; <code>0</code> for
+whiskers to the minimum and maximum).</p></dd>
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The box spans the first to the third quartile with the median inside,
+computed as in the summary tables (<code><a href="summaryTable.html">summaryTable()</a></code>, <code><a href="summaryByVisit.html">summaryByVisit()</a></code>:
+<code>quantile(type = 2)</code>), so that a boxplot and a <code>"median_IQR"</code> table show
+the same numbers. (<code><a href="https://rdrr.io/r/graphics/boxplot.html" class="external-link">boxplot()</a></code> itself draws Tukey's hinges, which can differ
+slightly.) The whiskers reach the most extreme values within <code>range</code> (1.5 by
+default) times the box length from the box; values beyond are drawn as
+points.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

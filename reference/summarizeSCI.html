@@ -77,6 +77,8 @@ variable has in the table, so that table and plots always agree.</p>
 <span>  plot_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  as_flex_table <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  border <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  word_output <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  file_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"SummaryTable_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"%Y%m%d"</span><span class="op">)</span>, <span class="st">".docx"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -112,7 +114,11 @@ dataset. If no label present, the variable name is taken.</p></dd>
 <dt id="arg-stat-cont">stat_cont<a class="anchor" aria-label="anchor" href="#arg-stat-cont"></a></dt>
 <dd><p>Summary statistic to display for continuous variables. Options
 include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
-"geomMean_sd".</p></dd>
+"geomMean_sd".
+"geomMean_sd" shows the geometric mean with the geometric standard
+deviation, <code>exp(sd(log(x)))</code>, both <code>NA</code> if a value is zero or negative.
+The geometric SD is a factor close to 1 and is shown with at least 2
+decimals.</p></dd>
 
 
 <dt id="arg-stat-cat">stat_cat<a class="anchor" aria-label="anchor" href="#arg-stat-cat"></a></dt>
@@ -145,7 +151,10 @@ is built in every case, since it decides the type of each plot.</p></dd>
 <dt id="arg-plot-args">plot_args<a class="anchor" aria-label="anchor" href="#arg-plot-args"></a></dt>
 <dd><p>A named list of further arguments for the plotting
 functions, e.g. <code>list(risk_table = TRUE, col = c("grey", "black"))</code>. Each
-plot receives the arguments its function has.</p></dd>
+plot receives the arguments its function has, as in <code><a href="boxplotSCI.html">boxplotSCI()</a></code> and
+<code><a href="stackedbarplotSCI.html">stackedbarplotSCI()</a></code>; an argument no plot uses gives a warning. For
+example, <code>stat_footnote = TRUE</code> adds a footnote saying what each plot shows
+(the box and whiskers, or the denominator of the percentages).</p></dd>
 
 
 <dt id="arg-as-flex-table">as_flex_table<a class="anchor" aria-label="anchor" href="#arg-as-flex-table"></a></dt>
@@ -158,6 +167,16 @@ converted to a flextable object. Useful when rendering to Word.</p></dd>
 available if flex_table = TRUE. Default is TRUE.</p></dd>
 
 
+<dt id="arg-word-output">word_output<a class="anchor" aria-label="anchor" href="#arg-word-output"></a></dt>
+<dd><p>Logical. If TRUE, the table is also saved in a word document.</p></dd>
+
+
+<dt id="arg-file-path">file_path<a class="anchor" aria-label="anchor" href="#arg-file-path"></a></dt>
+<dd><p>Character string.
+Specify the path of the Word document containing the table.
+Only used when <code>word_output</code> is TRUE. Needs to end with ".docx".</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Further arguments passed on to <code><a href="summaryTable.html">summaryTable()</a></code>, e.g. <code>test</code>,
 <code>ci</code>, <code>overall</code> or <code>digits_cont</code>.</p></dd>
@@ -166,7 +185,8 @@ available if flex_table = TRUE. Default is TRUE.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An object of class <code>summarizeSCI</code>, a list with</p><ul><li><p><code>table</code>: the table, a flextable or (with <code>as_flex_table = FALSE</code>) a
-gtsummary object; <code>NULL</code> with <code>type = "plot"</code>;</p></li>
+gtsummary object; <code>NULL</code> with <code>type = "plot"</code>. With <code>word_output = TRUE</code>
+it is also saved to <code>file_path</code>, as <code><a href="summaryTable.html">summaryTable()</a></code> does;</p></li>
 <li><p><code>plots</code>: a named list with one plot per variable, e.g. <code>res$plots$hb</code>;
 empty with <code>type = "table"</code>. Printing a plot draws it; <code><a href="save_plots.html">save_plots()</a></code>
 writes them to files.</p></li>
@@ -174,7 +194,9 @@ writes them to files.</p></li>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The settings of the table carry over to the plots: the variable labels
+    <p>The plots are drawn from the same rows as the table, and the box of the
+boxplot spans the quartiles as the table computes them (see <code><a href="boxplotSCI.html">boxplotSCI()</a></code>).
+The settings of the table carry over to the plots: the variable labels
 become the axis or legend titles, <code>missing</code> / <code>missing_percent</code> decide
 whether missing values form a segment of their own (as they are counted in
 the table's percentages), and <code>stat_cat = "n"</code> shows counts instead of

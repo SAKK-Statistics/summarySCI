@@ -51,6 +51,7 @@ lineplot_draw(
   legend_offset = c(0, 0),
   legend_cex = 1,
   legend_bty = "n",
+  stat_footnote = NULL,
   ...
 )
 ```
@@ -257,6 +258,11 @@ lineplot_draw(
   The type of box border to be drawn around the legend. Allowed values
   are `"n"` (transparent/no border, the default) and `"o"` (standard box
   frame).
+
+- stat_footnote:
+
+  The text of the footnote in the bottom-right corner, or `NULL` for
+  none (the callers turn `TRUE` into their default text).
 
 - ...:
 

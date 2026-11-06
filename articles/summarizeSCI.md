@@ -6,7 +6,9 @@ produces, in one call, the summary table of
 and one plot per variable: a boxplot for continuous variables and a
 stacked barplot for categorical and dichotomous ones. The type of each
 plot follows the type the variable has in the table, so table and plots
-always agree.
+always agree. The plots use the same rows as the table, and the box of
+the boxplot spans the quartiles as the table computes them, so it shows
+the numbers of a `"median_IQR"` table.
 
 ## Setup and data
 
@@ -101,7 +103,32 @@ res_opt$plots$hb
 
 ![](summarizeSCI_files/figure-html/unnamed-chunk-7-1.png)
 
-## Saving plots
+`stat_footnote = TRUE` adds a footnote in the bottom-right corner saying
+what a plot shows, e.g. the box and whiskers of a boxplot or the
+denominator of the percentages of a stacked bar; a character string
+gives a text of your own.
+
+``` r
+
+res_note <- summarizeSCI(hb2, vars = "hb_cat", group = "Arm", type = "plot",
+                         plot_args = list(stat_footnote = TRUE))
+res_note$plots$hb_cat
+```
+
+![](summarizeSCI_files/figure-html/unnamed-chunk-8-1.png)
+
+## Saving the table and plots
+
+With `word_output = TRUE`, the table is also saved to a Word document at
+`file_path`, exactly as
+[`summaryTable()`](https://sakk-statistics.github.io/summarySCI/reference/summaryTable.md)
+saves it:
+
+``` r
+
+summarizeSCI(hb2, vars = c("hb", "hb_cat"), group = "Arm",
+             word_output = TRUE, file_path = "hemoglobin_table.docx")
+```
 
 [`save_plots()`](https://sakk-statistics.github.io/summarySCI/reference/save_plots.md)
 writes every plot of a result into its own file. The format (`"png"`,

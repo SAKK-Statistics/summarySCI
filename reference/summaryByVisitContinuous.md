@@ -54,7 +54,10 @@ summaryByVisitContinuous(
 
   Summary statistic to display for continuous variables. Options include
   "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
-  "geomMean_sd".
+  "geomMean_sd". "geomMean_sd" shows the geometric mean with the
+  geometric standard deviation, `exp(sd(log(x)))`, both `NA` if a value
+  is zero or negative. The geometric SD is a factor close to 1 and is
+  shown with at least 2 decimals.
 
 - visit:
 

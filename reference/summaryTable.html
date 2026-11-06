@@ -115,7 +115,11 @@ dataset. If no label present, the variable name is taken.</p></dd>
 <dt id="arg-stat-cont">stat_cont<a class="anchor" aria-label="anchor" href="#arg-stat-cont"></a></dt>
 <dd><p>Summary statistic to display for continuous variables. Options
 include "median_IQR", "median_range" (default), "mean_sd", "mean_se" and
-"geomMean_sd".</p></dd>
+"geomMean_sd".
+"geomMean_sd" shows the geometric mean with the geometric standard
+deviation, <code>exp(sd(log(x)))</code>, both <code>NA</code> if a value is zero or negative.
+The geometric SD is a factor close to 1 and is shown with at least 2
+decimals.</p></dd>
 
 
 <dt id="arg-stat-cat">stat_cat<a class="anchor" aria-label="anchor" href="#arg-stat-cat"></a></dt>

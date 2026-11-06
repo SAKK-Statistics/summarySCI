@@ -74,7 +74,10 @@
 of <code><a href="../reference/summaryTable.html">summaryTable()</a></code> and one plot per variable: a boxplot for
 continuous variables and a stacked barplot for categorical and
 dichotomous ones. The type of each plot follows the type the variable
-has in the table, so table and plots always agree.</p>
+has in the table, so table and plots always agree. The plots use the
+same rows as the table, and the box of the boxplot spans the quartiles
+as the table computes them, so it shows the numbers of a
+<code>"median_IQR"</code> table.</p>
 <div class="section level2">
 <h2 id="setup-and-data">Setup and data<a class="anchor" aria-label="anchor" href="#setup-and-data"></a>
 </h2>
@@ -213,10 +216,25 @@ argument that no plot uses gives a warning.</p>
 <span>                                         group_names_short <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">res_opt</span><span class="op">$</span><span class="va">plots</span><span class="op">$</span><span class="va">hb</span></span></code></pre></div>
 <p><img src="summarizeSCI_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p><code>stat_footnote = TRUE</code> adds a footnote in the bottom-right
+corner saying what a plot shows, e.g. the box and whiskers of a boxplot
+or the denominator of the percentages of a stacked bar; a character
+string gives a text of your own.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res_note</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarizeSCI.html">summarizeSCI</a></span><span class="op">(</span><span class="va">hb2</span>, vars <span class="op">=</span> <span class="st">"hb_cat"</span>, group <span class="op">=</span> <span class="st">"Arm"</span>, type <span class="op">=</span> <span class="st">"plot"</span>,</span>
+<span>                         plot_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>stat_footnote <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">res_note</span><span class="op">$</span><span class="va">plots</span><span class="op">$</span><span class="va">hb_cat</span></span></code></pre></div>
+<p><img src="summarizeSCI_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
-<h2 id="saving-plots">Saving plots<a class="anchor" aria-label="anchor" href="#saving-plots"></a>
+<h2 id="saving-the-table-and-plots">Saving the table and plots<a class="anchor" aria-label="anchor" href="#saving-the-table-and-plots"></a>
 </h2>
+<p>With <code>word_output = TRUE</code>, the table is also saved to a
+Word document at <code>file_path</code>, exactly as
+<code><a href="../reference/summaryTable.html">summaryTable()</a></code> saves it:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summarizeSCI.html">summarizeSCI</a></span><span class="op">(</span><span class="va">hb2</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hb"</span>, <span class="st">"hb_cat"</span><span class="op">)</span>, group <span class="op">=</span> <span class="st">"Arm"</span>,</span>
+<span>             word_output <span class="op">=</span> <span class="cn">TRUE</span>, file_path <span class="op">=</span> <span class="st">"hemoglobin_table.docx"</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="../reference/save_plots.html">save_plots()</a></code> writes every plot of a result into its own
 file. The format (<code>"png"</code>, <code>"jpeg"</code>,
 <code>"tiff"</code>, <code>"pdf"</code> or <code>"svg"</code>), size in
@@ -224,7 +242,7 @@ inches and resolution are set with <code>format</code>,
 <code>width</code>, <code>height</code> and <code>res</code>. Since each
 plot is redrawn at the requested size, its layout always fits the
 file.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"figures"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># one file per variable, named after it</span></span>

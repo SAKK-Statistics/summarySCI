@@ -64,9 +64,14 @@ to the plots, and further plot options go into `plot_args` (see
 and
 [`?stackedbarplotSCI`](https://sakk-statistics.github.io/summarySCI/reference/stackedbarplotSCI.md)).
 
-## The line plot shows the statistic of the table
+## The plots show the numbers of the table
 
-`stat_cont` decides what the line plot shows, matching the table:
+The line plots and stacked bars are drawn from the numbers printed in
+the table, as
+[`plotByVisit()`](https://sakk-statistics.github.io/summarySCI/reference/plotByVisit.md)
+does: they show exactly what the table shows, with its rounding, its
+visits and its N columns as the risk table. `stat_cont` decides what the
+line plot shows:
 
 | `stat_cont`      | Point          | Error bars                 |
 |------------------|----------------|----------------------------|
@@ -74,11 +79,18 @@ and
 | `"median_IQR"`   | median         | first to third quartile    |
 | `"mean_sd"`      | mean           | +/- one standard deviation |
 | `"mean_se"`      | mean           | +/- one standard error     |
-| `"geomMean_sd"`  | geometric mean | none                       |
+| `"geomMean_sd"`  | geometric mean | ÷ and × geometric SD       |
+
+The geometric mean needs positive values: the table shows `NA` for
+visits with values of zero or below, and the line plot leaves those
+points out. `plot_args = list(stat_footnote = TRUE)` names the statistic
+in a footnote under each plot.
 
 `plot_cont = "boxplot"` draws boxplots per visit instead of the line
-plot. Boxplots always show the median and quartiles, whatever
-`stat_cont` the table uses.
+plot. A boxplot shows more than the table holds, so it is drawn from the
+data: from the rows the table summarizes, with the box at the quartiles
+as the table computes them. It always shows the median and quartiles,
+whatever `stat_cont` the table uses; with `"median_IQR"` the two agree.
 
 ``` r
 
@@ -91,10 +103,11 @@ res_box$plots$hb
 
 ![](summarizeByVisitSCI_files/figure-html/unnamed-chunk-5-1.png)
 
-## Saving plots
+## Saving the table and plots
 
+`word_output = TRUE` (with `file_path`) and
 [`save_plots()`](https://sakk-statistics.github.io/summarySCI/reference/save_plots.md)
-works as described in
+work as described in
 [`vignette("summarizeSCI")`](https://sakk-statistics.github.io/summarySCI/articles/summarizeSCI.md):
 
 ``` r
