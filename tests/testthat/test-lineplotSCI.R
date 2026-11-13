@@ -81,3 +81,17 @@ test_that("a variable without values gives a readable error", {
   d$empty <- NA_real_
   expect_error(draw_quietly(lineplotSCI(d, empty, visit_nr)), "Nothing to plot")
 })
+
+test_that("a factor or text order is read as its numbers, not as level codes", {
+  d <- hb_fixture()
+  days <- c(0, 7, 14, 28, 42, 56, 84, 112, 140)[d$visit_nr]
+  ref <- draw_quietly(lineplotSCI(transform(d, day = days), hb, day, Arm))
+  d$day <- factor(days, levels = sort(unique(days)))
+  res <- draw_quietly(lineplotSCI(d, hb, day, Arm))
+  expect_equal(colnames(res$centre), as.character(sort(unique(days))))
+  expect_equal(res$centre, ref$centre)
+  d$day <- as.character(days)
+  expect_equal(draw_quietly(lineplotSCI(d, hb, day, Arm))$centre, ref$centre)
+  # labels are not positions
+  expect_error(lineplotSCI(d, hb, visit, Arm), "'order' must hold numbers")
+})

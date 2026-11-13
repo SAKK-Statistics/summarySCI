@@ -278,3 +278,17 @@ test_that("printed numbers are parsed", {
   expect_equal(parse_count(c("1,234.0 (12.5%)", "18.0/60.0", "7", "0 (NA%)")),
                c(1234, 18, 7, 0))
 })
+
+test_that("xs sets the positions of the visits and is checked", {
+  d   <- hb_fixture()
+  d   <- d[d$visit_nr <= 3, ]
+  tbl <- summaryByVisit(d, vars = "hb", group = "Arm", visit = "visit",
+                        as_flex_table = FALSE)
+  ax <- drawn_calls(plotByVisit(tbl, xs = c(0, 7, 28)), "C_axis")
+  ax <- Filter(function(a) a[[1]] == 1 && !is.null(a[[2]]), ax)
+  expect_equal(ax[[length(ax)]][[2]], c(0, 7, 28))
+  expect_error(draw_quietly(plotByVisit(tbl, xs = c(0, 7))),
+               "one x position per visit (3)", fixed = TRUE)
+  expect_error(draw_quietly(plotByVisit(tbl, xs = c("a", "b", "c"))),
+               "one x position per visit")
+})

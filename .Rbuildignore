@@ -9,3 +9,4 @@
 ^summarySCI\.Rproj$
 ^cran-comments\.md$
 ^minutes\.docx$
+^tests/testthat/_problems$

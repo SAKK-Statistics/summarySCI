@@ -39,7 +39,10 @@ passed to \code{\link[=summaryByVisit]{summaryByVisit()}}. Default is \code{"Mis
 \item{...}{Further arguments controlling the appearance of the plot, as
 documented in \code{\link[=lineplotSCI]{lineplotSCI()}} (continuous variables; e.g. \code{interval_type},
 \code{risk_table}, \code{col}, \code{legend_position}) or \code{\link[=stackedbarplotSCI]{stackedbarplotSCI()}}
-(categorical variables; e.g. \code{scale}, \code{percent_labels}, \code{risk_table}).}
+(categorical variables; e.g. \code{scale}, \code{percent_labels}, \code{risk_table}).
+For continuous variables, \code{xs} sets the positions of the visits on the
+x-axis (one number per visit, e.g. the study days); by default they are
+evenly spaced.}
 }
 \value{
 Invisibly, a list with
