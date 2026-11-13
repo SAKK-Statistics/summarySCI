@@ -295,8 +295,8 @@ as_natural_factor <- function(x) {
 #'
 #' Runs stats::fisher.test(); if it fails because the FEXACT workspace is too
 #' small (tables with many levels), retries with a larger workspace and finally
-#' falls back to a Monte Carlo p-value with a fixed seed (the user's RNG state
-#' is restored afterwards). Returns NA if the table is degenerate.
+#' falls back to a Monte Carlo p-value (reproducible with `set.seed()`).
+#' Returns NA if the table is degenerate.
 #'
 #' @param data,variable,by Passed by gtsummary::add_p().
 #' @return A data frame with columns `p.value` and `method`.
@@ -322,16 +322,8 @@ fisher_test_safe <- function(data, variable, by, ...) {
     return(data.frame(p.value = res$p.value, method = method))
   }
 
-  # 3. Monte Carlo p-value, reproducible, without touching the user's RNG state
+  # 3. Monte Carlo p-value (uses the session's random numbers)
   B <- 1e5
-  if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
-    old_seed <- get(".Random.seed", envir = globalenv(), inherits = FALSE)
-    on.exit(assign(".Random.seed", old_seed, envir = globalenv()), add = TRUE)
-  } else {
-    on.exit(if (exists(".Random.seed", envir = globalenv(), inherits = FALSE))
-      rm(".Random.seed", envir = globalenv()), add = TRUE)
-  }
-  set.seed(42)
   res <- stats::fisher.test(tab, simulate.p.value = TRUE, B = B)
 
   data.frame(

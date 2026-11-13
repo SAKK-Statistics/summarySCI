@@ -92,8 +92,9 @@ test_that("test = TRUE with 3 groups and many categories gives a Monte Carlo p-v
 test_that("Monte Carlo p-value in summaryTable is reproducible", {
   skip_on_cran()
   d <- st_mc()
-  expect_equal(st_p(st(d, vars = "v_cat", group = "arm", test = TRUE), "v_cat"),
-               st_p(st(d, vars = "v_cat", group = "arm", test = TRUE), "v_cat"))
+  set.seed(1); p1 <- st_p(st(d, vars = "v_cat", group = "arm", test = TRUE), "v_cat")
+  set.seed(1); p2 <- st_p(st(d, vars = "v_cat", group = "arm", test = TRUE), "v_cat")
+  expect_equal(p1, p2)
 })
 
 test_that("normal Fisher p-values are unchanged by the safe wrapper", {
