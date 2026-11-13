@@ -49,9 +49,11 @@
 #' res$plots$hb
 #' res$plots$hb_cat
 #'
+#' \donttest{
 #' # the plots alone
 #' plots <- summarizeSCI(d, vars = c("hb", "hb_cat"), group = "Arm",
 #'                       type = "plot")$plots
+#' }
 #' \dontrun{
 #' save_plots(res, file_name = "fig", file_path = "figures")
 #' }

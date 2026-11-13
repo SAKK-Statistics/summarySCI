@@ -153,13 +153,20 @@ also set the spacing of the visits in the line plots.
 \examples{
 library(summarySCI)
 data("hemoglobin_data")
-hb <- subset(hemoglobin_data, visit_nr <= 3)   # first 3 cycles, to keep it short
+hb <- subset(hemoglobin_data, visit_nr <= 2)   # first 2 cycles, to keep it short
+res <- summarizeByVisitSCI(hb, vars = "hb",
+                           group = "Arm", visit = "visit", order = "visit_nr",
+                           stat_cont = "median_IQR")
+res$plots$hb
+
+\donttest{
+# a categorical variable
 hb$hb_cat <- cut(hb$hb, c(-Inf, 120, 140, Inf),
                  labels = c("< 120", "120-140", "> 140"))
 res <- summarizeByVisitSCI(hb, vars = c("hb", "hb_cat"),
                            group = "Arm", visit = "visit", order = "visit_nr",
                            stat_cont = "median_IQR")
-res$plots$hb
 res$plots$hb_cat
+}
 
 }

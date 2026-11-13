@@ -82,12 +82,19 @@ library(summarySCI)
 data("hemoglobin_data")
 hb <- subset(hemoglobin_data, visit_nr <= 3)   # first 3 cycles, to keep it short
 attr(hb$hb, "label") <- "Hemoglobin"           # subset() drops the label
+tbl <- summaryByVisit(hb, vars = "hb",
+                      group = "Arm", visit = "visit", stat_cont = "median_IQR",
+                      as_flex_table = FALSE)
+plotByVisit(tbl, var = "Hemoglobin", risk_table = TRUE)
+
+\donttest{
+# a categorical variable
 hb$hb_cat <- cut(hb$hb, c(-Inf, 120, 140, Inf),
                  labels = c("< 120", "120-140", "> 140"))
 tbl <- summaryByVisit(hb, vars = c("hb", "hb_cat"),
                       group = "Arm", visit = "visit", stat_cont = "median_IQR",
                       as_flex_table = FALSE)
-plotByVisit(tbl, var = "Hemoglobin", risk_table = TRUE)
 plotByVisit(tbl, var = "hb_cat", legend_title = "Hemoglobin")
+}
 
 }
