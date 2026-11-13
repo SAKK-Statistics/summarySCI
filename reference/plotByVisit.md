@@ -69,6 +69,9 @@ plotByVisit(
   `legend_position`) or
   [`stackedbarplotSCI()`](https://sakk-statistics.github.io/summarySCI/reference/stackedbarplotSCI.md)
   (categorical variables; e.g. `scale`, `percent_labels`, `risk_table`).
+  For continuous variables, `xs` sets the positions of the visits on the
+  x-axis (one number per visit, e.g. the study days); by default they
+  are evenly spaced.
 
 ## Value
 

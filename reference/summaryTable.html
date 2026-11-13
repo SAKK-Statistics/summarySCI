@@ -174,8 +174,9 @@ for categorical variables.  Only used if <code>test = TRUE</code>.
 Options include "fisher.test" (default), "chisq.test", "chisq.test.no.correct".
 For "fisher.test", if the exact algorithm runs out of workspace (FEXACT
 error, e.g. for variables with many levels), the workspace is increased and,
-if still insufficient, a Monte Carlo p-value (B = 100,000, fixed seed) is
-reported instead; this is indicated in the table footnote.
+if still insufficient, a Monte Carlo p-value (B = 100,000) is
+reported instead; this is indicated in the table footnote. It varies
+slightly between runs unless <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> is called before.
 If NULL, the function decides itself: "chisq.test.no.correct" for categorical
 variables with all expected
 cell counts &gt;=5, and "fisher.test" for categorical variables with
@@ -291,7 +292,7 @@ To control the order fully, supply a factor with the desired levels.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sämi Schär, Charlotte Micheloud.</p>
+  <p>Developed by Sämi Schär, Charlotte Micheloud, Tudor Jumuga.</p>
 </div>
 
 <div class="pkgdown-footer-right">

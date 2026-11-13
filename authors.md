@@ -6,18 +6,20 @@
 
 - **Charlotte Micheloud**. Maintainer, author.
 
+- **Tudor Jumuga**. Author.
+
 ## Citation
 
 Source:
 [`DESCRIPTION`](https://github.com/SAKK-Statistics/summarySCI/blob/main/DESCRIPTION)
 
-Schär S, Micheloud C (2026). *summarySCI: Produces Publication-Ready
-Summary Tables*. R package version 1.0.0,
+Schär S, Micheloud C, Jumuga T (2026). *summarySCI: Produces
+Publication-Ready Summary Tables and Plots*. R package version 1.0.0,
 <https://sakk-statistics.github.io/summarySCI/>.
 
     @Manual{,
-      title = {summarySCI: Produces Publication-Ready Summary Tables},
-      author = {Sämi Schär and Charlotte Micheloud},
+      title = {summarySCI: Produces Publication-Ready Summary Tables and Plots},
+      author = {Sämi Schär and Charlotte Micheloud and Tudor Jumuga},
       year = {2026},
       note = {R package version 1.0.0},
       url = {https://sakk-statistics.github.io/summarySCI/},

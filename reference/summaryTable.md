@@ -124,11 +124,13 @@ summaryTable(
   "chisq.test", "chisq.test.no.correct". For "fisher.test", if the exact
   algorithm runs out of workspace (FEXACT error, e.g. for variables with
   many levels), the workspace is increased and, if still insufficient, a
-  Monte Carlo p-value (B = 100,000, fixed seed) is reported instead;
-  this is indicated in the table footnote. If NULL, the function decides
-  itself: "chisq.test.no.correct" for categorical variables with all
-  expected cell counts \>=5, and "fisher.test" for categorical variables
-  with any expected cell count \<5.
+  Monte Carlo p-value (B = 100,000) is reported instead; this is
+  indicated in the table footnote. It varies slightly between runs
+  unless [`set.seed()`](https://rdrr.io/r/base/Random.html) is called
+  before. If NULL, the function decides itself: "chisq.test.no.correct"
+  for categorical variables with all expected cell counts \>=5, and
+  "fisher.test" for categorical variables with any expected cell count
+  \<5.
 
 - ci:
 
