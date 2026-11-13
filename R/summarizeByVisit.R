@@ -107,6 +107,7 @@ summarizeByVisitSCI <- function(data, vars = NULL, group = NULL, labels = NULL,
     line_args <- common(lineplotSCI, lineplot_draw)
     bar_args  <- c(common(stackedbarplotSCI, stackedbar_draw), "missing")
 
+    overall <- isTRUE(list(...)$overall)
     specs <- lapply(seq_along(vars), function(i) {
       if (types[i] == "categorical") {
         return(list(fun = plotByVisit, name = "stacked barplot", data = tbl,
@@ -126,6 +127,13 @@ summarizeByVisitSCI <- function(data, vars = NULL, group = NULL, labels = NULL,
         bdata <- data[keep, , drop = FALSE]
         bdata$.visit_id    <- pos[keep]
         bdata$.visit_label <- visits[pos[keep]]
+        # the overall column of the table, as one more group
+        if (!is.null(group) && overall) {
+          g     <- factor(bdata[[group]])
+          bdata <- rbind(bdata, bdata)
+          bdata[[group]] <- factor(c(as.character(g), rep("Overall", length(g))),
+                                   levels = c(levels(g), "Overall"))
+        }
         return(list(fun = boxplotSCI, name = "boxplot", data = bdata,
                     args = list(var = vars[i], order = ".visit_id",
                                 visit = ".visit_label", group = group,

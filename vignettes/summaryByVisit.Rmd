@@ -37,7 +37,6 @@ colorize <- function(text, color) {
 
 ```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
 library(dplyr)
-library(tidyverse)
 library(gtsummary)
 library(summarySCI)
 library(flextable)

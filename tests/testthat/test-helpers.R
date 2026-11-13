@@ -55,31 +55,12 @@ test_that("fisher_test_safe falls back to a Monte Carlo p-value when needed", {
   expect_match(res$method, "100,000", fixed = TRUE)
 })
 
-test_that("Monte Carlo p-value is reproducible", {
+test_that("Monte Carlo p-value is reproducible with set.seed()", {
   skip_on_cran()
   d <- mc_data()
-  expect_identical(fisher_test_safe(d, "v", "arm"), fisher_test_safe(d, "v", "arm"))
-})
-
-test_that("fisher_test_safe does not change the user's random number stream", {
-  skip_on_cran()
-  d <- mc_data()
-  set.seed(123); a <- runif(3)
-  set.seed(123); invisible(fisher_test_safe(d, "v", "arm")); b <- runif(3)
+  set.seed(1); a <- fisher_test_safe(d, "v", "arm")
+  set.seed(1); b <- fisher_test_safe(d, "v", "arm")
   expect_identical(a, b)
-})
-
-test_that("fisher_test_safe does not create a seed if there was none", {
-  skip_on_cran()
-  d <- mc_data()
-  had_seed <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
-  if (had_seed) {
-    old <- get(".Random.seed", envir = globalenv())
-    on.exit(assign(".Random.seed", old, envir = globalenv()), add = TRUE)
-    rm(".Random.seed", envir = globalenv())
-  }
-  invisible(fisher_test_safe(d, "v", "arm"))
-  expect_false(exists(".Random.seed", envir = globalenv(), inherits = FALSE))
 })
 
 test_that("fisher_test_safe returns NA for degenerate tables", {

@@ -39,6 +39,9 @@
 #' documented in [lineplotSCI()] (continuous variables; e.g. `interval_type`,
 #' `risk_table`, `col`, `legend_position`) or [stackedbarplotSCI()]
 #' (categorical variables; e.g. `scale`, `percent_labels`, `risk_table`).
+#' For continuous variables, `xs` sets the positions of the visits on the
+#' x-axis (one number per visit, e.g. the study days); by default they are
+#' evenly spaced.
 #'
 #' @return Invisibly, a list with
 #' * `type`: `"continuous"` or `"categorical"`;
@@ -95,6 +98,8 @@ plotByVisit <- function(tbl, var = NULL, stat_cont = NULL,
   # x positions of the visits (summarizeByVisitSCI() passes those of 'order')
   xs <- if (is.null(args[["xs"]])) seq_along(visits) else args[["xs"]]
   args[["xs"]] <- NULL
+  if (!is.numeric(xs) || length(xs) != length(visits) || anyNA(xs))
+    stop("'xs' must give one x position per visit (", length(visits), ").")
 
   if (type == "continuous") {
     centre <- lower <- upper <- matrix(NA_real_, length(groups), length(visits),

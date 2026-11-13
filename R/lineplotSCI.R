@@ -178,7 +178,12 @@ lineplotSCI <- function(data, var, order, group = NULL,
   g <- if (is.null(group_name)) rep(var_name, nrow(data)) else data[[group_name]]
 
   keep <- !is.na(g) & !is.na(o)
-  v <- v[keep]; g <- factor(g[keep]); o <- as.numeric(o[keep])
+  v <- v[keep]; g <- factor(g[keep])
+  # the values of the time points (of a factor, its labels rather than codes)
+  o <- suppressWarnings(as.numeric(as.character(o[keep])))
+  if (anyNA(o))
+    stop("'order' must hold numbers, since they are the positions on the ",
+         "x-axis; give the labels of the time points in 'visit'.")
 
   # --- Summarise: point estimate and interval per group and time point ------
   interval_of <- function(x, m) {

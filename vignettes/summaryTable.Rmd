@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   echo = TRUE,
-  eval = TRUE,
+  eval = requireNamespace("survival", quietly = TRUE),   # the example data
   warning=FALSE,
   fig.height = 6,
   fig.width = 9,
@@ -36,7 +36,6 @@ colorize <- function(text, color) {
 
 ```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
 library(dplyr)
-library(tidyverse)
 library(gtsummary)
 library(summarySCI)
 library(flextable)
@@ -72,7 +71,7 @@ colon1 <-  colon %>%
 n_patients <- nrow(colon)
 ```
 
-The dataset `colon` contains data of `r n_patients` patients from one of
+The dataset `colon` contains data of `r if (exists("n_patients")) n_patients` patients from one of
 the first successful trials of adjuvant chemotherapy for colon cancer.
 
 For simplicity, we focus here on recurrence only, two treatment groups,

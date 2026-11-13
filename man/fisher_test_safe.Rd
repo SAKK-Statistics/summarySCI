@@ -15,7 +15,7 @@ A data frame with columns \code{p.value} and \code{method}.
 \description{
 Runs stats::fisher.test(); if it fails because the FEXACT workspace is too
 small (tables with many levels), retries with a larger workspace and finally
-falls back to a Monte Carlo p-value with a fixed seed (the user's RNG state
-is restored afterwards). Returns NA if the table is degenerate.
+falls back to a Monte Carlo p-value (reproducible with \code{set.seed()}).
+Returns NA if the table is degenerate.
 }
 \keyword{internal}

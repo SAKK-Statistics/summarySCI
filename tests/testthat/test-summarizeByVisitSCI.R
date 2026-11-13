@@ -358,3 +358,18 @@ test_that("plot_args cannot change the statistic the table shows", {
   expect_true("Hb (g/L)" %in% unlist(lapply(txt, function(a) Filter(is.character, a))))
 })
 
+test_that("overall = TRUE adds the overall group to the boxplots too", {
+  d <- sbv_fixture()
+  res <- suppressMessages(summarizeByVisitSCI(
+    d, vars = "hb", group = "Arm", visit = "visit", overall = TRUE,
+    stat_cont = "median_IQR", plot_cont = "boxplot", as_flex_table = FALSE))
+  sm <- tidySummaryByVisit(res$table)
+  z  <- boxes_drawn(res$plots$hb)
+  expect_length(z, 3)                                   # Arm A, Arm B, Overall
+  s <- sm[sm$group == "Overall", ]
+  s <- s[order(s$visit_id), ]
+  expect_equal(z[[3]]$n, s$n)
+  expect_within_rounding(z[[3]]$stats[3, ], s$centre, digits = 1)
+  expect_within_rounding(z[[3]]$stats[2, ], s$lower, digits = 1)
+  expect_within_rounding(z[[3]]$stats[4, ], s$upper, digits = 1)
+})

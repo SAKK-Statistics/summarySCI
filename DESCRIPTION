@@ -1,11 +1,12 @@
 Package: summarySCI
-Title: Produces Publication-Ready Summary Tables
+Title: Produces Publication-Ready Summary Tables and Plots
 Version: 1.0.0
 Authors@R: 
     c(person("Sämi", "Schär", email = "Saemi.Schaer@swisscancerinstitute.ch", role = "aut"),
       person("Charlotte", "Micheloud", email = "Charlotte.Micheloud@swisscancerinstitute.ch", 
-      role = c("cre", "aut")))
-Description: Produces tables with descriptive statistics for continuous, categorical and dichotomous variables. It is largely based on the package 'gtsummary'; Sjoberg DD et al. (2021) <doi:10.32614/RJ-2021-053>.
+      role = c("cre", "aut")),
+      person("Tudor", "Jumuga", email = "tudor.jumuga@swisscancerinstitute.ch", role = "aut"))
+Description: Produces tables with descriptive statistics for continuous, categorical and dichotomous variables. It is largely based on the package 'gtsummary'; Sjoberg DD et al. (2021) <doi:10.32614/RJ-2021-053>. The tables can be accompanied by matching boxplots, line plots and stacked barplots, also over time.
 License: LGPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -13,8 +14,8 @@ RoxygenNote: 7.3.2
 Depends: R (>= 4.1)
 Imports: Hmisc, cardx, dplyr, gtsummary (>= 2.3.0), forcats, labelled, purrr, rlang, tidyr, flextable, officer, graphics, grDevices, stats, utils, tools
 Suggests: 
+    broom (>= 1.0.8),
     knitr,
-    tidyverse,
     survival,
     testthat (>= 3.0.0),
     rmarkdown
