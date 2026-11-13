@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/SAKK-Statistics/summarySCI/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/SAKK-Statistics/summarySCI/blob/v1.0.0cran/DESCRIPTION)
 
 Schär S, Micheloud C, Jumuga T (2026). *summarySCI: Produces
 Publication-Ready Summary Tables and Plots*. R package version 1.0.0,
